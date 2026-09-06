@@ -4,7 +4,7 @@ The frontend is a static React build. Chain reads, wallet transactions and impor
 
 | Item | Value |
 |---|---|
-| Site | https://mergebounty-gnosis.pretty-moon-6694.chatgpt.site |
+| Site | https://mergebounty-gnosis.turetzkyron.chatgpt.site |
 | Network | Gnosis mainnet, chain 100, native xDAI |
 | Escrow | [0xdf1f54c97c728f7101b797a6db2383bea2cdecc1](https://gnosisscan.io/address/0xdf1f54c97c728f7101b797a6db2383bea2cdecc1#code) |
 | Verifier | [0x0106a198a94ef9958a5ab2dfc0fdb96ac3092e4f](https://gnosisscan.io/address/0x0106a198a94ef9958a5ab2dfc0fdb96ac3092e4f#code) |

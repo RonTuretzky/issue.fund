@@ -26,7 +26,7 @@ const deploymentPath = gnosisMode
   ? "public/deployment.gnosis.json"
   : ".local/deployment.json";
 const jobsRoot = gnosisMode ? ".local/gnosis-jobs" : ".local/jobs";
-const liveOrigin = "https://mergebounty-gnosis.pretty-moon-6694.chatgpt.site";
+const liveOrigin = "https://mergebounty-gnosis.turetzkyron.chatgpt.site";
 let pairingToken;
 if (gnosisMode) {
   fs.mkdirSync(".local", { recursive: true, mode: 0o700 });

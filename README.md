@@ -12,7 +12,7 @@ See [VERIFICATION.md](VERIFICATION.md) for the completed real-email, proof, payo
 
 ## Gnosis live version
 
-The static frontend is hosted at **https://mergebounty-gnosis.pretty-moon-6694.chatgpt.site** with owner-only access. It reads Gnosis directly and uses your browser wallet for transactions. See [GNOSIS.md](GNOSIS.md) for the verified contracts, deployment workflow, and acceptance test.
+The static frontend is hosted at **https://mergebounty-gnosis.turetzkyron.chatgpt.site** with owner-only access. It reads Gnosis directly and uses your browser wallet for transactions. See [GNOSIS.md](GNOSIS.md) for the verified contracts, deployment workflow, and acceptance test.
 
 For email proof generation on the prepared development computer:
 

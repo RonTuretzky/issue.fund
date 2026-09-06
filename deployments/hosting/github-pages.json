@@ -6,7 +6,7 @@
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "58dc98268e260db2a12d7048c04c4c14e0f1adb8",
+  "sourceCommit": "f964c855b45059385b3d93128a78f97977031f94",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -53,5 +53,12 @@
     "desktop and mobile directory layout",
     "secure context and zero page errors"
   ],
-  "transactionsSentByDeploymentChecks": 0
+  "transactionsSentByDeploymentChecks": 0,
+  "latestChange": "issue.fund header logo and browser icon",
+  "latestChangeBrowserChecks": [
+    "logo and favicon load successfully",
+    "home link and funding dialog work",
+    "no logo/wallet overlap at 1440, 1024, 800, 390, and 320 pixels",
+    "no horizontal page overflow or browser page errors"
+  ]
 }

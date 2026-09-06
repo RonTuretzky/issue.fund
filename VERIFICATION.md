@@ -50,3 +50,5 @@ GitHub Pages completed the update from source `58dc98268e260db2a12d7048c04c4c14e
 On September 6, 2026, the new issue.fund mark was added to the header alongside live text and configured as the favicon/home-screen icon. The transparent original and built-in generation prompt are preserved under `public/brand/issue-fund/`. Decentral Park attribution remains in the footer.
 
 The static Gnosis build and generated-documentation/TypeScript checks passed. All five handbook/branding/accessibility browser checks passed. A browser smoke check verified successful logo and favicon loading, the home link and funding dialog, and no logo/wallet overlap or horizontal page overflow at 1440, 1024, 800, 390, and 320 pixels. Desktop and mobile screenshots were reviewed. No contract code changed.
+
+GitHub Pages published logo source `f964c855b45059385b3d93128a78f97977031f94`; the live version manifest and successful Pages build agreed. The logo/favicon, responsive header, home navigation, and funding-dialog smoke checks passed again on `https://issue.fund/`, with zero page errors and zero transactions sent.

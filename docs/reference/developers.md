@@ -57,10 +57,11 @@ Edit shared/documentation.mjs and run npm run docs:build to refresh the Markdown
 
 ## Hosting and contract deployment
 
-npm run build:gnosis creates a static dist/ build. The published app reads the deployment manifest and HTTPS RPC directly; it needs no local server or proof-generation software. No email or wallet secret belongs in a static build.
+npm run build:gnosis creates a static dist/ build. npm run deploy:pages publishes it to the repository’s codex/pages branch; GitHub Pages serves issue.fund through Cloudflare DNS. The app reads the deployment manifest and HTTPS RPC directly; it needs no local server or proof-generation software. No email or wallet secret belongs in a static build.
 
 Contract deployment creates new immutable addresses and does not migrate existing funds. The source includes a chain-100 deployment script and a pinned Breadchain Etherform workflow. See the operations and Gnosis records before deploying.
 
+- [GitHub Pages hosting and Cloudflare DNS](https://github.com/RonTuretzky/issue.fund/blob/main/CLOUDFLARE.md)
 - [Operations and recovery](https://github.com/RonTuretzky/issue.fund/blob/main/OPERATIONS.md)
 - [Gnosis deployment guide](https://github.com/RonTuretzky/issue.fund/blob/main/GNOSIS.md)
 - [Browse the source](https://github.com/RonTuretzky/issue.fund)

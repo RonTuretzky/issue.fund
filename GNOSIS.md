@@ -1,6 +1,6 @@
 # Gnosis direct-DKIM deployment
 
-The live static app is [issue.fund public preview](https://mergebounty-gnosis.turetzkyron.chatgpt.site). It is public and needs only the browser, original email files and a Gnosis wallet with xDAI for gas.
+The live static app is [issue.fund](https://issue.fund). It is public and needs only the browser, original email files and a Gnosis wallet with xDAI for gas.
 
 | Component                | Address                                      |
 | ------------------------ | -------------------------------------------- |

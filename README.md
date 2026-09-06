@@ -2,15 +2,15 @@
 
 Fund a public GitHub issue with xDAI, then pay the wallet designated in the merged PR title using GitHub's original, DKIM-signed merge and linked issue-closure emails. The contracts verify RSA-SHA256 signatures directly. The static React app prepares the signed data and checks it with browser WebCrypto before submission.
 
-**[Open the public preview](https://mergebounty-gnosis.turetzkyron.chatgpt.site)** · [Protocol](PROTOCOL.md) · [Testing](TESTING.md) · [Gnosis deployment](GNOSIS.md)
+**[Open issue.fund](https://issue.fund)** · [Protocol](PROTOCOL.md) · [Testing](TESTING.md) · [Gnosis deployment](GNOSIS.md)
 
-The project is named **issue.fund**. Its Cloudflare custom-domain deployment is prepared and awaiting Workers permissions; see [deployment status](CLOUDFLARE.md#deployment-status). The existing preview and source repository are public. Gnosis uses native xDAI. Review the verification policy and contract limitations in the [technical guide](docs/reference/contracts.md).
+The app is hosted publicly on GitHub Pages, with the **issue.fund** domain managed through Cloudflare DNS. The source repository is public. Gnosis uses native xDAI. Review the verification policy and contract limitations in the [technical guide](docs/reference/contracts.md).
 
 ## Documentation
 
 The [documentation hub](https://issue.fund/#docs) lists all 14 pages for both audiences. Start with [maintainer onboarding](docs/maintainers/getting-started.md) or [contributor onboarding](docs/contributors/getting-started.md). The [complete documentation index](docs/README.md) includes funding, PR setup, merging, receipts, claims, withdrawals, refunds, privacy and troubleshooting.
 
-Content lives in `shared/documentation.mjs`. Run `npm run docs:build` after edits to generate the matching Markdown guides; every build checks that they are in sync. [Cloudflare deployment](CLOUDFLARE.md) covers static hosting.
+Content lives in `shared/documentation.mjs`. Run `npm run docs:build` after edits to generate the matching Markdown guides; every build checks that they are in sync. [GitHub Pages and DNS deployment](CLOUDFLARE.md) covers static hosting.
 
 ## Use the app
 

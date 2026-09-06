@@ -52,3 +52,9 @@ On September 6, 2026, the new issue.fund mark was added to the header alongside 
 The static Gnosis build and generated-documentation/TypeScript checks passed. All five handbook/branding/accessibility browser checks passed. A browser smoke check verified successful logo and favicon loading, the home link and funding dialog, and no logo/wallet overlap or horizontal page overflow at 1440, 1024, 800, 390, and 320 pixels. Desktop and mobile screenshots were reviewed. No contract code changed.
 
 GitHub Pages published logo source `f964c855b45059385b3d93128a78f97977031f94`; the live version manifest and successful Pages build agreed. The logo/favicon, responsive header, home navigation, and funding-dialog smoke checks passed again on `https://issue.fund/`, with zero page errors and zero transactions sent.
+
+## Selected Bounty Ticket identity
+
+The user selected option 3, Bounty Ticket. The header and browser/home-screen icon now use the transparent terminal-ticket mark with a green tab, paired with live text in a locally hosted Anton subset. The earlier checkmark asset was removed; brand notes preserve the generation prompts and font license.
+
+The static Gnosis build, TypeScript, documentation consistency, and diff checks passed. Four handbook/branding browser cases passed on the first run; the accessibility case timed out during an unusually long run, then passed on its isolated retry. The logo/font/favicon and home-link/funding-dialog smoke check passed at 1440, 1024, 800, 390, and 320 pixels, with no header overlap, horizontal page overflow, or browser page errors. Desktop and mobile screenshots were reviewed. These checks sent no transactions.

@@ -1,4 +1,11 @@
 @import "./brand.css";
+@font-face {
+  font-family: "Issue Ticket";
+  src: url("/brand/issue-fund/anton-wordmark.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 :root {
   font-family: var(--font-parkBody);
   color: var(--color-surface-ink);
@@ -2300,18 +2307,19 @@ footer > span:not(.brand) {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-family: var(--font-parkDisplay);
-  font-size: 27px;
-  font-weight: 700;
-  letter-spacing: -1.3px;
+  font-family: "Issue Ticket", var(--font-parkDisplay);
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 0.15px;
+  line-height: 1;
   color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
 }
 .project-mark {
   display: block;
-  width: 38px;
-  height: 38px;
+  width: 52px;
+  height: 36px;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -2362,11 +2370,11 @@ footer .brand.small {
     gap: 13px 8px;
   }
   .app-header .project-name {
-    font-size: 24px;
+    font-size: 27px;
     gap: 7px;
   }
   .project-mark {
-    width: 32px;
+    width: 46px;
     height: 32px;
   }
   .app-header .top-actions {
@@ -2401,11 +2409,11 @@ footer .brand.small {
     padding-left: 14px;
   }
   .app-header .project-name {
-    font-size: 22px;
+    font-size: 24px;
     gap: 5px;
   }
   .project-mark {
-    width: 28px;
+    width: 40px;
     height: 28px;
   }
   .app-header .wallet-button {

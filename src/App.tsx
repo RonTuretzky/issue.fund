@@ -398,10 +398,10 @@ export default function App() {
         <a className="project-name" href="#" onClick={explore}>
           <img
             className="project-mark"
-            src="/brand/issue-fund/mark.png"
+            src="/brand/issue-fund/bounty-ticket.png"
             alt=""
-            width="38"
-            height="38"
+            width="52"
+            height="36"
           />
           <span>issue.fund</span>
         </a>

@@ -119,7 +119,7 @@ test("fund the Gnosis fixture through the static frontend", async ({
   }
   await wallet(page);
   await page.goto("/");
-  await expect(page.getByText("GNOSIS · EXPERIMENTAL")).toBeVisible();
+  await expect(page.locator(".network")).toBeVisible();
   await connect(page);
   await page
     .getByRole("button", { name: "Fund an issue", exact: true })

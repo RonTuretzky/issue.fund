@@ -1,4 +1,4 @@
-name: Deploy Gnosis experimental contracts
+name: Deploy Gnosis contracts
 on:
   workflow_dispatch:
 permissions:

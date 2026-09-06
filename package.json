@@ -1,5 +1,5 @@
 {
-  "name": "mergebounty",
+  "name": "issue-fund",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,17 +7,20 @@
     "dev": "node scripts/dev.mjs",
     "start": "node server/index.mjs",
     "dev:web": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build",
+    "build": "npm run docs:check && tsc -b && vite build",
     "test": "node --test tests/github.test.mjs tests/dkim.test.mjs",
     "test:contracts": "forge test -vv",
-    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts",
+    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts tests/browser/documentation.spec.ts",
     "test:public-flow": "RUN_PUBLIC_FLOW=1 playwright test tests/browser/public-flow.spec.ts",
     "test:chain": "node --test tests/chain.test.mjs",
     "test:e2e": "playwright test",
     "chain": "anvil --host 127.0.0.1 --port 8547 --chain-id 31337 --gas-limit 30000000 --block-time 1 --silent",
     "deploy:local": "node scripts/deploy.mjs",
     "build:gnosis": "VITE_STATIC=true npm run build",
-    "test:vectors": "node scripts/make-test-receipts.mjs"
+    "test:vectors": "node scripts/make-test-receipts.mjs",
+    "docs:build": "node scripts/export-docs.mjs",
+    "docs:check": "node scripts/export-docs.mjs --check",
+    "deploy:cloudflare": "npm run build:gnosis && wrangler deploy"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1",
@@ -40,6 +43,7 @@
     "@vitejs/plugin-react": "4.5.2",
     "prettier": "3.6.2",
     "typescript": "5.8.3",
-    "vite": "6.4.3"
+    "vite": "6.4.3",
+    "wrangler": "4.129.0"
   }
 }

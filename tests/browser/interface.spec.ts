@@ -303,7 +303,7 @@ test("connection errors expose retry and recover", async ({ page }) => {
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.getByRole("alert")).toHaveCount(0);
 });
-test("mobile pages and guide fit the viewport and support keyboard dismissal", async ({
+test("mobile pages and documentation fit the viewport and wallet supports keyboard dismissal", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -315,11 +315,19 @@ test("mobile pages and guide fit the viewport and support keyboard dismissal", a
     .toBe(true);
   await page.screenshot({ path: ".local/frontend-mobile.png", fullPage: true });
   await page
-    .getByRole("button", { name: "Protocol & privacy", exact: true })
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Documentation", exact: true })
     .click();
+  await expect(
+    page.getByRole("heading", { name: "A guide for every step." }),
+  ).toBeVisible();
+  await page.locator(".wallet-button").click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Explore bounties", exact: true })
+    .click();
   await page.getByRole("button", { name: /example\/parser/ }).click();
   await expect
     .poll(() =>
@@ -340,7 +348,7 @@ test("key screens meet automated WCAG accessibility checks", async ({
       await page.getByRole("button", { name: /example\/parser/ }).click();
     if (screen === "guide")
       await page
-        .getByRole("button", { name: "View the guide", exact: true })
+        .getByRole("link", { name: "View the guide", exact: true })
         .click();
     const result = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa"])

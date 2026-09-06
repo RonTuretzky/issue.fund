@@ -21,3 +21,6 @@ deployment-summary.txt
 deployment-comment.md
 
 .audit.json
+.wrangler/
+.dev.vars
+.dev.vars.*

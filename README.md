@@ -1,10 +1,16 @@
-# MergeBounty
+# issue.fund
 
 Fund a public GitHub issue with xDAI, then pay the wallet designated in the merged PR title using GitHub's original, DKIM-signed merge and linked issue-closure emails. The contracts verify RSA-SHA256 signatures directly. The static React app prepares the signed data and checks it with browser WebCrypto before submission.
 
-**[Open the live app](https://mergebounty-gnosis.turetzkyron.chatgpt.site)** · [Protocol](PROTOCOL.md) · [Testing](TESTING.md) · [Gnosis deployment](GNOSIS.md)
+**[Open the public preview](https://mergebounty-gnosis.turetzkyron.chatgpt.site)** · [Protocol](PROTOCOL.md) · [Testing](TESTING.md) · [Gnosis deployment](GNOSIS.md)
 
-The hosted app retains its existing owner-only access. The source repository is public. Gnosis uses real xDAI; these contracts are experimental and unaudited. Use small amounts.
+The project is named **issue.fund**. Its Cloudflare custom-domain deployment is prepared and awaiting Workers permissions; see [deployment status](CLOUDFLARE.md#deployment-status). The existing preview and source repository are public. Gnosis uses native xDAI. Review the verification policy and contract limitations in the [technical guide](docs/reference/contracts.md).
+
+## Documentation
+
+The [documentation hub](https://issue.fund/#docs) lists all 14 pages for both audiences. Start with [maintainer onboarding](docs/maintainers/getting-started.md) or [contributor onboarding](docs/contributors/getting-started.md). The [complete documentation index](docs/README.md) includes funding, PR setup, merging, receipts, claims, withdrawals, refunds, privacy and troubleshooting.
+
+Content lives in `shared/documentation.mjs`. Run `npm run docs:build` after edits to generate the matching Markdown guides; every build checks that they are in sync. [Cloudflare deployment](CLOUDFLARE.md) covers static hosting.
 
 ## Use the app
 
@@ -57,6 +63,6 @@ Synthetic signing keys are used only in local cryptographic integration tests. P
 
 ## Archived private claims
 
-The complete previous ZK implementation is preserved on [`codex/archive-zk-proving`](https://github.com/RonTuretzky/mergebounty/tree/codex/archive-zk-proving). [Backlog issue #1](https://github.com/RonTuretzky/mergebounty/issues/1) records its circuits, proving artifacts, operational requirements, security work and restoration criteria. It is removed from the active application.
+The complete previous ZK implementation is preserved on [`codex/archive-zk-proving`](https://github.com/RonTuretzky/issue.fund/tree/codex/archive-zk-proving). [Backlog issue #1](https://github.com/RonTuretzky/issue.fund/issues/1) records its circuits, proving artifacts, operational requirements, security work and restoration criteria. It is removed from the active application.
 
 Legacy escrow `0xdf1f54c97c728f7101b797a6db2383bea2cdecc1` is a separate immutable deployment. Its funded bounty #2 and exact existing proving artifacts were preserved. Use the archived code and original manifest for legacy claims; new RSA receipts cannot settle that old escrow.

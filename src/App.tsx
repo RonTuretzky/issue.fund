@@ -36,6 +36,7 @@ import {
 import { defineChain } from "viem";
 import { api, friendly, short } from "./api";
 import { STATIC_MODE } from "./static-api";
+import { Documentation, docsPath } from "./Documentation";
 import { ClaimPanel } from "./ClaimPanel";
 import type { Bounty, Config } from "./types";
 import { Modal } from "./Modal";
@@ -109,23 +110,25 @@ export default function App() {
   const [repositoriesOpen, setRepositoriesOpen] = useState(
     () => location.hash === "#repositories",
   );
+  const [docPath, setDocPath] = useState(() => docsPath(location.hash));
   const openFunding = (url = "") => {
     setFundIssueUrl(url);
     setError("");
     setCreateOpen(true);
   };
   const openRepositories = () => {
+    setDocPath(null);
     setCreateOpen(false);
     setSelected(undefined);
     setRepositoriesOpen(true);
     history.replaceState(null, "", "#repositories");
   };
   const explore = () => {
+    setDocPath(null);
     setSelected(undefined);
     setRepositoriesOpen(false);
     history.replaceState(null, "", "#");
   };
-  const [help, setHelp] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState("");
@@ -193,6 +196,7 @@ export default function App() {
   const now = config?.chainTime ?? Date.now() / 1000;
   const wrongNetwork = !!account && chainId !== config?.chainId;
   const choose = (b: Bounty) => {
+    setDocPath(null);
     setRepositoriesOpen(false);
     setSelected(b.id);
     setError("");
@@ -200,6 +204,10 @@ export default function App() {
   };
   useEffect(() => {
     const navigate = () => {
+      setDocPath(docsPath(location.hash));
+      setCreateOpen(false);
+      setWalletOpen(false);
+      setWithdrawOpen(false);
       setRepositoriesOpen(location.hash === "#repositories");
       const id = Number(location.hash.match(/^#bounty-(\d+)$/)?.[1]);
       setSelected(id || undefined);
@@ -208,6 +216,10 @@ export default function App() {
     window.addEventListener("hashchange", navigate);
     return () => window.removeEventListener("hashchange", navigate);
   }, []);
+
+  useEffect(() => {
+    if (docPath === null) document.title = "issue.fund";
+  }, [docPath]);
 
   async function connect() {
     try {
@@ -382,34 +394,34 @@ export default function App() {
 
   return (
     <>
-      <header className="topbar">
-        <a className="brand" href="#" onClick={explore}>
-          <img
-            src="/brand/decentralpark/logo.png"
-            alt=""
-            width="42"
-            height="42"
-          />
-          <span className="brand-name">
-            Decentral Park<small>MergeBounty</small>
-          </span>
+      <header className="topbar app-header">
+        <a className="project-name" href="#" onClick={explore}>
+          issue.fund
         </a>
-        <nav>
+        <nav aria-label="Main navigation">
           <button
-            className={!selected && !repositoriesOpen ? "nav-active" : ""}
+            className={
+              !selected && !repositoriesOpen && docPath === null
+                ? "nav-active"
+                : ""
+            }
             onClick={explore}
           >
             Explore bounties
           </button>
           <button
-            className={repositoriesOpen ? "nav-active" : ""}
+            className={repositoriesOpen && docPath === null ? "nav-active" : ""}
             onClick={openRepositories}
           >
             Repositories
           </button>
-          <button onClick={() => setHelp(true)}>
-            How it works <ArrowUpRight size={13} />
-          </button>
+          <a
+            href="#docs"
+            className={docPath !== null ? "nav-active" : ""}
+            aria-current={docPath !== null ? "page" : undefined}
+          >
+            Documentation
+          </a>
         </nav>
         <div className="top-actions">
           <span className="network">
@@ -429,100 +441,106 @@ export default function App() {
         </div>
       </header>
       <main>
-        {connectionError && (
-          <div className="alert error" role="alert">
-            <strong>Connection needs attention.</strong> {connectionError}
-            <button onClick={refresh}>Retry</button>
-          </div>
+        {docPath === null && (
+          <>
+            {connectionError && (
+              <div className="alert error" role="alert">
+                <strong>Connection needs attention.</strong> {connectionError}
+                <button onClick={refresh}>Retry</button>
+              </div>
+            )}
+            {config?.local && (
+              <div className="environment">
+                <span>
+                  <span className="dot" /> LOCAL DEVELOPMENT
+                </span>{" "}
+                Real contract transactions. Test ETH only. Direct RSA/DKIM
+                verification.
+              </div>
+            )}
+            {wrongNetwork && (
+              <div className="alert error" role="alert">
+                Your wallet is on a different network.
+                <button onClick={switchNetwork}>
+                  Switch to {config?.chainName}
+                </button>
+              </div>
+            )}
+            {notice && (
+              <div className="alert success" role="status">
+                <CheckCircle2 size={18} />
+                <span>
+                  {notice}
+                  {lastTx &&
+                    (config?.explorerUrl ? (
+                      <a
+                        className="tx-hash"
+                        href={`${config.explorerUrl}/tx/${lastTx}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View transaction {short(lastTx)}
+                      </a>
+                    ) : (
+                      <small className="tx-hash">
+                        Transaction {short(lastTx)}
+                      </small>
+                    ))}
+                </span>
+                <button
+                  className="icon-button"
+                  aria-label="Dismiss notification"
+                  onClick={() => setNotice("")}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+            {error && !createOpen && !walletOpen && !withdrawOpen && (
+              <div className="alert error" role="alert">
+                {error}
+                <button
+                  className="icon-button"
+                  aria-label="Dismiss error"
+                  onClick={() => setError("")}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+            {BigInt(credit) > 0n && (
+              <div className="credit-bar">
+                <div>
+                  <ArrowDownLeft size={20} />
+                  <span>
+                    <strong>
+                      {money(credit)} {symbol} ready to withdraw
+                    </strong>
+                    <small>
+                      Only your connected wallet can withdraw this balance.
+                    </small>
+                  </span>
+                </div>
+                <button
+                  className="button primary"
+                  disabled={!!pending || wrongNetwork}
+                  onClick={() => {
+                    setError("");
+                    setWithdrawOpen(true);
+                  }}
+                >
+                  {pending === "withdraw" ? (
+                    <Loader2 className="spin" size={16} />
+                  ) : null}
+                  Withdraw {symbol}
+                </button>
+              </div>
+            )}
+          </>
         )}
-        {config?.experimental && (
-          <div className="environment">
-            <span>
-              <span className="dot" />{" "}
-              {config.local ? "LOCAL DEVELOPMENT" : "GNOSIS · EXPERIMENTAL"}
-            </span>{" "}
-            {config.local
-              ? "Real contract transactions. Test ETH only. Direct RSA/DKIM verification."
-              : "Real xDAI. Experimental, unaudited contracts. Use small amounts."}
-          </div>
-        )}
-        {wrongNetwork && (
-          <div className="alert error" role="alert">
-            Your wallet is on a different network.
-            <button onClick={switchNetwork}>
-              Switch to {config?.chainName}
-            </button>
-          </div>
-        )}
-        {notice && (
-          <div className="alert success" role="status">
-            <CheckCircle2 size={18} />
-            <span>
-              {notice}
-              {lastTx &&
-                (config?.explorerUrl ? (
-                  <a
-                    className="tx-hash"
-                    href={`${config.explorerUrl}/tx/${lastTx}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View transaction {short(lastTx)}
-                  </a>
-                ) : (
-                  <small className="tx-hash">Transaction {short(lastTx)}</small>
-                ))}
-            </span>
-            <button
-              className="icon-button"
-              aria-label="Dismiss notification"
-              onClick={() => setNotice("")}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
-        {error && !createOpen && !walletOpen && !withdrawOpen && (
-          <div className="alert error" role="alert">
-            {error}
-            <button
-              className="icon-button"
-              aria-label="Dismiss error"
-              onClick={() => setError("")}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
-        {BigInt(credit) > 0n && (
-          <div className="credit-bar">
-            <div>
-              <ArrowDownLeft size={20} />
-              <span>
-                <strong>
-                  {money(credit)} {symbol} ready to withdraw
-                </strong>
-                <small>
-                  Only your connected wallet can withdraw this balance.
-                </small>
-              </span>
-            </div>
-            <button
-              className="button primary"
-              disabled={!!pending || wrongNetwork}
-              onClick={() => {
-                setError("");
-                setWithdrawOpen(true);
-              }}
-            >
-              {pending === "withdraw" ? (
-                <Loader2 className="spin" size={16} />
-              ) : null}
-              Withdraw {symbol}
-            </button>
-          </div>
-        )}
-        {repositoriesOpen ? (
+        {docPath !== null ? (
+          <Documentation path={docPath} />
+        ) : repositoriesOpen ? (
           <RepositoryHub
             bounties={bounties}
             fund={openFunding}
@@ -804,9 +822,9 @@ export default function App() {
                   reward.
                 </p>
               </div>
-              <button className="text-button" onClick={() => setHelp(true)}>
+              <a className="text-button" href="#docs/reference/verification">
                 Understand the protocol <ArrowRight size={17} />
-              </button>
+              </a>
             </section>
           </>
         ) : (
@@ -1017,9 +1035,12 @@ export default function App() {
                     Read the receipt requirements and learn what a signature
                     reveals.
                   </p>
-                  <button className="text-button" onClick={() => setHelp(true)}>
+                  <a
+                    className="text-button"
+                    href="#docs/contributors/collect-emails"
+                  >
                     View the guide <ArrowRight size={15} />
-                  </button>
+                  </a>
                 </section>
               </aside>
             </div>
@@ -1034,12 +1055,8 @@ export default function App() {
             width="28"
             height="28"
           />
-          Decentral Park / MergeBounty
+          Decentral Park
         </span>
-        <span>Code for the common good.</span>
-        <button onClick={() => setHelp(true)}>
-          Protocol & privacy <ArrowUpRight size={13} />
-        </button>
       </footer>
       {createOpen && (
         <FundDialog
@@ -1195,80 +1212,6 @@ export default function App() {
               Disconnect {short(account)}
             </button>
           )}
-        </Modal>
-      )}
-      {help && (
-        <Modal
-          title="From open issue to earned reward"
-          close={() => setHelp(false)}
-        >
-          <div className="guide">
-            <div>
-              <span>01</span>
-              <section>
-                <h3>Fund the work</h3>
-                <p>
-                  Create a bounty for an exact GitHub repository, issue and
-                  target branch. {symbol} is held by the immutable escrow.
-                </p>
-              </section>
-            </div>
-            <div>
-              <span>02</span>
-              <section>
-                <h3>Make the fix</h3>
-                <p>
-                  Add the copied bounty reference and your wallet to your PR
-                  title. Include “Closes #issue” in the description. Subscribe
-                  to both the PR and issue before the merge.
-                </p>
-              </section>
-            </div>
-            <div>
-              <span>03</span>
-              <section>
-                <h3>Download two receipts</h3>
-                <p>
-                  In Gmail, open the specific message, choose its three-dot
-                  menu, then “Download message.” Use GitHub's merge event and
-                  the linked issue-closure event. A comment that says “Merged”
-                  does not qualify.
-                </p>
-              </section>
-            </div>
-            <div>
-              <span>04</span>
-              <section>
-                <h3>Verify, claim, withdraw</h3>
-                <p>
-                  The contract checks GitHub's RSA signatures, hashes the full
-                  email bodies, and verifies the linked native events. It
-                  credits the wallet in the merge-time title, which can then
-                  withdraw.
-                </p>
-              </section>
-            </div>
-          </div>
-          <div className="terms">
-            <LockKeyhole size={21} />
-            <p>
-              Submitted emails are public on-chain, including email addresses
-              and notification links. The interface checks signatures locally
-              before you choose to submit. No proving software or GitHub
-              connection is needed.
-            </p>
-          </div>
-          <p className="fine-print">
-            {config?.local
-              ? "The development deployment uses test ETH."
-              : "This Gnosis deployment uses real xDAI and unaudited contracts."}
-            GitHub remains the source of truth; this contract does not judge
-            code quality. Repository renames and transfers are not automatically
-            reconciled.
-          </p>
-          <button className="button primary" onClick={() => setHelp(false)}>
-            Got it <Check size={16} />
-          </button>
         </Modal>
       )}
     </>

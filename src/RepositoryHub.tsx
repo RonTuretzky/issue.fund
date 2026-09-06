@@ -591,7 +591,7 @@ function CreateIssue({
         <ExternalLink size={16} />
       </a>
       <p className="field-note">
-        Nothing is created until you submit on GitHub. MergeBounty never asks
+        Nothing is created until you submit on GitHub. issue.fund never asks
         for a GitHub token.
       </p>
       <div className="modal-actions">

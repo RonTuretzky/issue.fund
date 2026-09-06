@@ -31,4 +31,4 @@ The local API supports only `GET /api/config`, `GET /api/bounties`, `GET /api/cr
 
 ## Legacy ZK funds
 
-The archived branch and [backlog issue #1](https://github.com/RonTuretzky/mergebounty/issues/1) retain the original verifier, interfaces and artifact requirements. The old Gnosis escrow and bounty #2 were left intact. Keep the original local proving key, verification key and WASM; a newly generated setup cannot recreate that deployment's key. Use a separate archived checkout for old claims. Do not delete legacy local artifacts while a bounty remains unsettled.
+The archived branch and [backlog issue #1](https://github.com/RonTuretzky/issue.fund/issues/1) retain the original verifier, interfaces and artifact requirements. The old Gnosis escrow and bounty #2 were left intact. Keep the original local proving key, verification key and WASM; a newly generated setup cannot recreate that deployment's key. Use a separate archived checkout for old claims. Do not delete legacy local artifacts while a bounty remains unsettled.

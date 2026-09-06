@@ -1,6 +1,6 @@
 # Gnosis direct-DKIM deployment
 
-The live static app is [MergeBounty](https://mergebounty-gnosis.turetzkyron.chatgpt.site). It retains owner-only access and needs only the browser, original email files and a Gnosis wallet with xDAI for gas.
+The live static app is [issue.fund public preview](https://mergebounty-gnosis.turetzkyron.chatgpt.site). It is public and needs only the browser, original email files and a Gnosis wallet with xDAI for gas.
 
 | Component                | Address                                      |
 | ------------------------ | -------------------------------------------- |
@@ -15,7 +15,7 @@ The machine-readable manifest is `public/deployment.gnosis.json`, mirrored in `d
 
 Use **Repositories** to add a public repository, browse issues and fund one. Copy the PR-title markers from that bounty, subscribe to the issue and PR, merge with `Closes #N`, download the two original event emails, then check and submit them. The contract credits the title's wallet; use that wallet to withdraw. Submitting discloses the signed headers and full canonical email bodies, including addresses and notification links.
 
-The deployment is experimental and unaudited, pins GitHub's observed RSA-1024 key and supports a narrow native notification template. Read `PROTOCOL.md` before funding substantial work.
+The deployment has not had an independent security audit. It pins GitHub's observed RSA-1024 key and supports a narrow native notification template. Read `PROTOCOL.md` before funding substantial work.
 
 ## Reproducible deployment
 

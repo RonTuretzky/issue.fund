@@ -1,0 +1,81 @@
+/* DecentralPark UI kit 7696b1b72460801ccc24abfa4e7d49c8abc72b9c. See BRANDING.md. */
+/* Decentral Park Fonts - self-hosted by decentralpark-ui-kit */
+@font-face {
+  font-family: "Park Display";
+  src: url("/brand/decentralpark/fonts/spacegrotesk-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Park Display";
+  src: url("/brand/decentralpark/fonts/spacegrotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Park Display";
+  src: url("/brand/decentralpark/fonts/spacegrotesk-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Park Body";
+  src: url("/brand/decentralpark/fonts/inter-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Park Body";
+  src: url("/brand/decentralpark/fonts/inter-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Park Body";
+  src: url("/brand/decentralpark/fonts/inter-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-core-green: #16a34a;
+  --color-primary-green: #16a34a;
+  --color-green-0: #86efac;
+  --color-green-1: #15803d;
+  --color-green-2: #166534;
+  --color-primary-pine: #0d9488;
+  --color-pine-0: #5eead4;
+  --color-pine-1: #0f766e;
+  --color-pine-2: #134e4a;
+  --color-primary-sky: #0284c7;
+  --color-sky-0: #7dd3fc;
+  --color-sky-1: #0369a1;
+  --color-sky-2: #075985;
+  --color-paper-main: #f0fdf4;
+  --color-paper-0: #ffffff;
+  --color-paper-1: #dcfce7;
+  --color-paper-2: #bbf7d0;
+  --color-surface-ink: #14211a;
+  --color-surface-grey: #808080;
+  --color-surface-grey-2: #595959;
+  --color-surface-brown: #513c35;
+  --color-surface-brown-1: #301f18;
+  --color-system-green: #16a34a;
+  --color-system-red: #df0b00;
+  --color-system-warning: #ce7f00;
+  --color-red-0: #f7cac2;
+  --color-red-1: #f4b8ad;
+  --color-red-main: #df0b00;
+  --color-text-standard: #0a0a0a;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --font-parkDisplay: "Park Display", sans-serif;
+  --font-parkBody: "Park Body", sans-serif;
+}

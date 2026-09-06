@@ -1,0 +1,12 @@
+{
+  "contracts": [
+    {
+      "sourcePathAndName": "contracts/ReceiptVerifier.sol:Groth16Verifier",
+      "address": "0x0106a198a94ef9958a5ab2dfc0fdb96ac3092e4f"
+    },
+    {
+      "sourcePathAndName": "contracts/MergeBounty.sol:MergeBounty",
+      "address": "0xdf1f54c97c728f7101b797a6db2383bea2cdecc1"
+    }
+  ]
+}

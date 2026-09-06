@@ -1,6 +1,6 @@
 # Verified local implementation
 
-Checked September 6, 2026. This is a working local development system using test ETH; it has not been audited or deployed to a public network.
+The local Anvil checks below were completed September 6, 2026, before the Gnosis deployment. The subsequent real-xDAI deployment and complete proof/claim/withdrawal test passed at 16:20 UTC; see [GNOSIS.md](GNOSIS.md). Both versions remain unaudited and use a development proof ceremony.
 
 ## Results
 

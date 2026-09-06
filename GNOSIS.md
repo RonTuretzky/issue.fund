@@ -24,6 +24,8 @@ Both contracts were deployed using `script/Deploy.s.sol`, and their sources were
 
 Proof export/import works without exposing original emails. Import is checked by the actual Gnosis escrow using `eth_call`; a transaction still simulates again before submission. If the local service is stopped or the browser blocks loopback access, the site explains how to reconnect. Proof generation is not a standalone browser feature in this version.
 
+A second bounty (#2, 0.001 xDAI, issue #13 / PR #14) is funded and deliberately unclaimed for the owner's manual test. Its two original emails were verified against the bounty and saved privately in `Downloads/MergeBounty-Gnosis-Test`, alongside pairing instructions. The completed acceptance test used bounty #1.
+
 ## Reproducible deployment and Etherform
 
 The checked-in GitHub workflows use the pinned `breadchaincoop/etherform` CI and deployment workflows. Gnosis deployment is **manual only**, via `workflow_dispatch`; it is never triggered by a pull request or ordinary push. A future manual deployment requires the `gnosis` GitHub environment and its `GNOSIS_DEPLOYER_KEY` and `GNOSIS_RPC_URL` secrets. No deployer credential is checked into this project or copied into frontend assets.

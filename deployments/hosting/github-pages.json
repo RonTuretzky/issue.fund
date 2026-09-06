@@ -6,7 +6,7 @@
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "4f704a88d1d94f31bc520cf1324d811dd30ef7a1",
+  "sourceCommit": "58dc98268e260db2a12d7048c04c4c14e0f1adb8",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -46,10 +46,11 @@
   "readOnlyBrowserChecks": [
     "documentation catalogue and onboarding guides",
     "deep-link reload",
-    "public GitHub repository onboarding",
-    "open issue funding review in xDAI",
+    "bounty-derived repository directory without bookmark controls or storage writes",
+    "directory issue browsing through public GitHub API",
+    "direct open issue funding review in xDAI",
     "existing Gnosis bounty read",
-    "mobile viewport",
+    "desktop and mobile directory layout",
     "secure context and zero page errors"
   ],
   "transactionsSentByDeploymentChecks": 0

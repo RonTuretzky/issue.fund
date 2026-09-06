@@ -1,60 +1,34 @@
-# Operations
+# Operation and recovery
 
-## Proving artifacts
+The deployed app is a static build. It reads public GitHub metadata anonymously, reads Gnosis through HTTPS RPC, performs local WebCrypto signature checks, and asks the user's wallet to submit transactions. It has no receipt-upload endpoint, proving server, GitHub token or custody key.
 
-`npm run circuits:build` compiles `circuits/Receipt.circom` to R1CS/WASM. `npm run setup` creates development Powers of Tau parameters, contributes fresh entropy, prepares phase 2, performs the circuit-specific Groth16 setup, contributes again and exports the verification key and Solidity verifier.
+## Local development
 
-The default local ceremony is for development. It is computationally expensive and writes several multi-gigabyte files. Do not interrupt it merely because a stage takes a long time; inspect `artifacts/setup.log` when running with output redirected there. Keep enough free disk space for the PTAU, R1CS, ZKEY and witness files together.
+- 8547: Anvil RPC, chain 31337.
+- 4319: loopback development API with config, bounties, credits and local RPC forwarding.
+- 5174: Vite frontend.
 
-To use an externally obtained phase-1 file, independently verify its published cryptographic checksum and set `MERGEBOUNTY_PTAU=/absolute/path/to/verified.ptau`. The file must support power 23. The script still performs a **local** circuit-specific phase-2 contribution and labels the result a development ceremony. Do not treat a successful export as an audit.
+Start with `npm run chain`, `npm run deploy:local`, then `npm run dev`. The local manifest is `.local/deployment.rsa.json`. After contract changes, retain any existing deployment record, then explicitly create a fresh local deployment; `deploy:local` reuses an existing deployed address. Never expose unlocked Anvil wallets publicly.
 
-`node scripts/download-ptau.mjs` downloads the public power-23 file from the [RISC Zero mirror](https://github.com/risc0/risc0/blob/main/groth16_proof/README.md), resumes completed HTTP ranges, and checks the independent BLAKE2b checksum published by [iden3/snarkjs](https://github.com/iden3/snarkjs). It only renames the download to `artifacts/hermez23.ptau` after a complete checksum match. Run setup with `MERGEBOUNTY_PTAU=artifacts/hermez23.ptau npm run setup` to use it. The file is approximately 9 GiB.
+The local API supports only `GET /api/config`, `GET /api/bounties`, `GET /api/credits/:address` and a loopback RPC proxy. Uploaded emails are processed by `shared/dkim.mjs` in the page, not this service. Raw files are held in memory and discarded on navigation/reload; reselect originals to retry.
 
-Changing the circuit or regenerating keys requires regenerating proofs and deploying a matching verifier. Do not mix artifacts from different circuits/ceremonies. Preserve the old artifacts if any escrow still relies on them. The generated verifier source is reviewable; its parameters are public.
+## Static publishing
 
-Setup reuses a complete artifact set and refuses a partial one. A checked-in verifier source alone does not block a fresh setup. If a step fails, preserve the existing artifact directory, recover that step using the commands in `scripts/setup.mjs`, and finish the remaining exports. Do not remove keys associated with a funded escrow. Local phase-1 preparation writes a `.partial` file and promotes it only after success.
+`npm run build:gnosis` builds `dist/` with `public/deployment.gnosis.json`. The manifest identifies chain 100, the escrow, immutable verifier, RSA key and ABI. The browser checks the chain and deployed key against the manifest before presenting the app. Do not reuse the legacy ZK manifest with this build.
 
-## Gnosis service
+`scripts/deploy-gnosis.mjs` deploys new immutable contracts with a hidden-input/secret-environment signer and a resumable local transaction checkpoint. `script/Deploy.s.sol` supports the pinned Etherform workflow. `scripts/export-gnosis.mjs` validates Foundry broadcast results and writes a manifest. Runtime validation checks compiled bytecode with compiler-declared immutable ranges normalized, then separately checks the actual immutable verifier/key and stored modulus. Deployment does not migrate old funds.
 
-`npm run prover:gnosis` starts the existing prover on loopback port 4320 for the deployment in `public/deployment.gnosis.json`. The first run creates an owner-readable pairing code at `.local/prover-pairing-code`. Paste it into the live page's pairing dialog; it is retained only in that tab's session storage. The page sends raw emails only to this local service. The service validates Host, Origin, the pairing code, and the deployed verification-key/source hashes. It does not expose an RPC proxy or any signing key.
+## Common recovery paths
 
-The static page uses `src/static-api.ts` to read Gnosis and verify imported proofs through the actual escrow. Build it using `npm run build:gnosis`; hosting metadata selects `dist/`. The development-mode frontend (`npm run dev`) still uses Anvil and its separate service.
+- **No GitHub connection needed:** public reads require no credentials. Rate limits or API failures stop funding preflight; retry later. Create issues through GitHub's own UI.
+- **Unsupported email:** obtain the original `.eml`; ensure it is a native merge or linked closure event, not a comment, forwarded message or manual closure. Titles and target branch must match the bounty.
+- **Invalid RSA/body hash:** the file was modified, decoded, signed with another key, or is not a supported original. Download it again; never bypass signature checking.
+- **Wrong reference or timestamps:** receipts cannot be repurposed for another escrow, chain, bounty or funding window. A new deployment requires newly funded work and appropriately timed receipts.
+- **Wallet rejected:** retry from the current review. Signed data may already have reached the configured RPC during simulation, even if the transaction was cancelled.
+- **Paid but not received:** the reward is a withdrawal credit for the authenticated wallet. Connect that wallet and withdraw; another submitter cannot withdraw it.
+- **Transfer failure:** credit remains intact. The credited wallet can choose a different destination.
+- **Expired bounty:** valid receipt submission remains possible through the seven-day grace period. Only the funder can reclaim after that period.
 
-Keep the exact existing `artifacts/Receipt.zkey`, `artifacts/verification-key.json`, and `artifacts/Receipt_js/` files. Re-running setup on a new computer will not recreate the Gnosis deployment's proving key. See [GNOSIS.md](GNOSIS.md).
+## Legacy ZK funds
 
-## Local services
-
-| Port | Process                                                        |
-| ---- | -------------------------------------------------------------- |
-| 4320 | Paired Gnosis proof service, started with `npm run prover:gnosis` |
-| 8547 | Anvil, chain ID 31337                                          |
-| 4319 | Express local proof service; also serves `dist/` after a build |
-| 5174 | Vite development frontend, proxying `/api` and `/rpc`          |
-
-The services listen on loopback. Requests with another Host or Origin are rejected by the proof service. There are no mailbox credentials or account private keys in the application. Do not expose the services through a tunnel or reverse proxy as a public deployment.
-
-The default deployment pins the Poseidon hash of GitHub's observed `pf2023` RSA public key:
-
-```text
-18769159890606851885526203517158331386071551795170342791119488780143683832216
-```
-
-`MERGEBOUNTY_DKIM_KEY_HASH` is a deployment-time override for explicitly reviewed keys. It does not change an existing escrow. Passing an arbitrary key would create an escrow for that arbitrary signer; the UI must never imply it authenticates GitHub automatically.
-
-## Recovery
-
-- **Chain unavailable:** start Anvil on port 8547 and use Retry. An empty new chain requires a deployment; old proofs may no longer satisfy new bounty creation times.
-- **Wrong network:** switch the browser wallet to the displayed chain. The explicit Anvil test wallet works without an extension.
-- **Unsupported email:** use the original downloaded message, with the native merge/linked closure event. Unicode, forwarded, oversized or differently encoded messages are intentionally rejected.
-- **Prover restarted:** unfinished jobs become failed, and private intermediate files are removed. Upload the originals to retry.
-- **Proof cancelled:** cancellation stops witness generation/proving and removes private files. The funded bounty remains open.
-- **Proof ready:** export it before removing local job history. Import rechecks the actual verifier and bounty policy. Someone holding exported proofs can submit them but cannot redirect the recipient.
-- **Transaction rejected/reverted:** the interface reports the failure and allows retry; reread current bounty status first.
-- **ETH destination rejects transfers:** choose another destination in the withdrawal dialog. Only the credited account can authorize that change.
-- **GitHub key rotation:** the immutable escrow cannot be updated. Pending funds remain refundable under their original deadlines; new key support requires a reviewed new deployment.
-
-## API
-
-`GET /api/config`, `GET /api/bounties`, `GET /api/credits/:address`, `POST /api/receipts/inspect`, `POST /api/proofs`, `GET /api/proofs/:id`, `POST /api/proofs/:id/cancel`, `POST /api/proofs/import`.
-
-Receipt POST requests use `{bountyId, merge, closure}`, where the latter two are raw `.eml` strings. Import uses `{bountyId, result:{merged,closed}}` with Solidity proof calldata. Raw uploads are limited to 100 KB per file and 210 KB per JSON request. One proof job runs at a time to avoid exhausting memory. Public jobs are addressed by random UUID and retained locally for resumption; private working files are not retained after completion.
+The archived branch and [backlog issue #1](https://github.com/RonTuretzky/mergebounty/issues/1) retain the original verifier, interfaces and artifact requirements. The old Gnosis escrow and bounty #2 were left intact. Keep the original local proving key, verification key and WASM; a newly generated setup cannot recreate that deployment's key. Use a separate archived checkout for old claims. Do not delete legacy local artifacts while a bounty remains unsettled.

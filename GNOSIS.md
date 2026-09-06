@@ -1,47 +1,34 @@
-# Gnosis experimental deployment
+# Gnosis direct-DKIM deployment
 
-The frontend is a static React build. Chain reads, wallet transactions and imported-proof verification run from the browser against Gnosis. Original-email proof generation uses the paired local Node prover on this computer. This is a live experimental deployment, with real xDAI, an unaudited circuit/escrow, and a development Groth16 phase-2 setup.
+The live static app is [MergeBounty](https://mergebounty-gnosis.turetzkyron.chatgpt.site). It retains owner-only access and needs only the browser, original email files and a Gnosis wallet with xDAI for gas.
 
-| Item | Value |
-|---|---|
-| Site | https://mergebounty-gnosis.turetzkyron.chatgpt.site |
-| Network | Gnosis mainnet, chain 100, native xDAI |
-| Escrow | [0xdf1f54c97c728f7101b797a6db2383bea2cdecc1](https://gnosisscan.io/address/0xdf1f54c97c728f7101b797a6db2383bea2cdecc1#code) |
-| Verifier | [0x0106a198a94ef9958a5ab2dfc0fdb96ac3092e4f](https://gnosisscan.io/address/0x0106a198a94ef9958a5ab2dfc0fdb96ac3092e4f#code) |
-| Manifest | `public/deployment.gnosis.json` |
-| Etherform revision | `180aa91926a02ce2045f9a7e3ed08be9395ecfab` |
+| Component                | Address                                      |
+| ------------------------ | -------------------------------------------- |
+| Direct RSA/DKIM verifier | `0xc2404198b7519c915817826586ec3892332a27cf` |
+| Direct escrow            | `0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46` |
+| Chain                    | Gnosis, 100                                  |
+| Currency                 | Native xDAI                                  |
 
-Both contracts were deployed using `script/Deploy.s.sol`, and their sources were verified through Etherform's Blockscout verification helper. `scripts/export-gnosis.mjs` checks successful deployment receipts, byte-for-byte verifier runtime identity, escrow verifier address, and pinned GitHub key before exporting the frontend manifest.
+Deployment transactions: [verifier](https://gnosisscan.io/tx/0x2c8b9f6872626f92ceb0880445c25ef58eef5ea66631214a5424806550ed9e54), [escrow](https://gnosisscan.io/tx/0xacd7879b9e2c12626be43832fda88cc6d2a703c45c6c6998cab86588805a997f).
 
-## Test the application
+The machine-readable manifest is `public/deployment.gnosis.json`, mirrored in `deployments/gnosis/deployment.json`. It records the genuine GitHub RSA modulus, key hash, deployed addresses, ABI and transaction hashes. Deployment validation checks runtime source correspondence, verifier linkage and the exact pinned modulus.
 
-1. Start `npm run prover:gnosis` in the prepared project. Keep it running and keep the computer awake.
-2. Open the site in a browser with an Ethereum wallet. Connect the wallet and switch/add Gnosis when requested. Use a wallet holding a small amount of xDAI for gas.
-3. Choose **Connect prover** and paste `.local/prover-pairing-code`. This code grants access only to your local prover, never to your wallet. Allow the browser's local network permission for this specific site if prompted.
-4. Choose **Browse repositories**, add a public repository, and select an open issue. Use **Create issue** to open GitHub's form and refresh after submitting it, or import an existing issue URL. Review the detected default branch and fund with a tiny xDAI reward. Copy its exact bounty and wallet markers into the PR title before merging. Add `Closes #ISSUE` to its description; target the funded default branch. No GitHub connection or token is needed in MergeBounty.
-5. Subscribe to the issue and PR before the merge. Download the original merged-PR and linked issue-closure `.eml` messages. Check them, generate the two proofs, and submit the claim.
-6. The wallet named in the signed merge-time PR title withdraws its credited balance. The submitter cannot change that recipient.
+Use **Repositories** to add a public repository, browse issues and fund one. Copy the PR-title markers from that bounty, subscribe to the issue and PR, merge with `Closes #N`, download the two original event emails, then check and submit them. The contract credits the title's wallet; use that wallet to withdraw. Submitting discloses the signed headers and full canonical email bodies, including addresses and notification links.
 
-Proof export/import works without exposing original emails. Import is checked by the actual Gnosis escrow using `eth_call`; a transaction still simulates again before submission. If the local service is stopped or the browser blocks loopback access, the site explains how to reconnect. Proof generation is not a standalone browser feature in this version.
+The deployment is experimental and unaudited, pins GitHub's observed RSA-1024 key and supports a narrow native notification template. Read `PROTOCOL.md` before funding substantial work.
 
-A second bounty (#2, 0.001 xDAI, issue #13 / PR #14) is funded and deliberately unclaimed for the owner's manual test. Its two original emails were verified against the bounty and saved privately in `Downloads/MergeBounty-Gnosis-Test`, alongside pairing instructions. The completed acceptance test used bounty #1.
+## Reproducible deployment
 
-## Reproducible deployment and Etherform
+The manual workflow in `.github/workflows/deploy-gnosis.yml` uses BreadchainCoop/etherform pinned to `180aa91926a02ce2045f9a7e3ed08be9395ecfab`. It invokes `script/Deploy.s.sol:Deploy`, which requires chain 100. Configure the repository's Gnosis environment and secret variables before dispatch; creating the workflow does not provision those secrets.
 
-The checked-in GitHub workflows use the pinned `breadchaincoop/etherform` CI and deployment workflows. Gnosis deployment is **manual only**, via `workflow_dispatch`; it is never triggered by a pull request or ordinary push. A future manual deployment requires the `gnosis` GitHub environment and its `GNOSIS_DEPLOYER_KEY` and `GNOSIS_RPC_URL` secrets. No deployer credential is checked into this project or copied into frontend assets.
+The local equivalent is `forge build` followed by `node scripts/deploy-gnosis.mjs`, which accepts a key through hidden terminal input or `GNOSIS_DEPLOYER_KEY` supplied by a secret manager. Never pass the key as a CLI argument or commit it. The script records public transaction checkpoints, resumes interrupted deployment and validates the resulting manifest.
 
-The completed initial deployment was run locally with Foundry's hidden interactive key entry. Etherform's broadcast parser, network resolver, artifact writer and verification helper were then run locally at the same pinned revision. The CI workflow is provided for reuse; an upstream Etherform GitHub Actions deployment was not used for this initial broadcast.
+Every deployment is a new immutable escrow. The old ZK escrow `0xdf1f54c97c728f7101b797a6db2383bea2cdecc1` and its outstanding bounty #2 are preserved. They remain accessible through the archived implementation, not the new direct-RSA interface.
 
-Two integration details need preserving: the current canonical Gnosis explorer is `https://gnosisscan.io` (the old Blockscout hostname redirects), and the generated verifier is named `Groth16Verifier` inside `contracts/ReceiptVerifier.sol`. Etherform's generic artifact writer assumes filename equals contract name, so `deployments/gnosis/deployment.json` corrects that source mapping. Dry-run broadcasts must be kept separate from the real broadcast before running its parser.
+## Real GitHub → Gnosis acceptance test
 
-`forge script script/Deploy.s.sol:Deploy` checks chain 100 before broadcasting. Running it again deploys **new immutable contracts**, not an upgrade. Existing bounties and proof artifacts must continue using their original deployment. Preserve the original proving key for the current escrow.
+On September 6, 2026, public repository `RonTuretzky/tmp-mergebounty-public-e2e-20260906`, issue #2 and merged PR #4 completed the direct flow through the static frontend. Bounty #1 funded 0.001 xDAI. Both genuine original GitHub notifications passed browser RSA checks; the Gnosis contract verified them, credited the designated wallet, and that wallet withdrew the exact reward less its withdrawal gas. No proving service was used.
 
-## Acceptance evidence
+Transactions: [fund](https://gnosisscan.io/tx/0x944461c0e8a8f721b0c7340462fe940aaa25f2869985b7045982730eebbadd3a), [claim](https://gnosisscan.io/tx/0xdc00944624435a7f48e38666a3598df0768bc6cac0b7cfd0547a146281b0c053), [withdraw](https://gnosisscan.io/tx/0x181287ceaab3d41fd06953778e6bf95d840ee9760d2f43adbb852bfd440c9944). The claim contains the intentionally disclosed signed headers and full canonical bodies. A sanitized machine-readable record is in `deployments/gnosis/e2e.json`.
 
-The current onboarding UI supports public repositories only. The earlier email/proof fixtures below remain historical evidence and existing funded bounties remain claimable. New onboarding was tested with the public repository `RonTuretzky/tmp-mergebounty-public-e2e-20260906`: a real issue created through GitHub's form, anonymous discovery, default-branch preflight and wallet funding on local Anvil. The new onboarding test does not spend more mainnet xDAI or alter the unclaimed Gnosis bounty #2.
-
-The controlled fixture is issue #11 and PR #12 in the previously authorized private GitHub test repository. It uses a 0.001 xDAI bounty. Mainnet browser tests are explicitly gated behind `RUN_GNOSIS_E2E=1` and never run in routine CI. The full Gnosis flow passed on September 6, 2026: genuine receipts → local proof generation through the static frontend → browser proof import and on-chain verification → claim → exact withdrawal after gas. Mutated proofs and claim replay were rejected. The transactions are [funding](https://gnosisscan.io/tx/0x94260af729194eaa5acd4a26f1ec6355daaab04b9f37edb2322c2b3cb5df102a), [claim](https://gnosisscan.io/tx/0xbd92ead56c9ac35f63c5432c0069a4b5310fa87ed491e60789c10681481f0e10), and [withdrawal](https://gnosisscan.io/tx/0xf14a3d1bcf00ffd8489689917072bfbe60f50b6e5ed191b4c935172ba64fec24).
-
-Local evidence is retained under `.local/gnosis-*`; private originals and keys are ignored by Git.
-
-The production gaps and trust assumptions in `PROTOCOL.md` and `README.md` still apply. The successful test is not an audit or an independently secured circuit-specific ceremony.
+Both contract sources are verified on Gnosisscan: [RSA/DKIM verifier](https://gnosisscan.io/address/0xc2404198b7519c915817826586ec3892332a27cf?tab=contract) and [escrow](https://gnosisscan.io/address/0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46?tab=contract). `scripts/verify-gnosis.mjs` resolves the canonical explorer host before submitting verification to avoid POST data being lost on redirects.

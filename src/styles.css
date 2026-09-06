@@ -952,7 +952,7 @@ footer button {
   line-height: 1.6;
 }
 .facts dl,
-.proof-review dl {
+.receipt-review dl {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px 12px;
@@ -960,11 +960,11 @@ footer button {
   margin: 20px 0 24px;
 }
 .facts dt,
-.proof-review dt {
+.receipt-review dt {
   color: var(--color-surface-grey-2);
 }
 .facts dd,
-.proof-review dd {
+.receipt-review dd {
   margin: 0;
   text-align: right;
   color: #536b45;
@@ -985,7 +985,7 @@ footer button {
   font-size: 11px;
   color: var(--color-surface-grey-2);
 }
-.proof-review {
+.receipt-review {
   border: 1px solid var(--color-paper-2);
   background: var(--color-paper-main);
   padding: 20px;
@@ -1001,27 +1001,13 @@ footer button {
   font-weight: 600;
   margin-bottom: 17px;
 }
-.proof-review dd.full-address {
+.receipt-review dd.full-address {
   word-break: break-all;
   font:
     10px ui-monospace,
     monospace;
 }
-.proof-progress {
-  display: flex;
-  gap: 12px;
-  padding: 20px 0;
-  color: #506c3a;
-}
-.proof-progress strong {
-  font-size: 12px;
-}
-.proof-progress p {
-  font-size: 10px;
-  line-height: 1.8;
-  margin: 5px 0;
-}
-.proof-review .text-button {
+.receipt-review .text-button {
   margin-left: 12px;
   font-size: 10px;
 }
@@ -1504,10 +1490,10 @@ footer button {
   .modal-head h2 {
     font-size: 19px;
   }
-  .proof-review {
+  .receipt-review {
     padding: 15px;
   }
-  .proof-review .text-button {
+  .receipt-review .text-button {
     display: flex;
     margin: 10px 0;
   }
@@ -1520,24 +1506,6 @@ footer button {
     animation-duration: 0.01ms !important;
     transition: none !important;
   }
-}
-
-.proof-import {
-  display: block;
-  margin: 14px 0 20px;
-  font-size: 13px;
-  color: var(--color-surface-grey-2);
-  cursor: pointer;
-}
-.proof-import span {
-  color: #28553e;
-  text-decoration: underline;
-}
-.proof-import input {
-  display: block;
-  margin-top: 8px;
-  font: inherit;
-  max-width: 100%;
 }
 
 /* DecentralPark fund identity: paper surfaces, bold display type, lifted controls. */
@@ -1959,21 +1927,6 @@ footer > span:not(.brand) {
 }
 
 @media (max-width: 760px) {
-  .topbar.with-prover {
-    height: auto;
-    min-height: 82px;
-    flex-wrap: wrap;
-    padding: 16px 18px;
-  }
-  .topbar.with-prover .top-actions {
-    width: 100%;
-    justify-content: space-between;
-    gap: 14px;
-  }
-  .topbar.with-prover .top-actions .button {
-    font-size: 14px;
-    padding: 12px 14px;
-  }
 }
 
 /* Public repository onboarding and funding review. */
@@ -2313,19 +2266,6 @@ footer > span:not(.brand) {
   justify-content: center;
 }
 @media (max-width: 1100px) {
-  .topbar.with-prover {
-    height: auto;
-    min-height: 88px;
-    flex-wrap: wrap;
-    padding-top: 16px;
-    padding-bottom: 16px;
-    row-gap: 16px;
-  }
-  .topbar.with-prover nav {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
   .topbar nav {
     gap: 16px;
   }
@@ -2394,4 +2334,21 @@ footer > span:not(.brand) {
   .modal-actions {
     flex-wrap: wrap;
   }
+}
+
+.disclosure-note {
+  color: var(--color-surface-grey-2);
+  font-size: 12px;
+}
+.disclosure-note input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-green-1);
+  margin-top: 4px;
+}
+.receipt-review h3 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
 }

@@ -10,5 +10,7 @@ via_ir = true
 evm_version = "cancun"
 remappings = ["@openzeppelin/=node_modules/@openzeppelin/"]
 
+fs_permissions = [{ access = "read", path = "tests/fixtures/rsa-vectors.json" }]
+
 [fuzz]
 runs = 128

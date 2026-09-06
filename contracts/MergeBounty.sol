@@ -3,14 +3,7 @@ pragma solidity ^0.8.30;
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ReceiptPolicy} from "./ReceiptPolicy.sol";
 
-interface IReceiptVerifier {
-    function verifyProof(
-        uint256[2] calldata a,
-        uint256[2][2] calldata b,
-        uint256[2] calldata c,
-        uint256[43] calldata signals
-    ) external view returns (bool);
-}
+import {IDkimVerifier} from "./IDkimVerifier.sol";
 
 /// Native-ETH issue escrow. No administrator, upgrades, replacement verifier,
 /// key updates, fee recipient, or discretionary withdrawal of active bounties.
@@ -34,14 +27,8 @@ contract MergeBounty is ReentrancyGuard {
         string branch;
     }
 
-    struct Proof {
-        uint256[2] a;
-        uint256[2][2] b;
-        uint256[2] c;
-        uint256[43] signals;
-    }
-    IReceiptVerifier public immutable verifier;
-    uint256 public immutable githubKeyHash;
+    IDkimVerifier public immutable verifier;
+    bytes32 public immutable githubKeyHash;
     uint256 public constant CLAIM_GRACE = 7 days;
     uint256 public nextId = 1;
     mapping(uint256 => Bounty) private bounties;
@@ -59,7 +46,7 @@ contract MergeBounty is ReentrancyGuard {
     event Refunded(uint256 indexed id, address indexed funder, uint256 amount);
     event Withdrawn(address indexed owner, address indexed destination, uint256 amount);
     error InvalidInput();
-    error InvalidProof();
+    error InvalidReceipt();
     error NotOpen();
     error TooLate();
     error TooEarly();
@@ -67,10 +54,10 @@ contract MergeBounty is ReentrancyGuard {
     error NothingToWithdraw();
     error TransferFailed();
 
-    constructor(IReceiptVerifier v, uint256 key) {
-        if (address(v).code.length == 0 || key == 0) revert InvalidInput();
+    constructor(IDkimVerifier v) {
+        if (address(v).code.length == 0 || v.keyHash() == bytes32(0)) revert InvalidInput();
         verifier = v;
-        githubKeyHash = key;
+        githubKeyHash = v.keyHash();
     }
 
     function getBounty(uint256 id) external view returns (Bounty memory) {
@@ -103,31 +90,26 @@ contract MergeBounty is ReentrancyGuard {
         emit Funded(id, msg.sender, referenceFor(id), repo, issue, msg.value, deadline);
     }
 
-    function claim(uint256 id, Proof calldata merged, Proof calldata closed) external nonReentrant {
+    function claim(uint256 id, IDkimVerifier.Receipt calldata merged, IDkimVerifier.Receipt calldata closed) external nonReentrant {
         Bounty storage bounty = bounties[id];
         if (bounty.funder == address(0)) revert InvalidInput();
         if (bounty.status != Status.Open) revert NotOpen();
         if (block.timestamp > uint256(bounty.deadline) + CLAIM_GRACE) revert TooLate();
-        if (merged.signals[0] != githubKeyHash || closed.signals[0] != githubKeyHash) revert InvalidProof();
-        if (
-            !verifier.verifyProof(merged.a, merged.b, merged.c, merged.signals)
-                || !verifier.verifyProof(closed.a, closed.b, closed.c, closed.signals)
-        ) revert InvalidProof();
-        ReceiptPolicy.Event memory m = ReceiptPolicy.decode(merged.signals);
-        ReceiptPolicy.Event memory c = ReceiptPolicy.decode(closed.signals);
+        ReceiptPolicy.Event memory m = verifier.verifyReceipt(merged);
+        ReceiptPolicy.Event memory c = verifier.verifyReceipt(closed);
         if (
             !m.merged || c.merged || m.pr != c.pr || c.number != bounty.issue || m.pr > type(uint64).max
                 || m.bountyRef != referenceFor(id)
-        ) revert InvalidProof();
+        ) revert InvalidReceipt();
         if (
             keccak256(bytes(m.repo)) != keccak256(bytes(bounty.repo))
                 || keccak256(bytes(c.repo)) != keccak256(bytes(bounty.repo))
                 || keccak256(bytes(m.branch)) != keccak256(bytes(bounty.branch))
-        ) revert InvalidProof();
+        ) revert InvalidReceipt();
         if (
             m.issuedAt < bounty.createdAt || c.issuedAt < bounty.createdAt || m.issuedAt > bounty.deadline
                 || c.issuedAt > bounty.deadline || m.issuedAt > block.timestamp || c.issuedAt > block.timestamp
-        ) revert InvalidProof();
+        ) revert InvalidReceipt();
         bounty.status = Status.Paid;
         bounty.recipient = m.wallet;
         bounty.pr = uint64(m.pr);

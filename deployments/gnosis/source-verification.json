@@ -1,0 +1,16 @@
+[
+  {
+    "name": "GithubDkimVerifier",
+    "address": "0xc2404198b7519c915817826586ec3892332a27cf",
+    "verified": true,
+    "explorerUrl": "https://gnosisscan.io/address/0xc2404198b7519c915817826586ec3892332a27cf?tab=contract",
+    "checkedAt": "2026-09-06T18:18:00.324Z"
+  },
+  {
+    "name": "MergeBounty",
+    "address": "0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46",
+    "verified": true,
+    "explorerUrl": "https://gnosisscan.io/address/0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46?tab=contract",
+    "checkedAt": "2026-09-06T18:18:17.744Z"
+  }
+]

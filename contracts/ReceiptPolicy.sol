@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-/// Parses ONLY fields authenticated by Receipt.circom. Fail closed on every
-/// unsupported MIME/encoding/template variant. A UI parser is never authority.
+/// Parses native GitHub events only after the verifier authenticates the entire
+/// canonical header block and body. Both event text and native footer are bound.
 library ReceiptPolicy {
     error InvalidReceipt();
 
@@ -17,10 +18,9 @@ library ReceiptPolicy {
         bool merged;
     }
 
-    function decode(uint256[43] calldata fields) internal pure returns (Event memory e) {
-        bytes memory subject = unpack(fields, 1, 13);
-        bytes memory body = unpack(fields, 14, 9);
-        bytes memory tags = unpack(fields, 23, 20);
+    function decode(bytes memory subject, bytes memory body, uint256 issuedAt) internal pure returns (Event memory e) {
+        e.issuedAt = issuedAt;
+        uint256 footerAt;
         // Subject must include its complete CRLF terminator and contain no
         // other line breaks. This excludes partial-subject disclosures.
         expect(subject, 0, bytes("\r\nsubject:Re: ["));
@@ -56,6 +56,7 @@ library ReceiptPolicy {
             p++;
         }
         if (p < 30 || p > 80) revert InvalidReceipt();
+        bytes memory boundary = slice(body, 2, p);
         bytes memory mime =
             bytes("\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n");
         expect(body, p, mime);
@@ -69,7 +70,7 @@ library ReceiptPolicy {
             p += 6;
             uint256 branchEnd = find(body, bytes(".\r\n\r\n"), p);
             e.branch = string(slice(body, p, branchEnd));
-            if (branchEnd + 5 != body.length) revert InvalidReceipt();
+            footerAt = branchEnd + 5;
             uint256 w = unique(subject, bytes("[wallet 0x"));
             e.wallet = address(uint160(hexNumber(subject, w + 10, 40)));
             expect(subject, w + 50, bytes("]"));
@@ -88,76 +89,36 @@ library ReceiptPolicy {
             p += 19;
             (e.pr, p) = decimal(body, p);
             expect(body, p, bytes(".\r\n\r\n"));
-            if (p + 5 != body.length) revert InvalidReceipt();
+            footerAt = p + 5;
         }
-        // Canonical DKIM signature header is disclosed in full. Circuit also
-        // checks its end is the first SHA padding byte, not a chosen substring.
-        expect(tags, 0, bytes("\r\ndkim-signature:"));
-        if (!at(tags, tags.length - 2, bytes("b="))) revert InvalidReceipt();
-        bool domain;
-        bool algorithm;
-        bool canonical;
-        bool version;
-        bool timestamp;
-        bool hash;
-        bool signedSubject;
-        bool headerList;
-        p = 17;
-        while (p < tags.length) {
-            while (p < tags.length && (tags[p] == 0x20 || tags[p] == 0x3b)) p++;
-            uint256 stop = p;
-            while (stop < tags.length && tags[stop] != 0x3b) stop++;
-            bytes memory part = slice(tags, p, stop);
-            if (at(part, 0, bytes("d="))) {
-                if (domain || keccak256(part) != keccak256("d=github.com")) revert InvalidReceipt();
-                domain = true;
-            } else if (at(part, 0, bytes("a="))) {
-                if (algorithm || keccak256(part) != keccak256("a=rsa-sha256")) revert InvalidReceipt();
-                algorithm = true;
-            } else if (at(part, 0, bytes("c="))) {
-                if (canonical || keccak256(part) != keccak256("c=relaxed/relaxed")) revert InvalidReceipt();
-                canonical = true;
-            } else if (at(part, 0, bytes("v="))) {
-                if (version || keccak256(part) != keccak256("v=1")) revert InvalidReceipt();
-                version = true;
-            } else if (at(part, 0, bytes("l="))) {
-                revert InvalidReceipt();
-            } else if (at(part, 0, bytes("t="))) {
-                if (timestamp) revert InvalidReceipt();
-                uint256 last;
-                (e.issuedAt, last) = decimal(part, 2);
-                if (last != part.length) revert InvalidReceipt();
-                timestamp = true;
-            } else if (at(part, 0, bytes("bh="))) {
-                if (hash || part.length != 47) revert InvalidReceipt();
-                hash = true;
-            } else if (at(part, 0, bytes("h="))) {
-                if (headerList) revert InvalidReceipt();
-                headerList = true;
-                signedSubject = contains(lower(part), bytes(":subject:"));
-            }
-            p = stop + 1;
+        // A user comment can quote a native event. Require the GitHub-generated
+        // issue_event footer, its matching URL/id, and the end of the actual MIME
+        // text part. A forged footer before a real comment footer cannot qualify.
+        bytes memory route = bytes(isPr ? "/pull/" : "/issues/");
+        bytes memory thread = bytes(Strings.toString(e.number));
+        bytes memory lead = abi.encodePacked("--\r\nReply to this email directly or view it on GitHub:\r\nhttps://github.com/", e.repo, route, thread, "#event-");
+        expect(body, footerAt, lead);
+        p = footerAt + lead.length;
+        (uint256 eventId, uint256 afterId) = decimal(body, p);
+        p = afterId;
+        bytes memory reasonLead = bytes("\r\nYou are receiving this because ");
+        expect(body, p, reasonLead);
+        p += reasonLead.length;
+        uint256 reasonEnd = find(body, bytes("\r\n"), p);
+        if (reasonEnd == p || reasonEnd - p > 180) revert InvalidReceipt();
+        for (uint256 i = p; i < reasonEnd; i++) {
+            if (uint8(body[i]) < 32 || uint8(body[i]) > 126) revert InvalidReceipt();
         }
-        if (!(domain && algorithm && canonical && version && timestamp && hash && signedSubject)) revert InvalidReceipt();
-    }
-
-    function unpack(uint256[43] calldata fields, uint256 start, uint256 count) private pure returns (bytes memory out) {
-        out = new bytes(count * 31);
-        uint256 n;
-        bool ended;
-        for (uint256 i = 0; i < count; i++) {
-            if (fields[start + i] >> 248 != 0) revert InvalidReceipt();
-            for (uint256 j = 0; j < 31; j++) {
-                bytes1 c = bytes1(uint8(fields[start + i] >> (j * 8)));
-                if (c == 0) {
-                    ended = true;
-                } else {
-                    if (ended) revert InvalidReceipt();
-                    out[n++] = c;
-                }
-            }
+        bytes memory footerTail = abi.encodePacked("\r\n\r\nMessage ID: <", e.repo, isPr ? "/pull/" : "/issue/", thread, "/issue_event/", Strings.toString(eventId), "@github.com>\r\n", boundary,
+            "\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n");
+        expect(body, reasonEnd, footerTail);
+        bytes memory ending = abi.encodePacked("\r\n", boundary, "--\r\n");
+        if (body.length < ending.length || !at(body, body.length - ending.length, ending)) revert InvalidReceipt();
+        uint256 boundaries;
+        for (uint256 i; i + boundary.length <= body.length; i++) {
+            if (at(body, i, boundary)) { boundaries++; i += boundary.length - 1; }
         }
-        assembly ("memory-safe") { mstore(out, n) }
+        if (boundaries != 3) revert InvalidReceipt();
     }
 
     function at(bytes memory s, uint256 p, bytes memory part) private pure returns (bool) {

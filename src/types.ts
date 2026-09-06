@@ -1,4 +1,5 @@
 import type { Abi, Address } from "viem";
+import type { DkimKey } from "../shared/dkim.mjs";
 export type Config = {
   chainId: number;
   rpcUrl?: string;
@@ -9,7 +10,9 @@ export type Config = {
   contract: Address;
   verifier: Address;
   keyHash: string;
-  developmentCeremony: boolean;
+  protocol: "rsa-dkim-v1";
+  experimental: boolean;
+  dkimKey: DkimKey;
   local: boolean;
   abi: Abi;
 };
@@ -37,14 +40,6 @@ export type Preview = {
   bountyRef: string;
   mergeIssuedAt: number;
   closedIssuedAt: number;
-};
-export type Job = {
-  id: string;
-  status: "queued" | "proving" | "ready" | "failed";
-  stage: string;
-  preview?: Preview;
-  error?: string;
-  result?: { merged: unknown; closed: unknown };
 };
 declare global {
   interface Window {

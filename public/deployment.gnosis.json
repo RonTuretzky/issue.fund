@@ -1,21 +1,29 @@
 {
+  "protocol": "rsa-dkim-v1",
   "chainId": 100,
   "chainName": "Gnosis",
   "currency": "xDAI",
   "rpcUrl": "https://rpc.gnosischain.com",
   "explorerUrl": "https://gnosisscan.io",
-  "contract": "0xdf1f54c97c728f7101b797a6db2383bea2cdecc1",
-  "verifier": "0x0106a198a94ef9958a5ab2dfc0fdb96ac3092e4f",
-  "keyHash": "18769159890606851885526203517158331386071551795170342791119488780143683832216",
-  "developmentCeremony": true,
+  "contract": "0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46",
+  "verifier": "0xc2404198b7519c915817826586ec3892332a27cf",
+  "keyHash": "0x2bd60fdb0947f60776b43b581d3bf90a0c29f1bf63694ca965fa27d3bcf87a42",
+  "dkimKey": {
+    "domain": "github.com",
+    "selector": "pf2023",
+    "exponent": "0x010001",
+    "modulus": "0x9c9b39b2659faf700cf4b4537d348049b9ed704d70f07cca749a5ed762c6616d6ca61871ac588bc0f7f79d2e7d470372b51b420a5507d72a5a0e8640da048453e57aa623b6b4f2fc2666640fd7657ca4c483e44aacc40193dda272ca618909c7320472f35950aa34786fbc3f509326f6530530147315a25ecb0363002f061bf9",
+    "keyHash": "0x2bd60fdb0947f60776b43b581d3bf90a0c29f1bf63694ca965fa27d3bcf87a42",
+    "observedAt": "2026-09-06T17:46:24.628Z"
+  },
+  "experimental": true,
   "local": false,
-  "deployedAt": "2026-09-06T16:11:46.701Z",
+  "deployedAt": "2026-09-06T18:10:18.585Z",
   "deploymentTransactions": [
-    "0x3acae1b4a482341329b92313a17fc82ac0b559aab46386c39b62fdd22e5fd285",
-    "0x7344d9694f165f7189bbb365bf2ac3eb9dee7470e1d8f358bdc33a5d12483fc5"
+    "0x2c8b9f6872626f92ceb0880445c25ef58eef5ea66631214a5424806550ed9e54",
+    "0xacd7879b9e2c12626be43832fda88cc6d2a703c45c6c6998cab86588805a997f"
   ],
-  "verificationKeySha256": "e6c65021c9b00e870fdee5cccdbbed0353e955404be7b8ed9d597c05a1ed7e49",
-  "verifierSourceSha256": "e856450096340260c4ef7914075c9e4970dc9dd057b26f157dcffa857f2909d6",
+  "verifierSourceSha256": "c50601f1e36eae81f7a5ecb212309a0162bb6b66e9379ef55a5d5bf09a844ab8",
   "etherformCommit": "180aa91926a02ce2045f9a7e3ed08be9395ecfab",
   "abi": [
     {
@@ -24,12 +32,7 @@
         {
           "name": "v",
           "type": "address",
-          "internalType": "contract IReceiptVerifier"
-        },
-        {
-          "name": "key",
-          "type": "uint256",
-          "internalType": "uint256"
+          "internalType": "contract IDkimVerifier"
         }
       ],
       "stateMutability": "nonpayable"
@@ -59,54 +62,44 @@
         {
           "name": "merged",
           "type": "tuple",
-          "internalType": "struct MergeBounty.Proof",
+          "internalType": "struct IDkimVerifier.Receipt",
           "components": [
             {
-              "name": "a",
-              "type": "uint256[2]",
-              "internalType": "uint256[2]"
+              "name": "headers",
+              "type": "bytes",
+              "internalType": "bytes"
             },
             {
-              "name": "b",
-              "type": "uint256[2][2]",
-              "internalType": "uint256[2][2]"
+              "name": "body",
+              "type": "bytes",
+              "internalType": "bytes"
             },
             {
-              "name": "c",
-              "type": "uint256[2]",
-              "internalType": "uint256[2]"
-            },
-            {
-              "name": "signals",
-              "type": "uint256[43]",
-              "internalType": "uint256[43]"
+              "name": "signature",
+              "type": "bytes",
+              "internalType": "bytes"
             }
           ]
         },
         {
           "name": "closed",
           "type": "tuple",
-          "internalType": "struct MergeBounty.Proof",
+          "internalType": "struct IDkimVerifier.Receipt",
           "components": [
             {
-              "name": "a",
-              "type": "uint256[2]",
-              "internalType": "uint256[2]"
+              "name": "headers",
+              "type": "bytes",
+              "internalType": "bytes"
             },
             {
-              "name": "b",
-              "type": "uint256[2][2]",
-              "internalType": "uint256[2][2]"
+              "name": "body",
+              "type": "bytes",
+              "internalType": "bytes"
             },
             {
-              "name": "c",
-              "type": "uint256[2]",
-              "internalType": "uint256[2]"
-            },
-            {
-              "name": "signals",
-              "type": "uint256[43]",
-              "internalType": "uint256[43]"
+              "name": "signature",
+              "type": "bytes",
+              "internalType": "bytes"
             }
           ]
         }
@@ -245,8 +238,8 @@
       "outputs": [
         {
           "name": "",
-          "type": "uint256",
-          "internalType": "uint256"
+          "type": "bytes32",
+          "internalType": "bytes32"
         }
       ],
       "stateMutability": "view"
@@ -304,7 +297,7 @@
         {
           "name": "",
           "type": "address",
-          "internalType": "contract IReceiptVerifier"
+          "internalType": "contract IDkimVerifier"
         }
       ],
       "stateMutability": "view"
@@ -455,11 +448,6 @@
     {
       "type": "error",
       "name": "InvalidInput",
-      "inputs": []
-    },
-    {
-      "type": "error",
-      "name": "InvalidProof",
       "inputs": []
     },
     {

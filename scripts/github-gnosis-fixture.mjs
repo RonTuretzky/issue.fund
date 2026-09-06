@@ -49,7 +49,7 @@ if (process.argv[2] === "prepare") {
     );
   repo = metadata.full_name;
   const issue = api(peer, "POST", `repos/${repo}/issues`, {
-    title: "GNOSIS E2E: verify private proof payout",
+    title: "GNOSIS E2E: verify direct RSA/DKIM payout",
     body: "Controlled MergeBounty acceptance test: add the Gnosis fixture. A tiny real xDAI bounty will be funded before merging, claimed using the two original GitHub event emails, and withdrawn to the test funder.",
   });
   const f = {
@@ -97,7 +97,7 @@ if (process.argv[2] === "prepare") {
         message: "Add Gnosis bounty acceptance fixture",
         branch: f.branch,
         content: Buffer.from(
-          "Controlled real-chain proof and payout acceptance test on Gnosis.\n",
+          "Controlled real-chain RSA/DKIM payout acceptance test on Gnosis.\n",
         ).toString("base64"),
       },
     );
@@ -109,7 +109,7 @@ if (process.argv[2] === "prepare") {
       title: `[bounty ${f.bountyRef}] [wallet ${f.recipient}] GNOSIS E2E`,
       head: f.branch,
       base: "main",
-      body: `Closes #${f.issue}\n\nControlled MergeBounty Gnosis acceptance test. Original notifications are private proof inputs.`,
+      body: `Closes #${f.issue}\n\nControlled MergeBounty Gnosis acceptance test. The signed headers and email bodies will be published in the authorized direct-DKIM claim.`,
     });
     f.pr = pr.number;
     f.prUrl = pr.html_url;

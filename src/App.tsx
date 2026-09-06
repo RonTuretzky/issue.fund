@@ -35,13 +35,9 @@ import {
 } from "viem";
 import { defineChain } from "viem";
 import { api, friendly, short } from "./api";
-import {
-  STATIC_MODE,
-  connectProver,
-  disconnectProver,
-  hasProverToken,
-} from "./static-api";
-import type { Bounty, Config, Job, Preview } from "./types";
+import { STATIC_MODE } from "./static-api";
+import { ClaimPanel } from "./ClaimPanel";
+import type { Bounty, Config } from "./types";
 import { Modal } from "./Modal";
 import { RepositoryHub } from "./RepositoryHub";
 import { FundDialog, type FundingRequest } from "./FundDialog";
@@ -94,10 +90,6 @@ export default function App() {
   const [config, setConfig] = useState<Config>();
   const symbol = config?.currency ?? (STATIC_MODE ? "xDAI" : "ETH");
   const rpcUrl = config?.rpcUrl ?? `${location.origin}/rpc`;
-  const [proverOpen, setProverOpen] = useState(false);
-  const [proverConnected, setProverConnected] = useState(hasProverToken);
-  const [pairing, setPairing] = useState(false);
-  const [proverError, setProverError] = useState("");
   const [bounties, setBounties] = useState<Bounty[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionError, setConnectionError] = useState("");
@@ -139,11 +131,6 @@ export default function App() {
   const [pending, setPending] = useState("");
   const [credit, setCredit] = useState("0");
   const [lastTx, setLastTx] = useState("");
-  const [files, setFiles] = useState<{ merge?: File; closure?: File }>({});
-  const [preview, setPreview] = useState<Preview>();
-  const [job, setJob] = useState<Job>();
-  const [inspecting, setInspecting] = useState(false);
-  const [startingProof, setStartingProof] = useState(false);
   const bounty = bounties.find((b) => b.id === selected);
   const chain = config
     ? defineChain({
@@ -203,44 +190,11 @@ export default function App() {
       wallet.removeListener?.("chainChanged", chains);
     };
   }, [localWallet]);
-  useEffect(() => {
-    if (!job || !["queued", "proving"].includes(job.status)) return;
-    const t = setInterval(
-      () =>
-        api<Job>(`/proofs/${job.id}`)
-          .then(setJob)
-          .catch((e) => setError(friendly(e))),
-      2500,
-    );
-    return () => clearInterval(t);
-  }, [job]);
-  useEffect(() => {
-    let active = true;
-    if (selected) {
-      const id = localStorage.getItem(
-        `mergebounty:job:${config?.contract}:${selected}`,
-      );
-      if (id)
-        api<Job>(`/proofs/${id}`)
-          .then((j) => {
-            if (!active) return;
-            setJob(j);
-            setPreview(j.preview);
-          })
-          .catch(() => {});
-    }
-    return () => {
-      active = false;
-    };
-  }, [selected, config?.contract]);
   const now = config?.chainTime ?? Date.now() / 1000;
   const wrongNetwork = !!account && chainId !== config?.chainId;
   const choose = (b: Bounty) => {
     setRepositoriesOpen(false);
     setSelected(b.id);
-    setFiles({});
-    setPreview(undefined);
-    setJob(undefined);
     setError("");
     history.replaceState(null, "", `#bounty-${b.id}`);
   };
@@ -249,9 +203,6 @@ export default function App() {
       setRepositoriesOpen(location.hash === "#repositories");
       const id = Number(location.hash.match(/^#bounty-(\d+)$/)?.[1]);
       setSelected(id || undefined);
-      setFiles({});
-      setPreview(undefined);
-      setJob(undefined);
       setError("");
     };
     window.addEventListener("hashchange", navigate);
@@ -412,67 +363,6 @@ export default function App() {
     const added = after.find((b) => b.id === Number(funded));
     if (added) choose(added);
   }
-  async function inspect() {
-    if (!files.merge || !files.closure || !bounty) return;
-    setError("");
-    setInspecting(true);
-    setPreview(undefined);
-    setJob(undefined);
-    try {
-      const r = await api<Preview>("/receipts/inspect", {
-        bountyId: bounty.id,
-        merge: await files.merge.text(),
-        closure: await files.closure.text(),
-      });
-      setPreview(r);
-    } catch (e) {
-      setError(friendly(e));
-    } finally {
-      setInspecting(false);
-    }
-  }
-  async function prove() {
-    if (!files.merge || !files.closure || !bounty) return;
-    setError("");
-    setStartingProof(true);
-    try {
-      const j = await api<Job>("/proofs", {
-        bountyId: bounty.id,
-        merge: await files.merge.text(),
-        closure: await files.closure.text(),
-      });
-      setJob(j);
-      localStorage.setItem(
-        `mergebounty:job:${config?.contract}:${bounty.id}`,
-        j.id,
-      );
-    } catch (e) {
-      setError(friendly(e));
-    } finally {
-      setStartingProof(false);
-    }
-  }
-  async function importProof(file?: File) {
-    if (!file || !bounty) return;
-    setError("");
-    try {
-      if (file.size > 100000)
-        throw new Error("Choose an exported proof file under 100 KB.");
-      const result = JSON.parse(await file.text());
-      const j = await api<Job>("/proofs/import", {
-        bountyId: bounty.id,
-        result,
-      });
-      setJob(j);
-      setPreview(j.preview);
-      localStorage.setItem(
-        `mergebounty:job:${config?.contract}:${bounty.id}`,
-        j.id,
-      );
-    } catch (e) {
-      setError(friendly(e));
-    }
-  }
   const available = bounties.filter(
     (b) =>
       (filter === "All" ||
@@ -492,7 +382,7 @@ export default function App() {
 
   return (
     <>
-      <header className={`topbar${STATIC_MODE ? " with-prover" : ""}`}>
+      <header className="topbar">
         <a className="brand" href="#" onClick={explore}>
           <img
             src="/brand/decentralpark/logo.png"
@@ -526,12 +416,6 @@ export default function App() {
             <i />
             {config?.chainName ?? (STATIC_MODE ? "Gnosis" : "Local testnet")}
           </span>
-          {STATIC_MODE && (
-            <button className="button" onClick={() => setProverOpen(true)}>
-              <LockKeyhole size={16} />
-              {proverConnected ? "Prover paired" : "Connect prover"}
-            </button>
-          )}
           <button
             className="button wallet-button"
             onClick={() => {
@@ -551,15 +435,15 @@ export default function App() {
             <button onClick={refresh}>Retry</button>
           </div>
         )}
-        {config?.developmentCeremony && (
+        {config?.experimental && (
           <div className="environment">
             <span>
               <span className="dot" />{" "}
               {config.local ? "LOCAL DEVELOPMENT" : "GNOSIS · EXPERIMENTAL"}
             </span>{" "}
             {config.local
-              ? "Real contract transactions. Test ETH only. Development proof setup."
-              : "Real xDAI. Unaudited contracts and a development proof setup. Use small amounts."}
+              ? "Real contract transactions. Test ETH only. Direct RSA/DKIM verification."
+              : "Real xDAI. Experimental, unaudited contracts. Use small amounts."}
           </div>
         )}
         {wrongNetwork && (
@@ -660,7 +544,7 @@ export default function App() {
                 <p>
                   Fund a GitHub issue. Merge the fix.
                   <br />
-                  Prove it and get paid. No payout operator required.
+                  Verify it and get paid. No payout operator required.
                 </p>
                 <div className="hero-actions">
                   <button
@@ -676,7 +560,7 @@ export default function App() {
                 </div>
                 <div className="hero-note">
                   <ShieldCheck size={14} />
-                  Funds held by code. Payouts verified with private proofs.
+                  Funds held by code. Payouts verified from signed receipts.
                 </div>
               </div>
               <div className="hero-art" aria-hidden="true">
@@ -749,7 +633,7 @@ export default function App() {
                     <Check size={16} />
                   </span>
                   <div>
-                    Proof verified<small>Reward ready to withdraw</small>
+                    Signature verified<small>Reward ready to withdraw</small>
                   </div>
                   <ArrowUpRight size={17} />
                 </div>
@@ -1022,7 +906,7 @@ export default function App() {
                 </section>
                 <section className="panel claim-panel">
                   <div className="panel-title">
-                    <h2>Prove the merge. Claim the reward.</h2>
+                    <h2>Verify the merge. Claim the reward.</h2>
                     <LockKeyhole size={19} />
                   </div>
                   {bounty.status === 1 ? (
@@ -1052,245 +936,29 @@ export default function App() {
                       </p>
                     </div>
                   ) : (
-                    <>
-                      <p>
-                        Download the original GitHub notifications as .eml
-                        files. You'll need the merged-PR email and the issue
-                        email that says “closed as completed via” that PR.
-                      </p>
-                      <div className="uploads">
-                        {(["merge", "closure"] as const).map((kind, i) => (
-                          <label
-                            className={`upload ${files[kind] ? "has-file" : ""}`}
-                            key={kind}
-                          >
-                            <input
-                              type="file"
-                              accept=".eml,message/rfc822"
-                              disabled={
-                                startingProof ||
-                                (!!job &&
-                                  ["queued", "proving"].includes(job.status))
-                              }
-                              aria-label={
-                                kind === "merge"
-                                  ? "Merged PR email"
-                                  : "Issue closure email"
-                              }
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                if (f && f.size > 100000) {
-                                  setError("Choose an .eml file under 100 KB.");
-                                  return;
-                                }
-                                setFiles((x) => ({ ...x, [kind]: f }));
-                                setPreview(undefined);
-                                setJob(undefined);
-                                localStorage.removeItem(
-                                  `mergebounty:job:${config?.contract}:${bounty.id}`,
-                                );
-                              }}
-                            />
-                            {files[kind] ? (
-                              <FileCheck2 size={25} />
-                            ) : (
-                              <Upload size={24} />
-                            )}
-                            <strong>
-                              {i + 1}.{" "}
-                              {kind === "merge"
-                                ? "Merged PR email"
-                                : "Issue closure email"}
-                            </strong>
-                            <span>
-                              {files[kind]?.name ??
-                                "Choose an original .eml file"}
-                            </span>
-                            <small>
-                              {kind === "merge"
-                                ? "“Merged #… into main.”"
-                                : "“Closed #… as completed via #…”"}
-                            </small>
-                          </label>
-                        ))}
-                      </div>
-                      {STATIC_MODE && (
-                        <div className="alert">
-                          <span>
-                            {proverConnected
-                              ? "Local prover paired for this browser session."
-                              : "Email proofs need the prover running on this computer."}
-                          </span>
-                          <button onClick={() => setProverOpen(true)}>
-                            {proverConnected
-                              ? "Check connection"
-                              : "Connect prover"}
-                          </button>
-                        </div>
-                      )}
-                      <div className="privacy-note">
-                        <LockKeyhole size={14} />
-                        Proving runs on your local computer. Your mailbox
-                        details and reply links stay private.
-                      </div>
-                      <label className="proof-import">
-                        Already have proofs?{" "}
-                        <span>Import verified proof file</span>
-                        <input
-                          type="file"
-                          accept=".json,application/json"
-                          aria-label="Import proof file"
-                          onChange={(e) => {
-                            importProof(e.target.files?.[0]);
-                            e.target.value = "";
-                          }}
-                        />
-                      </label>
-                      {!preview && (
-                        <button
-                          className="button primary"
-                          disabled={
-                            !files.merge || !files.closure || inspecting
+                    config && (
+                      <ClaimPanel
+                        key={`${config.contract}:${bounty.id}`}
+                        bounty={bounty}
+                        config={config}
+                        account={account}
+                        pending={!!pending}
+                        wrongNetwork={wrongNetwork}
+                        connect={() => setWalletOpen(true)}
+                        submit={async (merged, closed) => {
+                          try {
+                            await transact("claim", [
+                              BigInt(bounty.id),
+                              merged,
+                              closed,
+                            ]);
+                          } catch (e) {
+                            setError("");
+                            throw e;
                           }
-                          onClick={inspect}
-                        >
-                          {inspecting ? (
-                            <Loader2 size={17} className="spin" />
-                          ) : (
-                            <ShieldCheck size={17} />
-                          )}{" "}
-                          {inspecting
-                            ? "Checking signatures…"
-                            : "Check receipts"}
-                        </button>
-                      )}
-                      {job?.status === "failed" && !preview && (
-                        <div className="alert error" role="alert">
-                          {job.error} Choose the original emails to retry.
-                        </div>
-                      )}
-                      {preview && (
-                        <div className="proof-review">
-                          <div className="verified-label">
-                            <CheckCircle2 size={17} />
-                            Signatures and bounty match
-                          </div>
-                          <dl>
-                            <dt>Closing pull request</dt>
-                            <dd>#{preview.pr}</dd>
-                            <dt>Payout wallet</dt>
-                            <dd className="full-address">{preview.wallet}</dd>
-                            <dt>Reward</dt>
-                            <dd>
-                              {money(bounty.amount)} {symbol}
-                            </dd>
-                          </dl>
-                          {preview.wallet.toLowerCase() !==
-                            account?.toLowerCase() && (
-                            <p className="inline-note">
-                              You can submit this claim, but payment will go to
-                              the wallet shown above.
-                            </p>
-                          )}
-                          {!job && (
-                            <button
-                              className="button primary"
-                              disabled={startingProof}
-                              onClick={prove}
-                            >
-                              {startingProof
-                                ? "Preparing proofs…"
-                                : "Generate private proofs"}{" "}
-                              <ArrowRight size={16} />
-                            </button>
-                          )}
-                          {job &&
-                            ["queued", "proving"].includes(job.status) && (
-                              <div className="proof-progress" role="status">
-                                <Loader2 className="spin" size={20} />
-                                <div>
-                                  <strong>{job.stage}</strong>
-                                  <p>
-                                    Full email proofs can take several minutes.
-                                    You can return to this bounty while the
-                                    local prover is running.
-                                  </p>
-                                  <button
-                                    className="text-button"
-                                    onClick={() =>
-                                      api(`/proofs/${job.id}/cancel`, {}).catch(
-                                        (e) => setError(friendly(e)),
-                                      )
-                                    }
-                                  >
-                                    Cancel proof generation
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          {job?.status === "failed" && (
-                            <div role="alert" className="alert error">
-                              {job.error}
-                              {files.merge && files.closure ? (
-                                <button onClick={prove}>Try again</button>
-                              ) : (
-                                <span>
-                                  Choose the two original emails above to retry.
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          {job?.status === "ready" && (
-                            <>
-                              <div className="verified-label">
-                                <ShieldCheck size={17} />
-                                Both zero-knowledge proofs verified
-                              </div>
-                              <button
-                                className="button primary"
-                                disabled={!!pending || wrongNetwork}
-                                onClick={() =>
-                                  account
-                                    ? transact("claim", [
-                                        BigInt(bounty.id),
-                                        job.result!.merged,
-                                        job.result!.closed,
-                                      ]).catch(() => {})
-                                    : setWalletOpen(true)
-                                }
-                              >
-                                {pending === "claim" ? (
-                                  <Loader2 className="spin" size={17} />
-                                ) : (
-                                  <Wallet size={17} />
-                                )}{" "}
-                                {account
-                                  ? "Submit claim"
-                                  : "Connect wallet to claim"}
-                              </button>
-                              <button
-                                className="text-button"
-                                onClick={() => {
-                                  const u = URL.createObjectURL(
-                                    new Blob(
-                                      [JSON.stringify(job.result, null, 2)],
-                                      { type: "application/json" },
-                                    ),
-                                  );
-                                  const a = document.createElement("a");
-                                  a.href = u;
-                                  a.download = `mergebounty-${bounty.id}-proof.json`;
-                                  a.click();
-                                  URL.revokeObjectURL(u);
-                                }}
-                              >
-                                Export proofs <ArrowDownLeft size={15} />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </>
+                        }}
+                      />
+                    )
                   )}
                 </section>
               </div>
@@ -1312,8 +980,8 @@ export default function App() {
                   <hr />
                   <div className="inline-note">
                     <ShieldCheck size={18} />
-                    The contract verifies the proof and fixes the recipient. A
-                    relayer cannot redirect your reward.
+                    The contract verifies the email signatures and fixes the
+                    recipient. A relayer cannot redirect your reward.
                   </div>
                 </section>
                 <section className="panel">
@@ -1346,7 +1014,7 @@ export default function App() {
                   <HelpCircle size={20} />
                   <h3>Need a hand?</h3>
                   <p>
-                    Read the receipt requirements and learn what a proof
+                    Read the receipt requirements and learn what a signature
                     reveals.
                   </p>
                   <button className="text-button" onClick={() => setHelp(true)}>
@@ -1468,7 +1136,8 @@ export default function App() {
           }}
         >
           <p className="modal-intro">
-            Use your wallet to fund issues, submit proofs and withdraw rewards.
+            Use your wallet to fund issues, submit receipts and withdraw
+            rewards.
           </p>
           {error && (
             <div className="alert error" role="alert">
@@ -1528,84 +1197,6 @@ export default function App() {
           )}
         </Modal>
       )}
-      {proverOpen && (
-        <Modal
-          title="Connect your local prover"
-          close={() => setProverOpen(false)}
-        >
-          <p>
-            The website is static. Generating proofs uses the MergeBounty prover
-            on this computer, with the matching proving key. Your original
-            emails stay on this computer.
-          </p>
-          <p>
-            Start it with <code>npm run prover:gnosis</code> in the MergeBounty
-            project, then paste the code from{" "}
-            <code>.local/prover-pairing-code</code>. Allow local network access
-            if your browser asks.
-          </p>
-          {proverError && (
-            <div className="alert error" role="alert">
-              {proverError}
-            </div>
-          )}
-          <form
-            onSubmit={async (event) => {
-              event.preventDefault();
-              setPairing(true);
-              setProverError("");
-              const token = String(
-                new FormData(event.currentTarget).get("pairingCode"),
-              );
-              try {
-                await connectProver(token);
-                setProverConnected(true);
-                setProverOpen(false);
-                setNotice(
-                  "Local prover connected to this Gnosis deployment. You can generate private proofs.",
-                );
-              } catch (e) {
-                setProverError(friendly(e));
-              } finally {
-                setPairing(false);
-              }
-            }}
-          >
-            <label>
-              Pairing code
-              <input
-                name="pairingCode"
-                type="password"
-                autoComplete="off"
-                required
-                minLength={64}
-                maxLength={64}
-                spellCheck={false}
-              />
-            </label>
-            <button className="button primary" disabled={pairing}>
-              {pairing ? "Checking prover…" : "Connect and check prover"}
-            </button>
-          </form>
-          {proverConnected && (
-            <button
-              className="text-button"
-              onClick={() => {
-                disconnectProver();
-                setProverConnected(false);
-                setProverOpen(false);
-              }}
-            >
-              Disconnect prover
-            </button>
-          )}
-          <p className="fine-print">
-            The code pairs only this browser session. Funding, withdrawing, and
-            importing an existing proof work without the prover. Keep this
-            computer awake while proving.
-          </p>
-        </Modal>
-      )}
       {help && (
         <Modal
           title="From open issue to earned reward"
@@ -1648,12 +1239,12 @@ export default function App() {
             <div>
               <span>04</span>
               <section>
-                <h3>Prove, claim, withdraw</h3>
+                <h3>Verify, claim, withdraw</h3>
                 <p>
-                  The local prover checks the GitHub DKIM signature and
-                  generates two private proofs. The contract verifies them,
-                  credits the wallet in the merge-time title, and lets that
-                  wallet withdraw.
+                  The contract checks GitHub's RSA signatures, hashes the full
+                  email bodies, and verifies the linked native events. It
+                  credits the wallet in the merge-time title, which can then
+                  withdraw.
                 </p>
               </section>
             </div>
@@ -1661,17 +1252,16 @@ export default function App() {
           <div className="terms">
             <LockKeyhole size={21} />
             <p>
-              Public: the PR/issue subjects, native event prefix, DKIM metadata,
-              wallet and reward. Private: sender and recipient addresses,
-              remaining email body and reply links. v1 supports GitHub's ASCII,
-              7-bit plain-text MIME notification format and pins one GitHub
-              signing key at deployment.
+              Submitted emails are public on-chain, including email addresses
+              and notification links. The interface checks signatures locally
+              before you choose to submit. No proving software or GitHub
+              connection is needed.
             </p>
           </div>
           <p className="fine-print">
             {config?.local
-              ? "The development deployment uses test ETH and a local trusted setup."
-              : "This Gnosis deployment uses real xDAI, unaudited contracts and a development trusted setup."}
+              ? "The development deployment uses test ETH."
+              : "This Gnosis deployment uses real xDAI and unaudited contracts."}
             GitHub remains the source of truth; this contract does not judge
             code quality. Repository renames and transfers are not automatically
             reconciled.

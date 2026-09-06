@@ -8,37 +8,26 @@
     "start": "node server/index.mjs",
     "dev:web": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test tests/github.test.mjs tests/dkim.test.mjs",
     "test:contracts": "forge test -vv",
-    "test:circuit": "node scripts/test-circuit.mjs",
-    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts",
+    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts",
     "test:public-flow": "RUN_PUBLIC_FLOW=1 playwright test tests/browser/public-flow.spec.ts",
-    "test:chain": "playwright test tests/browser/chain.spec.ts",
+    "test:chain": "node --test tests/chain.test.mjs",
     "test:e2e": "playwright test",
-    "circuits:build": "node scripts/build-circuit.mjs",
-    "setup": "node scripts/setup.mjs",
     "chain": "anvil --host 127.0.0.1 --port 8547 --chain-id 31337 --gas-limit 30000000 --block-time 1 --silent",
     "deploy:local": "node scripts/deploy.mjs",
-    "prover:gnosis": "MERGEBOUNTY_NETWORK=gnosis node server/index.mjs",
-    "build:gnosis": "VITE_STATIC=true npm run build"
+    "build:gnosis": "VITE_STATIC=true npm run build",
+    "test:vectors": "node scripts/make-test-receipts.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1",
-    "@zk-email/circuits": "6.3.4",
-    "@zk-email/helpers": "6.4.2",
-    "circomlib": "2.0.5",
-    "circomlibjs": "0.1.7",
     "express": "5.1.0",
     "lucide-react": "0.468.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "snarkjs": "0.7.6",
     "viem": "2.56.3"
   },
   "overrides": {
-    "@zk-email/helpers": {
-      "snarkjs": "$snarkjs"
-    },
     "ws": "^8.20.1",
     "underscore": "^1.13.8"
   },

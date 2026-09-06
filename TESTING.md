@@ -1,61 +1,24 @@
-# Verification
+# Test the direct implementation
 
-## Fast checks
+Run `npm ci --ignore-scripts` and `forge build`. Node 22 and Foundry are required. There are no proving artifacts to download.
 
-```sh
-npm test
-npm run test:contracts
-npm run build
-npx playwright install chromium
+| Command                    | Coverage                                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm test`                 | 16 tests: public GitHub preflight plus DKIM canonicalization, independent RSA signing, mutation rejection and pair bindings                                                           |
+| `npm run test:contracts`   | 35 Foundry tests, including 128 fuzz cases: RSA verifier, signed-comment rejection, full-body and header policy, escrow settlement and withdrawal invariants                          |
+| `npm run test:chain`       | Actual RSA verifier deployment, relayed claim, exact withdrawal, negative claims, RSA-2048 support; optional local checks against genuine original GitHub emails                      |
+| `npm run test:ui`          | 24 browser tests: repo/issue onboarding, payment validation, wallet failures, receipt checks, disclosure gating, actual local-chain claim/withdrawal, accessibility and mobile layout |
+| `npm run test:public-flow` | Opt-in real public GitHub lookup → funding → expiry refund → withdrawal on Anvil                                                                                                      |
+| `npm run build:gnosis`     | TypeScript check and static production build                                                                                                                                          |
 
-# With npm run dev running:
-npm run test:ui
-```
+Start `npm run chain`, run `npm run deploy:local`, and start `npm run dev` before chain/browser tests. Stateful tests run serially, require chain 31337, snapshot/revert their changes and restore wall-clock time. Do not run separate stateful suites simultaneously against the same Anvil instance.
 
-`tests/receipts.test.mjs` tests native event parsing, joining, spoofed comment rejection, formatting limits, ambiguous markers, private file cleanup, and public signal packing. It uses synthetic canonical strings to isolate parsing; it does not label them DKIM-valid receipts.
+`tests/fixtures/rsa-vectors.json` contains **synthetic** public test receipts signed with a disposable test key. It contains no genuine mail, recipient or private signing key. `npm run test:vectors` regenerates the fixtures and discards its private key. Dynamic chain and browser tests generate their own keys only in memory and deploy the real verifier against those test keys. Live Gnosis pins the genuine GitHub key instead.
 
-`contracts/test/MergeBounty.t.sol` isolates escrow and on-chain policy using a clearly named `UnitVerifier`. It tests routing, replay, mismatches, timing, refunds, failed transfers, credit conservation and invalid policy disclosures. That test verifier is never deployed by `deploy:local`.
+Optional genuine-mail tests read `.local/gnosis-merge.eml` and `.local/gnosis-closure.eml` and send them only to local Anvil. Files are not committed. These historical fixtures validate actual GitHub RSA and MIME compatibility; they do not claim a new bounty.
 
-`tests/browser/interface.spec.ts` tests frontend states using controlled API/RPC fixtures, including search, paid/open views, nested dialogs, wallet errors, wrong networks, invalid uploads, recovery and mobile layout. These tests are separate from cryptographic end-to-end verification.
+The browser integration verifies that email-bearing requests are absent during “Check receipts,” that disclosure consent gates claim simulation/submission, that changing a file clears consent and review, that relaying cannot redirect the reward, and that the beneficiary can withdraw the exact credit. It also checks the claim review at mobile width and with axe WCAG rules.
 
-`tests/github.test.mjs` checks public-only access, URL boundaries, canonical identity, issue/branch validation, stale review rejection, API errors, search scope and pagination. `tests/browser/repositories.spec.ts` covers onboarding, browser persistence/removal, search and status filters, issue details, GitHub creation handoff, duplicate rewards, final preflight rejection, keyboard dismissal and mobile WCAG checks. Both are included in the fast checks; their controlled GitHub fixtures never make real changes.
+For an explicitly authorized tiny Gnosis test, prepare a disposable **public** repository using `scripts/github-gnosis-fixture.mjs`, serve `npm run build:gnosis` on port 5175, and run `node scripts/run-gnosis-e2e.mjs fund`. That helper reads the signer through hidden terminal input or a secret environment variable. Merge only after funding, obtain fresh `.local/rsa-gnosis-merge.eml` and `.local/rsa-gnosis-closure.eml`, then run the helper with `claim`. Live tests are gated behind `RUN_GNOSIS_E2E=1`, limit transaction destinations and amounts, and disable traces. Direct claims intentionally publish the signed email data.
 
-## Public GitHub onboarding acceptance test
-
-The public fixture `RonTuretzky/tmp-mergebounty-public-e2e-20260906` was created specifically for this test. Issue #1 was submitted through GitHub's real browser form reached from MergeBounty, then found through the app's anonymous API client. The live fixture is not a mocked GitHub response.
-
-With Anvil and the local app running, `npm run test:public-flow` uses `.local/public-onboarding-fixture.json` (`repo`, `issue`, `branch`, `createdViaGithubForm`) to fund that open issue through the browser, verify the canonical repo/issue/branch and escrow balance, advance the local deadline, refund and withdraw. It explicitly checks chain 31337 and restores its snapshot and clock. It does not spend Gnosis xDAI. The sanitized result is `.local/public-onboarding-results.json`.
-
-Issue creation is an intentional handoff to GitHub, not an authenticated API operation inside MergeBounty. Private repos, GitHub token storage and OAuth flows are not implemented. Anonymous API rate limits are surfaced to the user and fail funding closed. Browser preflight is not atomic with GitHub state or a wallet confirmation.
-
-## Circuit checks with a real email
-
-The input JSON and raw message must stay private. Prepare an input using `prepareReceipt` from `server/receipt.mjs`, then write its `inputs` to a file under `.local/`. No example private email is committed.
-
-```sh
-MERGEBOUNTY_CIRCUIT_INPUT=.local/sample-input.json npm run test:circuit
-```
-
-The negative circuit test changes the RSA signature, signed subject, event body, SHA prefix state and DKIM disclosure boundary. Each must fail a circuit assertion, not merely a JavaScript preflight. The positive witness can also be checked using `snarkjs wtns check artifacts/Receipt.r1cs PRIVATE_WITNESS_PATH`.
-
-## Actual GitHub → ZK → contract → ETH test
-
-This run uses the actual generated verifier, real GitHub-signed emails, Anvil ETH transactions and the browser interface. It requires the local artifacts, deployment, original receipts and prepared GitHub fixture; no mock verifier or synthetic signing key substitutes for GitHub's signature.
-
-1. Prepare an authorized disposable public repository with issues enabled and default branch `main`. Run `MERGEBOUNTY_TEST_REPO=owner/public-lab node scripts/github-fixture.mjs prepare`. This fixture helper uses the two user-owned authenticated `gh` accounts named in the script, both of which need the relevant repository permissions. The helpers reject private repos for new fixtures. Existing saved fixtures retain their original repository when resumed. Read the script before adapting it; it creates real GitHub content.
-2. Deploy the generated verifier/escrow on a fresh local chain. The fixture predicts the escrow's address from the first Anvil account's deployment nonce. Do not transact from that account before the two deployments.
-3. Run the funding test through the real UI:
-
-   ```sh
-   npx playwright test tests/browser/chain.spec.ts -g 'fund the fresh'
-   ```
-
-4. Only after funding, run `node scripts/github-fixture.mjs finish` to merge the PR and close its linked issue.
-5. Download the two native GitHub emails to `.local/merge.eml` and `.local/closure.eml`.
-6. Run `npm run test:chain`. The first run generates two full proofs; subsequent runs can import `.local/proof-pair.json` and verify them against the real contract.
-
-The test confirms the signed-title wallet's identity, submits the claim from a different wallet, rejects a changed public input and replay, verifies exact ETH credit/withdrawal including transaction gas, and tests refund timing and an alternative withdrawal destination. It captures screenshots and sanitized reports under `.local/`.
-
-Claim and refund tests restore their Anvil snapshots after checking terminal states. This keeps the original funded bounty open for repeat tests. The exported proofs remain available to demonstrate a claim manually. Snapshot identifiers and transaction hashes belong to this disposable local chain and are not public-network receipts.
-
-Raw emails, Playwright traces, circuit witnesses, proof inputs and private local artifacts are ignored. Only share sanitized test reports or screenshots that you have inspected for personal information.
+CI uses Breadchain's pinned Etherform contract workflow and a separate Node/browser job. It runs full local RSA integration without mailbox access, real money, or private artifacts. Original emails, private keys, traces and local transaction state are ignored by Git.

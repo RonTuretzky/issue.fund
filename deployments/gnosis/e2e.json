@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-09-06T18:16:32.367Z",
+  "realGitHubDkim": true,
+  "directRsaOnChain": true,
+  "staticFrontend": true,
+  "repo": "RonTuretzky/tmp-mergebounty-public-e2e-20260906",
+  "issue": 2,
+  "pr": 4,
+  "bountyId": 1,
+  "escrow": "0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46",
+  "recipient": "0x6636A1CCBdf54485067304C1a590DE016DeaD9F0",
+  "amountWei": "1000000000000000",
+  "browserClaim": true,
+  "browserWithdrawal": true,
+  "transactions": [
+    {
+      "functionName": "create",
+      "hash": "0x944461c0e8a8f721b0c7340462fe940aaa25f2869985b7045982730eebbadd3a",
+      "sentAt": "2026-09-06T18:13:16.957Z",
+      "gasUsed": "217254",
+      "feeXDai": "0.000000000001738032",
+      "status": "success"
+    },
+    {
+      "functionName": "claim",
+      "hash": "0xdc00944624435a7f48e38666a3598df0768bc6cac0b7cfd0547a146281b0c053",
+      "sentAt": "2026-09-06T18:16:15.734Z",
+      "gasUsed": "9283775",
+      "feeXDai": "0.0000000000742702",
+      "status": "success"
+    },
+    {
+      "functionName": "withdraw",
+      "hash": "0x181287ceaab3d41fd06953778e6bf95d840ee9760d2f43adbb852bfd440c9944",
+      "sentAt": "2026-09-06T18:16:22.330Z",
+      "gasUsed": "33116",
+      "feeXDai": "0.000000000000298044",
+      "status": "success"
+    }
+  ]
+}

@@ -1,22 +1,15 @@
 import { staticApi, STATIC_MODE } from "./static-api";
-export async function api<T>(path: string, data?: unknown): Promise<T> {
-  if (STATIC_MODE) return staticApi<T>(path, data);
-  const r = await fetch(`/api${path}`, {
-    method: data ? "POST" : "GET",
-    headers: data ? { "Content-Type": "application/json" } : undefined,
-    body: data ? JSON.stringify(data) : undefined,
-  });
-  let out;
+export async function api<T>(path: string): Promise<T> {
+  if (STATIC_MODE) return staticApi<T>(path);
+  const r = await fetch(`/api${path}`);
+  let body;
   try {
-    out = await r.json();
+    body = await r.json();
   } catch {
-    throw new Error(
-      "The local service is unavailable. Check that npm run dev is running.",
-    );
+    throw new Error("The local development service is unavailable.");
   }
-  if (!r.ok)
-    throw new Error(out.error ?? "The request could not be completed.");
-  return out;
+  if (!r.ok) throw new Error(body.error ?? "The request failed.");
+  return body;
 }
 export const short = (s: string) => `${s.slice(0, 6)}…${s.slice(-4)}`;
 export function friendly(error: unknown) {

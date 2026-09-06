@@ -1,52 +1,41 @@
-# Protocol and trust boundaries
+# Direct RSA/DKIM protocol
 
-## Bounty statement
+The payment rule is “credit the wallet designated in the authenticated merged-PR title, when a native GitHub closure notification links that PR to the funded issue.” This is not a GitHub account-ownership claim. GitHub is the event authority; the chain independently verifies its signed email evidence.
 
-For bounty `id`, the escrow accepts a pair of proofs if all of the following hold:
+## Accepted claim
 
-1. Each proof verifies under the immutable Groth16 verifier and exposes the immutable `githubKeyHash`.
-2. Both full DKIM-signed header messages and full bodies authenticate under RSA-SHA256. The body hash in the signed DKIM header agrees with the body SHA256.
-3. The complete signed PR subject identifies the funded `owner/repo`, PR `P`, one payout wallet, and this bounty reference. The complete issue subject identifies that same repository and funded issue `I`.
-4. At body byte zero, the supported native first MIME part says `Merged #P into B.` for the PR and `Closed #I as completed via #P.` for the issue. Branch `B` equals the funded target branch. The contract does not search arbitrary body text for these phrases.
-5. The complete authenticated DKIM line asserts `d=github.com`, `a=rsa-sha256`, `c=relaxed/relaxed`, `v=1`, an issuance time, a body hash, and a signed subject. A body-length `l=` tag is rejected.
-6. Both issuance times are within the bounty's creation/deadline window and not ahead of the current block. The claim is submitted before the deadline plus seven days.
-7. The bounty is open and its reference equals `keccak256(abi.encode(block.chainid, address(escrow), id))`.
+`claim(id, merged, closed)` accepts two receipts, each containing the canonical signed headers, complete canonical body and RSA signature. The verifier pins the RSA modulus; its key identifier is `keccak256(modulus)`. Exponent 65537 is fixed.
 
-Successful verification changes `Open → Paid` once and credits the wallet in the signed title. `msg.sender` is not the beneficiary selector. The alternative terminal transition is `Open → Refunded`, funder-only and after the claim grace period. Withdrawal zeroes the caller's credit before transferring ETH and is guarded against reentrancy. A failed transfer reverts the entire withdrawal.
+For each receipt:
 
-## Circuit disclosures
+1. Headers are bounded to 8192 bytes; bodies to 65536 bytes. The client additionally bounds original uploads to 100 KB.
+2. The signed DKIM tags require `v=1`, `a=rsa-sha256`, `c=relaxed/relaxed`, `d=github.com`, `s=pf2023`, a positive timestamp, `h=`, `bh=` and the blanked final `b=`. Duplicate and unknown tags, including `l=` partial-body signatures, fail closed. Optional expiry must be valid. Exactly one subject is authenticated; the signed header order must agree with `h=`. GitHub's oversigned missing `From` occurrence is supported.
+3. `bh=` must equal Base64(SHA256(full canonical body)). SHA256(canonical signed headers) must verify against the existing RSA signature. The implementation compares the complete PKCS#1 v1.5 encoded block, including every padding byte and SHA-256 DigestInfo, after modular exponentiation. It rejects signatures at or above the modulus and wrong lengths.
+4. The subject must be the supported native GitHub `Re: [owner/repo] … (PR #N)` or `(Issue #N)` form. The first MIME part must be the exact observed text/plain template. The event paragraph must say `Merged #N into BRANCH.` or `Closed #I as completed via #N.`
+5. The GitHub-generated footer must contain the same repository, thread and event ID in both its `#event-ID` URL and `/issue_event/ID@github.com` Message ID. It must end at the actual text-part MIME boundary, with the matching HTML part and final boundary. Exactly three occurrences of that boundary are accepted. A signed comment quoting “Merged…” or injecting a fake footer does not meet this policy.
 
-The circuit has 43 public output field elements:
+The escrow then requires:
 
-| Indices | Meaning |
-|---|---|
-| 0 | Poseidon hash of the RSA modulus, using the upstream 121-bit × 17-limb representation |
-| 1–13 | Complete signed subject, at most 403 bytes |
-| 14–22 | Native first MIME/event prefix, at most 279 bytes, anchored to body byte zero |
-| 23–42 | Complete canonical DKIM signature header with `b=` value empty, at most 620 bytes |
+- An existing, still-open bounty, with submission no later than `deadline + 7 days`.
+- The same case-sensitive repository on both events; the funded issue in the closure; the same PR in merge and closure; and the funded target branch in the merge.
+- Exactly one nonzero `[wallet 0x…]` and one `[bounty 0x…]` marker in the merge-time title.
+- A bounty reference equal to `keccak256(abi.encode(chainId, escrowAddress, bountyId))`.
+- Both authenticated DKIM timestamps at or after creation, at or before the completion deadline, and not in the future relative to the chain.
 
-Disclosures are packed into 31-byte little-endian words and zero-padded. The on-chain parser rejects out-of-range words, interior zero padding, incomplete subject endings, ambiguous markers, wrong event types and mismatched numbers. The circuit binds header disclosure boundaries and requires the DKIM disclosure to end at the first SHA padding byte. The precomputed body SHA state is pinned to SHA256's standard IV, so an unproved body prefix cannot be substituted.
+Successful claims consume the bounty and credit the signed wallet. No caller identity can redirect that credit. Only the credited wallet can withdraw, optionally to another address. State updates precede the transfer; reentrancy is blocked. Failed transfers preserve credit. After the grace period, only the original funder can refund an unclaimed bounty into their own credit.
 
-Compiled size: 5,617,070 constraints, 5,510,183 wires and 43 public outputs. This requires a power-23 Powers of Tau file. The actual padded header/body capacities are smaller than the array lengths because the upstream length representation excludes equality with its power-of-two buffer size.
+## Trust and limitations
 
-## What is trusted
+**GitHub and email semantics.** DKIM authenticates a GitHub-generated message, not a consensus vote about code quality. Maintainers decide what to merge; a compromised GitHub signing key could forge evidence. The parser supports the exact observed native notification format, not arbitrary email. GitHub template changes can stop new claims and require a reviewed new deployment. No GitHub API response authorizes a payout.
 
-**GitHub:** Its DKIM key authenticates the data, notification template and issuance time. GitHub and authorized maintainers still decide when a PR is merged and an issue is completed. The protocol cannot independently establish code quality, repository governance, or a maintainer's honesty. Someone permitted to alter the PR title before merge can change the designated wallet.
+**Pinned key lifecycle.** The live deployment pins GitHub's observed `pf2023` RSA-1024 public key. OpenZeppelin's general RSA helper requires at least 2048 bits; this implementation uses its modular-exponentiation utility and a narrow full-padding checker to support the actual GitHub key. RSA-1024 is an inherited security limitation, not a claim of modern 2048-bit strength. The code also supports 2048-bit moduli in separate deployments. There is no key rotation, revocation, admin, upgrade, oracle override or emergency seizure function. If GitHub rotates or revokes this key, existing cryptographically valid signatures remain valid under the pinned key; a new deployment is required for another key. Observe key changes before funding long deadlines.
 
-**The verifier and ceremony:** Cryptographic soundness depends on the circuit constraints, generated verifier, RSA/SHA256/Poseidon/Groth16 assumptions and the ceremony. The on-chain contract has no administrator that can change its verifier or key. The development ceremony is not a production security claim.
+**Repository identity.** Email evidence binds the owner/repository name, not GitHub's durable numeric repository ID. Anonymous UI preflight checks numeric identity and canonical naming before funding, but it cannot eliminate rename/reuse attacks during an active bounty. Private repositories are outside the supported UI. The permissionless contract cannot independently determine current GitHub visibility, or whether an issue exists, at funding time.
 
-**The local application:** It prepares witnesses and helps the user submit transactions, but has no signing key or separate authorization over the escrow. A dishonest service cannot make an invalid proof pass the contract. It could lie in its interface, omit jobs or mishandle private inputs, so run reviewed local code and inspect wallet transactions.
+**Receipt availability and payout designation.** Claimants need the two native emails, signed within the bounty window. Subscribe beforehand. A PR can close several issues, but its one bounty-reference marker cannot automatically claim multiple separately funded bounties. Renaming a title after the merge does not rewrite its original receipt. A branch-only wallet marker is not supported by the observed receipts.
 
-**DNS:** Used by the local preflight verifier to retrieve a public key. Settlement separately compares the proof's key hash to the immutable deployment key. A malicious DNS answer cannot replace that key in a successful claim, but an unavailable/deleted selector can stop the default preflight from processing old messages.
+**Public disclosure.** Signed headers can include addresses and reply/unsubscribe capabilities. Full canonical bodies, including any notification links, are public in direct claim calldata. The browser does not send email data during local checking; after the disclosure acknowledgement, simulation and wallet submission may send it to RPC operators even if no transaction is mined. There is no selective redaction in direct DKIM mode. Do not log receipt calldata or include originals in bug reports.
 
-## Why account ownership is unnecessary here
+**Client and RPC.** The client can be independently hosted. It does not authorize payments and has no custody key. A malicious UI can still mislead wallet actions or disclose selected files, so review the deployed source and wallet transaction. RPC providers can censor or misreport reads, but cannot make invalid signatures pass the contracts. The current UI shows the newest 100 bounties; full-history indexing remains future work.
 
-The payment rule is “pay the address designated in the signed merged-PR title,” not “pay the person who owns GitHub account X.” Anyone can relay the receipt proofs, but no relay can change their public beneficiary without invalidating the proof. This removes the identity-enrollment step, while retaining the requirement that the address be authenticated in the same merged-PR receipt.
-
-A signature from a claimant's wallet is only needed when that wallet authorizes withdrawal. GPG registration or an email-based proof of GitHub-account ownership would add a separate identity policy, not strengthen this existing payout rule automatically.
-
-## Explicit limitations
-
-There is no stable GitHub repository ID in the accepted disclosures. Exact repository names and funder trust in their lifecycle are therefore part of the rule. An issue may be reopened later; this protocol pays for a qualifying completed event, and settlement is not undone. A PR title changed after the native merge notification does not change the signed historical recipient. Bounties cannot be attached retroactively to already issued receipts because both the creation timestamp and deployment-specific reference must match.
-
-The supported native event template is a security boundary. New GitHub formats need new fixtures, negative cases, circuit/policy review, and possibly a new deployment. Do not loosen parsing to accept arbitrary “Merged” substrings.
+The cryptographic code and application are experimental and unaudited. The archived optional privacy design and its remaining work are documented in [issue #1](https://github.com/RonTuretzky/mergebounty/issues/1).

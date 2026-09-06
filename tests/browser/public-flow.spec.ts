@@ -21,7 +21,7 @@ test("real public GitHub issue → checked funding → expiry refund → withdra
     fs.readFileSync(".local/public-onboarding-fixture.json", "utf8"),
   );
   const deployment = JSON.parse(
-    fs.readFileSync(".local/deployment.json", "utf8"),
+    fs.readFileSync(".local/deployment.rsa.json", "utf8"),
   );
   const abi = JSON.parse(
     fs.readFileSync("out/MergeBounty.sol/MergeBounty.json", "utf8"),

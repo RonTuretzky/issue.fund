@@ -14,7 +14,7 @@ const config = {
   contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
   verifier: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   keyHash: "123",
-  developmentCeremony: true,
+  experimental: true,
   local: true,
   abi,
 };
@@ -270,14 +270,12 @@ test("invalid receipt uploads never reach the claim state", async ({
   await page
     .getByRole("button", { name: "Check receipts", exact: true })
     .click();
-  await expect(page.getByRole("alert")).toContainText("not a native merge");
+  await expect(page.getByRole("alert")).toContainText("original GitHub .eml");
   await expect(
     page.getByRole("button", { name: "Submit claim", exact: true }),
   ).toHaveCount(0);
 });
-test("oversized receipts and malformed proof files report errors", async ({
-  page,
-}) => {
+test("oversized receipts report errors", async ({ page }) => {
   await fixture(page);
   await page.getByRole("button", { name: /example\/parser/ }).click();
   await page.getByLabel("Merged PR email", { exact: true }).setInputFiles({
@@ -286,12 +284,6 @@ test("oversized receipts and malformed proof files report errors", async ({
     buffer: Buffer.alloc(100001),
   });
   await expect(page.getByRole("alert")).toContainText("under 100 KB");
-  await page.getByLabel("Import proof file", { exact: true }).setInputFiles({
-    name: "bad.json",
-    mimeType: "application/json",
-    buffer: Buffer.from("broken JSON"),
-  });
-  await expect(page.getByRole("alert")).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Submit claim", exact: true }),
   ).toHaveCount(0);
@@ -368,60 +360,6 @@ test("key screens meet automated WCAG accessibility checks", async ({
       })),
     ).toEqual([]);
   }
-});
-test("proof progress resumes, cancels, and remains recoverable after reload", async ({
-  page,
-}) => {
-  await fixture(page);
-  const id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-  let state: any = {
-    id,
-    status: "proving",
-    stage: "Proving merge receipt (1 of 2)",
-    preview: {
-      repo: open.repo,
-      issue: 42,
-      pr: 43,
-      branch: "main",
-      wallet: recipient,
-      bountyRef: open.bountyRef,
-      mergeIssuedAt: now,
-      closedIssuedAt: now,
-    },
-  };
-  await page.route(`**/api/proofs/${id}`, (r) => r.fulfill({ json: state }));
-  await page.route(`**/api/proofs/${id}/cancel`, (r) => {
-    state = {
-      ...state,
-      status: "failed",
-      stage: "Proof cancelled",
-      error: "Proof generation was cancelled. You can start again.",
-    };
-    return r.fulfill({ json: { cancelled: true } });
-  });
-  await page.evaluate(({ key, id }) => localStorage.setItem(key, id), {
-    key: `mergebounty:job:${config.contract}:1`,
-    id,
-  });
-  await page.goto("/#bounty-1");
-  await expect(
-    page.getByText("Proving merge receipt (1 of 2)", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByLabel("Merged PR email", { exact: true }),
-  ).toBeDisabled();
-  await page
-    .getByRole("button", { name: "Cancel proof generation", exact: true })
-    .click();
-  await expect(page.getByRole("alert")).toContainText("cancelled");
-  state.preview = undefined;
-  await page.reload();
-  await expect(page.getByRole("alert")).toContainText(
-    "Choose the original emails to retry",
-  );
-  await expect(
-    page.getByLabel("Merged PR email", { exact: true }),
-  ).toBeEnabled();
 });
 test("withdrawal rejects invalid destinations before asking the wallet", async ({
   page,

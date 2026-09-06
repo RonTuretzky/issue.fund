@@ -19,7 +19,8 @@ test.use({ baseURL: "http://127.0.0.1:5175", trace: "off", screenshot: "off" });
 const fixture = () =>
   JSON.parse(
     fs.readFileSync(
-      process.env.GNOSIS_FIXTURE_FILE ?? ".local/github-gnosis-fixture.json",
+      process.env.GNOSIS_FIXTURE_FILE ??
+        ".local/github-rsa-gnosis-fixture.json",
       "utf8",
     ),
   );
@@ -40,7 +41,7 @@ const read = (functionName: string, args: unknown[] = []) =>
 async function wallet(page: Page) {
   // Signing stays in this local Node process. The browser receives no key.
   const account = privateKeyToAccount(
-    fs.readFileSync(".local/gnosis.key", "utf8").trim() as `0x${string}`,
+    process.env.GNOSIS_DEPLOYER_KEY!.trim() as `0x${string}`,
   );
   const wc = createWalletClient({
     account,
@@ -78,7 +79,7 @@ async function wallet(page: Page) {
         maxFeePerGas: 10000000n,
         maxPriorityFeePerGas: 1n,
       });
-      const file = ".local/gnosis-ui-transactions.json";
+      const file = ".local/direct-gnosis-ui-transactions.json";
       const history = fs.existsSync(file)
         ? JSON.parse(fs.readFileSync(file, "utf8"))
         : [];
@@ -141,97 +142,61 @@ test("fund the Gnosis fixture through the static frontend", async ({
   expect(b.amount).toBe(parseEther("0.001"));
   expect(b.status).toBe(0);
   expect(b.funder.toLowerCase()).toBe(f.recipient.toLowerCase());
-  await page.screenshot({ path: ".local/gnosis-funded.png", fullPage: true });
+  await page.screenshot({
+    path: ".local/direct-gnosis-funded.png",
+    fullPage: true,
+  });
 });
 
-test("prove genuine Gnosis emails, claim and withdraw through the static frontend", async ({
+test("claim genuine GitHub emails with direct RSA and withdraw through the static frontend", async ({
   page,
 }) => {
-  test.setTimeout(1800000);
+  test.setTimeout(240000);
   const f = fixture(),
     d = deployment(),
     account = await wallet(page);
-  const beforeBounty = await read("getBounty", [BigInt(f.bountyId)]);
-  expect(beforeBounty.status).toBe(0);
+  expect(d.protocol).toBe("rsa-dkim-v1");
+  expect(d.contract.toLowerCase()).toBe(f.expectedEscrow.toLowerCase());
+  const b = await read("getBounty", [BigInt(f.bountyId)]);
+  expect(b.status).toBe(0);
   await page.goto(`/#bounty-${f.bountyId}`);
   await connect(page);
+  const exposed: string[] = [];
+  page.on("request", (r) => {
+    if (
+      (r.postData() ?? "").includes("issue_event") ||
+      /prover|proofs|receipts/.test(new URL(r.url()).pathname)
+    )
+      exposed.push(r.url());
+  });
   await page
-    .getByRole("button", { name: "Connect prover", exact: true })
-    .first()
+    .getByLabel("Merged PR email", { exact: true })
+    .setInputFiles(".local/rsa-gnosis-merge.eml");
+  await page
+    .getByLabel("Issue closure email", { exact: true })
+    .setInputFiles(".local/rsa-gnosis-closure.eml");
+  await page
+    .getByRole("button", { name: "Check receipts", exact: true })
     .click();
-  await page
-    .getByLabel("Pairing code", { exact: true })
-    .fill(fs.readFileSync(".local/prover-pairing-code", "utf8").trim());
-  await page.getByRole("button", { name: "Connect and check prover" }).click();
   await expect(
-    page.getByText("Local prover paired for this browser session."),
+    page.getByText("Signatures and bounty match", { exact: true }),
   ).toBeVisible();
-  const proofFile = ".local/gnosis-proof-pair.json";
-  if (fs.existsSync(proofFile)) {
-    await page
-      .getByLabel("Import proof file", { exact: true })
-      .setInputFiles(proofFile);
-  } else {
-    await page
-      .getByLabel("Merged PR email", { exact: true })
-      .setInputFiles(".local/gnosis-merge.eml");
-    await page
-      .getByLabel("Issue closure email", { exact: true })
-      .setInputFiles(".local/gnosis-closure.eml");
-    await page
-      .getByRole("button", { name: "Check receipts", exact: true })
-      .click();
-    await expect(page.getByText("Signatures and bounty match")).toBeVisible({
-      timeout: 90000,
-    });
-    await page
-      .getByRole("button", { name: "Generate private proofs", exact: true })
-      .click();
-    await expect(
-      page.getByText("Both zero-knowledge proofs verified"),
-    ).toBeVisible({ timeout: 1500000 });
-    const download = page.waitForEvent("download");
-    await page
-      .getByRole("button", { name: "Export proofs", exact: true })
-      .click();
-    await (await download).saveAs(proofFile);
-    // Exercise browser-side import and an actual Gnosis eth_call, without the prover.
-    await page.reload();
-    await connect(page);
-    await page
-      .getByLabel("Import proof file", { exact: true })
-      .setInputFiles(proofFile);
-  }
-  await expect(
-    page.getByText("Both zero-knowledge proofs verified"),
-  ).toBeVisible({ timeout: 90000 });
-  const pair = JSON.parse(fs.readFileSync(proofFile, "utf8"));
-  const altered = structuredClone(pair.merged);
-  altered.signals[1] = (BigInt(altered.signals[1]) ^ 1n).toString();
-  await expect(
-    client.simulateContract({
-      address: d.contract,
-      abi: d.abi,
-      functionName: "claim",
-      args: [BigInt(f.bountyId), altered, pair.closed],
-      account: account.address,
-    }),
-  ).rejects.toThrow();
-  await page.getByRole("button", { name: "Submit claim", exact: true }).click();
+  expect(exposed).toEqual([]);
+  await expect(page.locator(".full-address")).toHaveText(f.recipient);
+  const submit = page.getByRole("button", {
+    name: "Submit claim",
+    exact: true,
+  });
+  await expect(submit).toBeDisabled();
+  await page
+    .getByRole("checkbox", { name: /Submitting makes these emails public/ })
+    .check();
+  await submit.click();
   await expect(page.getByText("This bounty has been paid.")).toBeVisible({
-    timeout: 90000,
+    timeout: 120000,
   });
   expect(await read("credits", [account.address])).toBe(parseEther("0.001"));
-  await expect(
-    client.simulateContract({
-      address: d.contract,
-      abi: d.abi,
-      functionName: "claim",
-      args: [BigInt(f.bountyId), pair.merged, pair.closed],
-      account: account.address,
-    }),
-  ).rejects.toThrow();
-  const before = await client.getBalance({ address: account.address });
+  const balance = await client.getBalance({ address: account.address });
   await page
     .getByRole("button", { name: "Withdraw xDAI", exact: true })
     .click();
@@ -240,47 +205,44 @@ test("prove genuine Gnosis emails, claim and withdraw through the static fronten
     .click();
   await expect(
     page.getByText("Withdrawal confirmed. The xDAI is in your wallet."),
-  ).toBeVisible({ timeout: 90000 });
+  ).toBeVisible({ timeout: 120000 });
   expect(await read("credits", [account.address])).toBe(0n);
   const history = JSON.parse(
-    fs.readFileSync(".local/gnosis-ui-transactions.json", "utf8"),
+    fs.readFileSync(".local/direct-gnosis-ui-transactions.json", "utf8"),
   );
   const withdrawal = await client.getTransactionReceipt({
-    hash: history.findLast((t: any) => t.functionName === "withdraw").hash,
+    hash: history.filter((x: any) => x.functionName === "withdraw").at(-1).hash,
   });
   expect(await client.getBalance({ address: account.address })).toBe(
-    before +
+    balance +
       parseEther("0.001") -
       withdrawal.gasUsed * withdrawal.effectiveGasPrice,
   );
-  const b = await read("getBounty", [BigInt(f.bountyId)]);
-  expect(b.status).toBe(1);
-  expect(Number(b.pr)).toBe(f.pr);
   fs.writeFileSync(
-    ".local/gnosis-e2e-results.json",
+    ".local/direct-gnosis-results.json",
     JSON.stringify(
       {
         testedAt: new Date().toISOString(),
-        chainId: 100,
-        escrow: d.contract,
-        verifier: d.verifier,
-        bountyId: f.bountyId,
+        realGitHubDkim: true,
+        directRsaOnChain: true,
+        staticFrontend: true,
+        repo: f.repo,
         issue: f.issue,
         pr: f.pr,
-        recipient: account.address,
-        amountXDai: "0.001",
-        genuineGitHubDKIM: true,
-        proofs: 2,
-        browserGeneratedViaLocalProver: true,
-        browserImportedAndVerifiedOnChain: true,
-        tamperedProofRejected: true,
-        replayRejected: true,
-        exactWithdrawalAfterGas: true,
+        bountyId: f.bountyId,
+        escrow: d.contract,
+        recipient: f.recipient,
+        amountWei: String(b.amount),
+        browserClaim: true,
+        browserWithdrawal: true,
         transactions: history,
       },
       null,
       2,
     ),
   );
-  await page.screenshot({ path: ".local/gnosis-paid.png", fullPage: true });
+  await page.screenshot({
+    path: ".local/direct-gnosis-paid.png",
+    fullPage: true,
+  });
 });

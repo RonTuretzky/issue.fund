@@ -1,5 +1,7 @@
 name: Contract and interface checks
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   contracts:
     uses: BreadchainCoop/etherform/.github/workflows/_ci.yml@180aa91926a02ce2045f9a7e3ed08be9395ecfab
@@ -20,12 +22,17 @@ jobs:
           version: v1.5.1
       - run: npm ci --ignore-scripts
       - run: npm test
+      - run: forge build
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - name: Frontend state tests (controlled API fixtures)
+      - name: Local chain, browser claim and interface tests
         run: |
+          npm run chain > /tmp/mergebounty-chain.log 2>&1 &
+          for attempt in $(seq 1 30); do curl -sf http://127.0.0.1:8547 -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' >/dev/null && break; sleep 1; done
+          npm run deploy:local
           npm run dev > /tmp/mergebounty-dev.log 2>&1 &
           for attempt in $(seq 1 30); do curl -sf http://127.0.0.1:5174 >/dev/null && break; sleep 1; done
+          npm run test:chain
           npm run test:ui
-      # Real DKIM/ZK/ETH tests are run locally with private original emails and
-      # the multi-gigabyte proving artifacts; neither belongs in this workflow.
+      # Gnosis tests require explicit opt-in, a funded signer, and original emails.
+      # Neither real email data nor signing secrets is included in CI artifacts.

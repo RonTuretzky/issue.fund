@@ -62,15 +62,22 @@ async function open(page: Page) {
     ),
   ).toBeVisible();
 }
-async function fund(page: Page, issue: number, amount: string) {
+async function fund(
+  page: Page,
+  issue: number,
+  amount: string,
+  repo = fixture().repo,
+) {
   await page
     .getByRole("button", { name: "Fund an issue", exact: true })
     .click();
   await page
     .getByRole("textbox", { name: "GitHub issue URL" })
-    .fill(`https://github.com/${fixture().repo}/issues/${issue}`);
+    .fill(`https://github.com/${repo}/issues/${issue}`);
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
   await page.getByRole("textbox", { name: "Reward in ETH" }).fill(amount);
   await page.getByLabel("Time to complete").selectOption("7");
+  await page.getByRole("checkbox", { name: /I understand the escrow/ }).check();
   await page.getByRole("button", { name: "Fund bounty", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: `Resolve issue #${issue}`, exact: true }),
@@ -323,6 +330,13 @@ test("real GitHub emails generate ZK proofs, pay the signed wallet and withdraw 
 test("expired bounty refund and withdrawal work through the real interface", async ({
   page,
 }) => {
+  test.skip(
+    !fs.existsSync(".local/public-onboarding-fixture.json"),
+    "Requires an open public issue fixture.",
+  );
+  const publicFixture = JSON.parse(
+    fs.readFileSync(".local/public-onboarding-fixture.json", "utf8"),
+  );
   const snapshot = await rpc("evm_snapshot");
   const d = deployment();
   const accounts = await walletClient.getAddresses();
@@ -330,7 +344,7 @@ test("expired bounty refund and withdrawal work through the real interface", asy
     await open(page);
     await local(page, 1);
     const id = BigInt(await read("nextId"));
-    await fund(page, fixture().issue, "0.01");
+    await fund(page, publicFixture.issue, "0.01", publicFixture.repo);
     await expect(
       publicClient.simulateContract({
         address: d.contract,

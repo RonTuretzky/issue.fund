@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowRight,
@@ -36,7 +30,6 @@ import {
   formatEther,
   http,
   isAddress,
-  parseEther,
   parseAbiItem,
   type Address,
 } from "viem";
@@ -49,6 +42,9 @@ import {
   hasProverToken,
 } from "./static-api";
 import type { Bounty, Config, Job, Preview } from "./types";
+import { Modal } from "./Modal";
+import { RepositoryHub } from "./RepositoryHub";
+import { FundDialog, type FundingRequest } from "./FundDialog";
 
 const date = (n: number) =>
   new Date(n * 1000).toLocaleDateString(undefined, {
@@ -67,36 +63,6 @@ const status = (b: Bounty, now: number) =>
         : now > b.deadline
           ? "Claim period"
           : "Open";
-function Modal({
-  title,
-  close,
-  children,
-}: {
-  title: string;
-  close: () => void;
-  children: React.ReactNode;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    ref.current?.showModal();
-    return () => ref.current?.close();
-  }, []);
-  return (
-    <dialog ref={ref} className="modal" aria-label={title} onCancel={close}>
-      <div className="modal-head">
-        <h2>{title}</h2>
-        <button
-          className="icon-button"
-          onClick={close}
-          aria-label="Close dialog"
-        >
-          <X size={20} />
-        </button>
-      </div>
-      {children}
-    </dialog>
-  );
-}
 function CopyButton({
   value,
   label = "Copy",
@@ -147,6 +113,26 @@ export default function App() {
     () => Number(location.hash.match(/^#bounty-(\d+)$/)?.[1]) || undefined,
   );
   const [createOpen, setCreateOpen] = useState(false);
+  const [fundIssueUrl, setFundIssueUrl] = useState("");
+  const [repositoriesOpen, setRepositoriesOpen] = useState(
+    () => location.hash === "#repositories",
+  );
+  const openFunding = (url = "") => {
+    setFundIssueUrl(url);
+    setError("");
+    setCreateOpen(true);
+  };
+  const openRepositories = () => {
+    setCreateOpen(false);
+    setSelected(undefined);
+    setRepositoriesOpen(true);
+    history.replaceState(null, "", "#repositories");
+  };
+  const explore = () => {
+    setSelected(undefined);
+    setRepositoriesOpen(false);
+    history.replaceState(null, "", "#");
+  };
   const [help, setHelp] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -250,6 +236,7 @@ export default function App() {
   const now = config?.chainTime ?? Date.now() / 1000;
   const wrongNetwork = !!account && chainId !== config?.chainId;
   const choose = (b: Bounty) => {
+    setRepositoriesOpen(false);
     setSelected(b.id);
     setFiles({});
     setPreview(undefined);
@@ -259,6 +246,7 @@ export default function App() {
   };
   useEffect(() => {
     const navigate = () => {
+      setRepositoriesOpen(location.hash === "#repositories");
       const id = Number(location.hash.match(/^#bounty-(\d+)$/)?.[1]);
       setSelected(id || undefined);
       setFiles({});
@@ -387,56 +375,42 @@ export default function App() {
       setPending("");
     }
   }
-  async function create(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const f = new FormData(event.currentTarget);
-    let repo = String(f.get("issueUrl")).trim();
-    const m = repo.match(
-      /^https:\/\/github\.com\/([^/]+\/[^/]+)\/issues\/([1-9]\d*)\/?$/,
+  async function create({ check, amount, days }: FundingRequest) {
+    const block = await client.getBlock();
+    const deadline = block.timestamp + BigInt(days * 86400);
+    const receipt = await transact(
+      "create",
+      [
+        check.repo.name,
+        BigInt(check.issue.number),
+        check.repo.branch,
+        deadline,
+      ],
+      amount,
     );
-    if (!m) {
-      setError(
-        "Enter a GitHub issue URL, such as https://github.com/owner/repo/issues/42.",
-      );
-      return;
-    }
-    repo = m[1];
-    try {
-      const amount = parseEther(String(f.get("amount")));
-      if (amount <= 0n) throw new Error("Enter an amount greater than zero.");
-      const days = Number(f.get("days"));
-      const deadline = BigInt(Math.floor(now) + days * 86400);
-      const receipt = await transact(
-        "create",
-        [repo, BigInt(m[2]), String(f.get("branch")), deadline],
-        amount,
-      );
-      setCreateOpen(false);
-      const after = await api<Bounty[]>("/bounties");
-      const funded = receipt.logs.flatMap((log) => {
-        if (log.address.toLowerCase() !== config!.contract.toLowerCase())
-          return [];
-        try {
-          const event = decodeEventLog({
-            abi: [
-              parseAbiItem(
-                "event Funded(uint256 indexed id,address indexed funder,bytes32 bountyRef,string repo,uint64 issue,uint256 amount,uint64 deadline)",
-              ),
-            ],
-            data: log.data,
-            topics: log.topics,
-            eventName: "Funded",
-          });
-          return [event.args.id];
-        } catch {
-          return [];
-        }
-      })[0];
-      const added = after.find((b) => b.id === Number(funded));
-      if (added) choose(added);
-    } catch (e) {
-      setError(friendly(e));
-    }
+    setCreateOpen(false);
+    const after = await api<Bounty[]>("/bounties");
+    const funded = receipt.logs.flatMap((log) => {
+      if (log.address.toLowerCase() !== config!.contract.toLowerCase())
+        return [];
+      try {
+        const event = decodeEventLog({
+          abi: [
+            parseAbiItem(
+              "event Funded(uint256 indexed id,address indexed funder,bytes32 bountyRef,string repo,uint64 issue,uint256 amount,uint64 deadline)",
+            ),
+          ],
+          data: log.data,
+          topics: log.topics,
+          eventName: "Funded",
+        });
+        return [event.args.id];
+      } catch {
+        return [];
+      }
+    })[0];
+    const added = after.find((b) => b.id === Number(funded));
+    if (added) choose(added);
   }
   async function inspect() {
     if (!files.merge || !files.closure || !bounty) return;
@@ -519,7 +493,7 @@ export default function App() {
   return (
     <>
       <header className={`topbar${STATIC_MODE ? " with-prover" : ""}`}>
-        <a className="brand" href="#" onClick={() => setSelected(undefined)}>
+        <a className="brand" href="#" onClick={explore}>
           <img
             src="/brand/decentralpark/logo.png"
             alt=""
@@ -532,13 +506,16 @@ export default function App() {
         </a>
         <nav>
           <button
-            className={!selected ? "nav-active" : ""}
-            onClick={() => {
-              setSelected(undefined);
-              history.replaceState(null, "", "#");
-            }}
+            className={!selected && !repositoriesOpen ? "nav-active" : ""}
+            onClick={explore}
           >
             Explore bounties
+          </button>
+          <button
+            className={repositoriesOpen ? "nav-active" : ""}
+            onClick={openRepositories}
+          >
+            Repositories
           </button>
           <button onClick={() => setHelp(true)}>
             How it works <ArrowUpRight size={13} />
@@ -661,7 +638,14 @@ export default function App() {
             </button>
           </div>
         )}
-        {!bounty ? (
+        {repositoriesOpen ? (
+          <RepositoryHub
+            bounties={bounties}
+            fund={openFunding}
+            viewBounty={choose}
+            back={explore}
+          />
+        ) : !bounty ? (
           <>
             <section className="hero">
               <div>
@@ -681,16 +665,13 @@ export default function App() {
                 <div className="hero-actions">
                   <button
                     className="button primary"
-                    onClick={() => {
-                      setError("");
-                      setCreateOpen(true);
-                    }}
+                    onClick={() => openFunding()}
                   >
                     <Plus size={18} />
                     Fund an issue
                   </button>
-                  <button className="text-button" onClick={() => setHelp(true)}>
-                    See how it works <ArrowRight size={16} />
+                  <button className="button" onClick={openRepositories}>
+                    Browse repositories <ArrowRight size={16} />
                   </button>
                 </div>
                 <div className="hero-note">
@@ -872,7 +853,7 @@ export default function App() {
                     onClick={() =>
                       filter === "Mine" && !account
                         ? setWalletOpen(true)
-                        : setCreateOpen(true)
+                        : openFunding()
                     }
                   >
                     {filter === "Mine" && !account
@@ -1393,103 +1374,22 @@ export default function App() {
         </button>
       </footer>
       {createOpen && (
-        <Modal
-          title="Fund a GitHub issue"
+        <FundDialog
+          initialUrl={fundIssueUrl}
           close={() => {
             setCreateOpen(false);
             setError("");
           }}
-        >
-          <p className="modal-intro">
-            Set the reward. Let a verified merge decide who earns it.
-          </p>
-          <form onSubmit={create}>
-            <label>
-              GitHub issue URL
-              <input
-                name="issueUrl"
-                type="url"
-                required
-                placeholder="https://github.com/owner/repo/issues/42"
-              />
-            </label>
-            <div className="form-grid">
-              <label>
-                Reward in {symbol}
-                <input
-                  name="amount"
-                  required
-                  inputMode="decimal"
-                  pattern="[0-9]+(\.[0-9]{1,18})?"
-                  placeholder="0.05"
-                />
-              </label>
-              <label>
-                Target branch
-                <input
-                  name="branch"
-                  required
-                  defaultValue="main"
-                  maxLength={64}
-                  pattern="[a-zA-Z0-9_.\/\-]+"
-                />
-              </label>
-            </div>
-            <label>
-              Time to complete
-              <select name="days" defaultValue="30">
-                <option value="7">7 days</option>
-                <option value="14">14 days</option>
-                <option value="30">30 days</option>
-                <option value="90">90 days</option>
-              </select>
-            </label>
-            <div className="terms">
-              <ShieldCheck size={20} />
-              <p>
-                Your {symbol} stays in escrow until a valid claim or an eligible
-                refund. A seven-day claim period follows the deadline. The
-                reward and acceptance terms cannot be edited after funding.
-              </p>
-            </div>
-            {error && (
-              <div role="alert" className="alert error">
-                {error}
-              </div>
-            )}
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="button"
-                onClick={() => setCreateOpen(false)}
-              >
-                Cancel
-              </button>
-              {account ? (
-                <button
-                  className="button primary"
-                  disabled={!!pending || wrongNetwork || !config}
-                >
-                  {pending ? (
-                    <Loader2 size={17} className="spin" />
-                  ) : (
-                    <Plus size={17} />
-                  )}
-                  Fund bounty
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="button primary"
-                  onClick={() => setWalletOpen(true)}
-                >
-                  <Wallet size={17} />
-                  Connect wallet
-                </button>
-              )}
-            </div>
-          </form>
-        </Modal>
+          browse={openRepositories}
+          symbol={symbol}
+          account={account}
+          connect={() => setWalletOpen(true)}
+          ready={!!config && !pending}
+          wrongNetwork={wrongNetwork}
+          switchNetwork={switchNetwork}
+          bounties={bounties}
+          onFund={create}
+        />
       )}
       {withdrawOpen && (
         <Modal

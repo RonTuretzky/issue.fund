@@ -4,16 +4,18 @@ The local Anvil checks below were completed September 6, 2026, before the Gnosis
 
 ## Results
 
+Public repository onboarding was added and checked on September 6, 2026. It uses GitHub's public API without credentials. A real issue was created using GitHub's own form reached from MergeBounty, discovered back in the app, funded through the new preflight review, refunded after local expiry and withdrawn. This new acceptance flow ran on Anvil and restored its snapshot; it did not modify Gnosis bounty #2. The static Gnosis build also passed real public-GitHub lookup and xDAI review, with no horizontal overflow at 390, 768, 820, 1024 or 1280 pixels.
+
 | Check | Result |
 |---|---|
 | Solidity escrow and receipt policy | 31 tests passed, including 128 fuzz runs for credit conservation |
-| Receipt parsing and private job lifecycle | 15 tests passed |
-| Browser suite | 18 tests passed: 15 UI state tests and 3 real-chain flows |
+| Receipt parsing, private job lifecycle and public GitHub preflight | 23 tests passed |
+| Browser suite | 24 UI state tests, 3 Anvil chain regressions and 1 real public-GitHub onboarding/funding/refund flow passed |
 | Circuit tampering | 5 invalid witnesses rejected by circuit assertions |
 | Actual GitHub signatures | Two original GitHub DKIM emails generated valid Groth16 proofs |
 | Actual payout | A separate relayer submitted the claim; the title's wallet received and withdrew 0.05 test ETH |
 | Actual refunds | Early refund rejected; funder-only refund and withdrawal to another destination passed |
-| Accessibility | No automated WCAG A/AA violations on the checked explore, detail and guide screens |
+| Accessibility | No automated WCAG A/AA violations on explore, detail, guide, repository browsing or funding review screens |
 | Branding | Official Decentral Park mark, self-hosted fonts, palette and button styling; desktop/mobile reviewed |
 | Build and local service | TypeScript/Vite build passed; built app, font/logo assets, Host/Origin guards checked |
 | Privacy cleanup | Completed jobs contain no raw private inputs or witnesses |

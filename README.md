@@ -52,7 +52,7 @@ Deployments are recorded in `.local/deployment.json`. The deployment script refu
 
 ## User flow
 
-1. **Fund:** enter the exact GitHub issue URL, native-token reward, target branch, and deadline. The contract escrows the native token and emits a bounty reference bound to the chain, contract and bounty number. Terms cannot be edited afterward.
+1. **Find and fund:** choose **Browse repositories**, add a public GitHub repository, then browse, search or import an issue. **Create issue** opens GitHub's issue form; submit there, then return and refresh or paste its URL. Review the open issue, detected default branch, reward and deadline, then confirm funding in your wallet. The contract escrows the native token and emits a bounty reference bound to the chain, contract and bounty number. Terms cannot be edited afterward.
 2. **Contribute:** copy the title template from the bounty. Use one `[bounty 0x…]` marker and one `[wallet 0x…]` marker in the PR title. Include `Closes #ISSUE` in the PR description and target the funded branch. The intended branch must also be the repository's default branch for GitHub to perform the automatic issue closure.
 3. **Receive:** subscribe to both the issue and PR before the merge. Download the original `.eml` for the native merge notification and the issue notification saying it was completed via that PR. In Gmail, use the specific message's three-dot menu → Download message. A forwarded email or a comment containing “Merged” is insufficient.
 4. **Inspect:** upload the two receipts. The UI checks signatures and the joined bounty terms, then shows the beneficiary before proof generation.
@@ -62,6 +62,16 @@ Deployments are recorded in `.local/deployment.json`. The deployment script refu
 8. **Refund:** if no claim succeeds, the funder can reclaim after the completion deadline plus a seven-day claim period. Refunds become withdrawable credit. A funder cannot race a timely claim during that grace period.
 
 Both DKIM issuance timestamps must fall between bounty creation and its completion deadline. Submission is allowed through the grace period. The rule accepts a linked completed issue and merged PR; it does not judge code quality or establish authorship of the contribution.
+
+## Public repository onboarding
+
+MergeBounty requires no GitHub OAuth, account connection, API token or repository installation. Public metadata is read directly from `api.github.com`, without credentials. GitHub handles authentication only on its own site when a user creates an issue. Private repositories are outside the app's scope.
+
+Saved repositories are browser bookmarks, persisted by numeric repository ID and canonical name; they are not ownership registrations or an on-chain repository registry. Funded issues are discoverable through the shared escrow. Removing a bookmark does not affect any bounty.
+
+The funding review verifies public visibility, an active repository with issues enabled, a real open issue (not a pull request), and an existing default branch compatible with the deployed verifier. Immediately before invoking the wallet it repeats the checks and rejects changes in repository ID/name, issue ID or default branch. Duplicate unsettled bounties require explicit review; a new bounty does not top up an existing one. Repository names and branch terms remain fixed in escrow.
+
+These are browser preflight checks, not additional smart-contract guarantees. GitHub may change after the check, including while the wallet confirmation is open. The deployed escrow validates signed receipts and still identifies repositories by name. GitHub's unauthenticated API rate limit also applies: the UI pauses funding with a retry message when it cannot verify an issue. Search is paginated and reports GitHub's partial-result and 1,000-result limits. The app does not bypass rate limits with shared credentials.
 
 ## Components
 

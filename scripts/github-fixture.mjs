@@ -2,8 +2,8 @@ import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import { getContractAddress, keccak256, encodeAbiParameters } from "viem";
 const owner = "RonTuretzky",
-  peer = "RonTuretzkyOpacity",
-  repo = "RonTuretzky/tmp-github-bounty-proofs-20260906";
+  peer = "RonTuretzkyOpacity";
+let repo = process.env.MERGEBOUNTY_TEST_REPO;
 const file = ".local/github-fixture.json";
 fs.mkdirSync(".local", { recursive: true, mode: 0o700 });
 function api(user, method, url, body) {
@@ -32,6 +32,20 @@ if (process.argv[2] === "prepare") {
     throw new Error(
       "Fixture already exists; use finish to merge after escrow funding.",
     );
+  if (!repo)
+    throw new Error(
+      "Set MERGEBOUNTY_TEST_REPO to an authorized disposable public repository.",
+    );
+  const metadata = api(owner, "GET", `repos/${repo}`);
+  if (
+    metadata.private ||
+    metadata.default_branch !== "main" ||
+    !metadata.has_issues
+  )
+    throw new Error(
+      "This fixture helper requires a public repository with issues enabled and default branch main.",
+    );
+  repo = metadata.full_name;
   const expectedEscrow = getContractAddress({
     from: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
     nonce: 1n,
@@ -82,6 +96,7 @@ if (process.argv[2] === "prepare") {
   console.log(data);
 } else if (process.argv[2] === "finish") {
   const f = JSON.parse(fs.readFileSync(file, "utf8"));
+  const repo = f.repo;
   const d = JSON.parse(fs.readFileSync(".local/deployment.json", "utf8"));
   if (d.contract.toLowerCase() !== f.expectedEscrow.toLowerCase())
     throw new Error(

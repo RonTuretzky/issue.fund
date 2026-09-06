@@ -18,7 +18,7 @@ Both contracts were deployed using `script/Deploy.s.sol`, and their sources were
 1. Start `npm run prover:gnosis` in the prepared project. Keep it running and keep the computer awake.
 2. Open the site in a browser with an Ethereum wallet. Connect the wallet and switch/add Gnosis when requested. Use a wallet holding a small amount of xDAI for gas.
 3. Choose **Connect prover** and paste `.local/prover-pairing-code`. This code grants access only to your local prover, never to your wallet. Allow the browser's local network permission for this specific site if prompted.
-4. Fund an issue with a tiny xDAI reward. Copy its exact bounty and wallet markers into the PR title before merging. Add `Closes #ISSUE` to its description; target the funded default branch.
+4. Choose **Browse repositories**, add a public repository, and select an open issue. Use **Create issue** to open GitHub's form and refresh after submitting it, or import an existing issue URL. Review the detected default branch and fund with a tiny xDAI reward. Copy its exact bounty and wallet markers into the PR title before merging. Add `Closes #ISSUE` to its description; target the funded default branch. No GitHub connection or token is needed in MergeBounty.
 5. Subscribe to the issue and PR before the merge. Download the original merged-PR and linked issue-closure `.eml` messages. Check them, generate the two proofs, and submit the claim.
 6. The wallet named in the signed merge-time PR title withdraws its credited balance. The submitter cannot change that recipient.
 
@@ -37,6 +37,8 @@ Two integration details need preserving: the current canonical Gnosis explorer i
 `forge script script/Deploy.s.sol:Deploy` checks chain 100 before broadcasting. Running it again deploys **new immutable contracts**, not an upgrade. Existing bounties and proof artifacts must continue using their original deployment. Preserve the original proving key for the current escrow.
 
 ## Acceptance evidence
+
+The current onboarding UI supports public repositories only. The earlier email/proof fixtures below remain historical evidence and existing funded bounties remain claimable. New onboarding was tested with the public repository `RonTuretzky/tmp-mergebounty-public-e2e-20260906`: a real issue created through GitHub's form, anonymous discovery, default-branch preflight and wallet funding on local Anvil. The new onboarding test does not spend more mainnet xDAI or alter the unclaimed Gnosis bounty #2.
 
 The controlled fixture is issue #11 and PR #12 in the previously authorized private GitHub test repository. It uses a 0.001 xDAI bounty. Mainnet browser tests are explicitly gated behind `RUN_GNOSIS_E2E=1` and never run in routine CI. The full Gnosis flow passed on September 6, 2026: genuine receipts → local proof generation through the static frontend → browser proof import and on-chain verification → claim → exact withdrawal after gas. Mutated proofs and claim replay were rejected. The transactions are [funding](https://gnosisscan.io/tx/0x94260af729194eaa5acd4a26f1ec6355daaab04b9f37edb2322c2b3cb5df102a), [claim](https://gnosisscan.io/tx/0xbd92ead56c9ac35f63c5432c0069a4b5310fa87ed491e60789c10681481f0e10), and [withdrawal](https://gnosisscan.io/tx/0xf14a3d1bcf00ffd8489689917072bfbe60f50b6e5ed191b4c935172ba64fec24).
 

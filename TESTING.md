@@ -18,6 +18,16 @@ npm run test:ui
 
 `tests/browser/interface.spec.ts` tests frontend states using controlled API/RPC fixtures, including search, paid/open views, nested dialogs, wallet errors, wrong networks, invalid uploads, recovery and mobile layout. These tests are separate from cryptographic end-to-end verification.
 
+`tests/github.test.mjs` checks public-only access, URL boundaries, canonical identity, issue/branch validation, stale review rejection, API errors, search scope and pagination. `tests/browser/repositories.spec.ts` covers onboarding, browser persistence/removal, search and status filters, issue details, GitHub creation handoff, duplicate rewards, final preflight rejection, keyboard dismissal and mobile WCAG checks. Both are included in the fast checks; their controlled GitHub fixtures never make real changes.
+
+## Public GitHub onboarding acceptance test
+
+The public fixture `RonTuretzky/tmp-mergebounty-public-e2e-20260906` was created specifically for this test. Issue #1 was submitted through GitHub's real browser form reached from MergeBounty, then found through the app's anonymous API client. The live fixture is not a mocked GitHub response.
+
+With Anvil and the local app running, `npm run test:public-flow` uses `.local/public-onboarding-fixture.json` (`repo`, `issue`, `branch`, `createdViaGithubForm`) to fund that open issue through the browser, verify the canonical repo/issue/branch and escrow balance, advance the local deadline, refund and withdraw. It explicitly checks chain 31337 and restores its snapshot and clock. It does not spend Gnosis xDAI. The sanitized result is `.local/public-onboarding-results.json`.
+
+Issue creation is an intentional handoff to GitHub, not an authenticated API operation inside MergeBounty. Private repos, GitHub token storage and OAuth flows are not implemented. Anonymous API rate limits are surfaced to the user and fail funding closed. Browser preflight is not atomic with GitHub state or a wallet confirmation.
+
 ## Circuit checks with a real email
 
 The input JSON and raw message must stay private. Prepare an input using `prepareReceipt` from `server/receipt.mjs`, then write its `inputs` to a file under `.local/`. No example private email is committed.
@@ -32,7 +42,7 @@ The negative circuit test changes the RSA signature, signed subject, event body,
 
 This run uses the actual generated verifier, real GitHub-signed emails, Anvil ETH transactions and the browser interface. It requires the local artifacts, deployment, original receipts and prepared GitHub fixture; no mock verifier or synthetic signing key substitutes for GitHub's signature.
 
-1. Create the private GitHub fixture with `node scripts/github-fixture.mjs prepare`. This script is intentionally specific to the existing disposable lab repo and its two user-owned authenticated `gh` accounts. Read it before adapting it.
+1. Prepare an authorized disposable public repository with issues enabled and default branch `main`. Run `MERGEBOUNTY_TEST_REPO=owner/public-lab node scripts/github-fixture.mjs prepare`. This fixture helper uses the two user-owned authenticated `gh` accounts named in the script, both of which need the relevant repository permissions. The helpers reject private repos for new fixtures. Existing saved fixtures retain their original repository when resumed. Read the script before adapting it; it creates real GitHub content.
 2. Deploy the generated verifier/escrow on a fresh local chain. The fixture predicts the escrow's address from the first Anvil account's deployment nonce. Do not transact from that account before the two deployments.
 3. Run the funding test through the real UI:
 

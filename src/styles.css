@@ -1975,3 +1975,423 @@ footer > span:not(.brand) {
     padding: 12px 14px;
   }
 }
+
+/* Public repository onboarding and funding review. */
+.repositories {
+  padding: 30px 0 55px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 28px;
+}
+.repo-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-bottom: 30px;
+}
+.repo-heading > div {
+  min-width: 0;
+}
+.repo-heading h1 {
+  font-family: var(--font-heading, "Space Grotesk", sans-serif);
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -1.6px;
+  margin: 14px 0;
+  overflow-wrap: anywhere;
+}
+.repo-heading p {
+  max-width: 720px;
+  line-height: 1.7;
+  color: var(--color-surface-grey-2);
+  font-size: 14px;
+}
+.repo-heading-icon {
+  color: var(--color-green-1);
+  flex: 0 0 auto;
+}
+.repo-add {
+  padding: 24px;
+  border: 1px solid var(--color-paper-2);
+  background: var(--color-paper-1);
+  margin-bottom: 36px;
+}
+.repo-add > label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.repo-input-row {
+  display: flex;
+  gap: 12px;
+}
+.repo-input-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--color-green-0);
+  background: white;
+  font-size: 14px;
+  color: var(--color-surface-grey-3);
+}
+.repo-add p,
+.field-note {
+  color: var(--color-surface-grey-2);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.repo-add p {
+  margin: 12px 0 0;
+}
+.repo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.repo-card {
+  position: relative;
+  border: 1px solid var(--color-paper-2);
+  background: white;
+  min-width: 0;
+}
+.repo-card-main {
+  display: block;
+  width: 100%;
+  padding: 26px;
+  text-align: left;
+}
+.repo-card-main:hover {
+  background: var(--color-paper-1);
+}
+.repo-card h3 {
+  font-size: 17px;
+  line-height: 1.6;
+  margin: 18px 0;
+  overflow-wrap: anywhere;
+}
+.repo-card-main > span {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+.repo-card > .icon-button {
+  position: absolute;
+  right: 14px;
+  top: 16px;
+}
+.known-repos {
+  padding-top: 36px;
+}
+.known-repos h2 {
+  font-size: 22px;
+}
+.known-repos p {
+  font-size: 13px;
+  color: var(--color-surface-grey-2);
+  line-height: 1.7;
+}
+.known-repos .button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.repo-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 18px 0 30px;
+}
+.repo-toolbar > span,
+.repo-toolbar > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.repo-toolbar > .text-button {
+  margin-right: auto;
+}
+.inline-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.issue-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 24px 0;
+}
+.issue-toolbar .tabs {
+  margin-right: auto;
+}
+.issue-search {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.issue-search .search {
+  width: 240px;
+  min-width: 0;
+}
+.issue-search input {
+  min-width: 0;
+}
+.issue-list {
+  border-top: 1px solid var(--color-paper-2);
+}
+.issue-row {
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 25px 0;
+  border-bottom: 1px solid var(--color-paper-2);
+}
+.issue-row-content {
+  min-width: 0;
+  flex: 1;
+}
+.issue-row-content > .repo-name {
+  display: flex;
+  gap: 12px;
+}
+.issue-title {
+  text-align: left;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 10px 0;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+.issue-title:hover {
+  color: var(--color-green-1);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.issue-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.issue-labels > span {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--color-paper-1);
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.issue-row-content > .inline-actions {
+  margin-top: 12px;
+}
+.issue-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.issue-row-actions .button {
+  white-space: nowrap;
+}
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+.pagination span {
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.6;
+}
+.issue-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 45vh;
+  overflow: auto;
+  background: white;
+  border: 1px solid var(--color-paper-2);
+  padding: 18px;
+  line-height: 1.8;
+  font-size: 13px;
+}
+.flow-steps {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  padding: 0 0 18px;
+  margin: 0 0 24px;
+  border-bottom: 1px solid var(--color-paper-2);
+  color: var(--color-surface-grey-2);
+  font-size: 12px;
+}
+.flow-steps .active {
+  color: var(--color-green-2);
+  font-weight: 600;
+}
+.issue-review {
+  padding: 20px;
+  background: var(--color-paper-1);
+  border-left: 3px solid var(--color-green-1);
+  margin: 24px 0;
+}
+.issue-review h3 {
+  margin: 12px 0;
+  font-size: 19px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.issue-review .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 1px;
+  font-size: 10px;
+}
+.issue-review a,
+.issue-review p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.modal form > .checkbox-label,
+.checkbox-label {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.8;
+}
+.modal .checkbox-label input {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  margin-top: 3px;
+  accent-color: var(--color-green-1);
+  padding: 0;
+}
+.duplicate-note {
+  border: 1px solid var(--color-green-0);
+  background: var(--color-paper-1);
+  padding: 18px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.duplicate-note a {
+  text-decoration: underline;
+}
+.create-instructions {
+  padding-left: 22px;
+  margin-bottom: 25px;
+  font-size: 14px;
+  line-height: 1.9;
+}
+.create-instructions li {
+  padding-left: 4px;
+  margin: 12px 0;
+}
+.full-width {
+  width: 100%;
+  justify-content: center;
+}
+@media (max-width: 1100px) {
+  .topbar.with-prover {
+    height: auto;
+    min-height: 88px;
+    flex-wrap: wrap;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    row-gap: 16px;
+  }
+  .topbar.with-prover nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+  .topbar nav {
+    gap: 16px;
+  }
+  .topbar nav button {
+    font-size: 11px;
+  }
+}
+@media (max-width: 760px) {
+  .repo-heading-icon {
+    display: none;
+  }
+  .repo-heading h1 {
+    font-size: 33px;
+    letter-spacing: -1px;
+  }
+  .repo-add {
+    padding: 18px;
+  }
+  .repo-input-row {
+    flex-direction: column;
+  }
+  .repo-input-row input {
+    font-size: 16px;
+  }
+  .repo-grid {
+    grid-template-columns: 1fr;
+  }
+  .repositories .section-heading {
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .repo-toolbar {
+    gap: 15px;
+  }
+  .issue-toolbar {
+    gap: 16px;
+  }
+  .issue-toolbar .tabs {
+    width: 100%;
+    gap: 16px;
+  }
+  .issue-toolbar .tabs button {
+    font-size: 12px;
+  }
+  .issue-search {
+    width: calc(100% - 46px);
+  }
+  .issue-search .search {
+    flex: 1;
+    width: auto;
+  }
+  .issue-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .issue-row-actions {
+    justify-content: flex-end;
+  }
+  .issue-title {
+    font-size: 17px;
+  }
+  .flow-steps {
+    gap: 16px;
+    font-size: 11px;
+  }
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+}

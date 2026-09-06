@@ -17,7 +17,12 @@ test.skip(
 );
 test.use({ baseURL: "http://127.0.0.1:5175", trace: "off", screenshot: "off" });
 const fixture = () =>
-  JSON.parse(fs.readFileSync(process.env.GNOSIS_FIXTURE_FILE ?? ".local/github-gnosis-fixture.json", "utf8"));
+  JSON.parse(
+    fs.readFileSync(
+      process.env.GNOSIS_FIXTURE_FILE ?? ".local/github-gnosis-fixture.json",
+      "utf8",
+    ),
+  );
 const deployment = () =>
   JSON.parse(fs.readFileSync("public/deployment.gnosis.json", "utf8"));
 const client = createPublicClient({
@@ -121,8 +126,10 @@ test("fund the Gnosis fixture through the static frontend", async ({
   await page
     .getByRole("textbox", { name: "GitHub issue URL" })
     .fill(f.issueUrl);
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
   await page.getByRole("textbox", { name: "Reward in xDAI" }).fill("0.001");
   await page.getByLabel("Time to complete").selectOption("7");
+  await page.getByRole("checkbox", { name: /I understand the escrow/ }).check();
   await page.getByRole("button", { name: "Fund bounty", exact: true }).click();
   await expect(
     page.getByRole("heading", {

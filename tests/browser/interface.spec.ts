@@ -43,6 +43,30 @@ const paid = {
   pr: 8,
 };
 async function fixture(page: Page) {
+  await page.route("https://api.github.com/**", (route) => {
+    const p = new URL(route.request().url()).pathname;
+    const number = Number(p.match(/\/issues\/(\d+)$/)?.[1]);
+    return route.fulfill({
+      json: number
+        ? {
+            id: 300 + number,
+            number,
+            html_url: `https://github.com/example/parser/issues/${number}`,
+            title: "Fix the parser",
+            state: "open",
+            labels: [],
+          }
+        : p.includes("/branches/")
+          ? { name: "main" }
+          : {
+              id: 101,
+              full_name: "example/parser",
+              private: false,
+              has_issues: true,
+              default_branch: "main",
+            },
+    });
+  });
   await page.route("**/api/**", async (route) => {
     const p = new URL(route.request().url()).pathname;
     const response =
@@ -123,7 +147,7 @@ test("local wallet connection and disconnect keep recipient instructions clear",
     "YOUR_WALLET_ADDRESS",
   );
 });
-test("funding form rejects non-issue URLs and preserves user input", async ({
+test("funding form rejects non-issue URLs before offering a payment", async ({
   page,
 }) => {
   await fixture(page);
@@ -134,14 +158,13 @@ test("funding form rejects non-issue URLs and preserves user input", async ({
   await page
     .getByRole("textbox", { name: "GitHub issue URL" })
     .fill("https://github.com/example/parser/pull/42");
-  await page.getByRole("textbox", { name: "Reward in ETH" }).fill("0.1");
-  await page.getByRole("button", { name: "Fund bounty", exact: true }).click();
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Enter a GitHub issue URL",
   );
   await expect(
-    page.getByRole("textbox", { name: "Reward in ETH" }),
-  ).toHaveValue("0.1");
+    page.getByRole("button", { name: "Fund bounty", exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
@@ -150,6 +173,10 @@ test("nested connect dialog returns to funding form", async ({ page }) => {
   await page
     .getByRole("button", { name: "Fund an issue", exact: true })
     .click();
+  await page
+    .getByLabel("GitHub issue URL")
+    .fill("https://github.com/example/parser/issues/43");
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Connect wallet", exact: true })
@@ -296,7 +323,7 @@ test("mobile pages and guide fit the viewport and support keyboard dismissal", a
     .toBe(true);
   await page.screenshot({ path: ".local/frontend-mobile.png", fullPage: true });
   await page
-    .getByRole("button", { name: "See how it works", exact: true })
+    .getByRole("button", { name: "Protocol & privacy", exact: true })
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -440,7 +467,15 @@ test("rejected funding transaction preserves the form for retry", async ({
         jsonrpc: "2.0",
         id: x.id,
         result:
-          x.method === "eth_call" ? "0x" + "1".padStart(64, "0") : "0x7a69",
+          x.method === "eth_getBlockByNumber"
+            ? {
+                timestamp: `0x${now.toString(16)}`,
+                number: "0x1",
+                transactions: [],
+              }
+            : x.method === "eth_call"
+              ? "0x" + "1".padStart(64, "0")
+              : "0x7a69",
       },
     });
   });
@@ -453,8 +488,10 @@ test("rejected funding transaction preserves the form for retry", async ({
     .click();
   await page
     .getByRole("textbox", { name: "GitHub issue URL" })
-    .fill("https://github.com/example/parser/issues/42");
+    .fill("https://github.com/example/parser/issues/43");
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
   await page.getByRole("textbox", { name: "Reward in ETH" }).fill("0.03");
+  await page.getByRole("checkbox", { name: /I understand the escrow/ }).check();
   await page.getByRole("button", { name: "Fund bounty", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "cancelled in your wallet",

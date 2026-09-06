@@ -2,9 +2,10 @@ import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import { createPublicClient, http } from "viem";
 const owner = "RonTuretzky",
-  peer = "RonTuretzkyOpacity",
-  repo = "RonTuretzky/tmp-github-bounty-proofs-20260906";
-const file = process.env.GNOSIS_FIXTURE_FILE ?? ".local/github-gnosis-fixture.json";
+  peer = "RonTuretzkyOpacity";
+let repo = process.env.MERGEBOUNTY_TEST_REPO;
+const file =
+  process.env.GNOSIS_FIXTURE_FILE ?? ".local/github-gnosis-fixture.json";
 const d = JSON.parse(fs.readFileSync("public/deployment.gnosis.json", "utf8"));
 const client = createPublicClient({ transport: http(d.rpcUrl) });
 const read = (functionName, args = []) =>
@@ -33,6 +34,20 @@ if (process.argv[2] === "prepare") {
     throw new Error(
       "Gnosis fixture already exists; resume it instead of creating another.",
     );
+  if (!repo)
+    throw new Error(
+      "Set MERGEBOUNTY_TEST_REPO to an authorized disposable public repository.",
+    );
+  const metadata = api(owner, "GET", `repos/${repo}`);
+  if (
+    metadata.private ||
+    metadata.default_branch !== "main" ||
+    !metadata.has_issues
+  )
+    throw new Error(
+      "This fixture helper requires a public repository with issues enabled and default branch main.",
+    );
+  repo = metadata.full_name;
   const issue = api(peer, "POST", `repos/${repo}/issues`, {
     title: "GNOSIS E2E: verify private proof payout",
     body: "Controlled MergeBounty acceptance test: add the Gnosis fixture. A tiny real xDAI bounty will be funded before merging, claimed using the two original GitHub event emails, and withdrawn to the test funder.",
@@ -50,6 +65,7 @@ if (process.argv[2] === "prepare") {
   console.log(f);
 } else if (process.argv[2] === "merge") {
   const f = JSON.parse(fs.readFileSync(file, "utf8"));
+  const repo = f.repo;
   const b = await read("getBounty", [BigInt(f.bountyId)]);
   if (
     d.contract !== f.expectedEscrow ||

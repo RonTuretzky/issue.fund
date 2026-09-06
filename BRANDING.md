@@ -1,8 +1,10 @@
-# Decentral Park identity
+# issue.fund identity
 
 issue.fund uses the [Decentral Park UI kit](https://github.com/decentralparknyc/decentralpark-ui-kit) at commit `7696b1b72460801ccc24abfa4e7d49c8abc72b9c`.
 
-The header and browser title identify the project as **issue.fund**. The **Decentral Park** name and official tree mark appear only in the footer; all navigation and protocol links are in the app and documentation.
+The header pairs the issue.fund mark with a live Space Grotesk wordmark. Its open circle, check/merge gesture, and detached square suggest an issue reaching a funded resolution. The green mark is also the browser and home-screen icon. The original asset and generation prompt are recorded in [the issue.fund brand directory](public/brand/issue-fund/README.md).
+
+The **Decentral Park** name and official tree mark appear only in the footer; all navigation and protocol links are in the app and documentation.
 
 The official tree mark and all six bundled WOFF2 files are copied without modification into `public/brand/decentralpark`. `src/brand.css` carries the kit's color tokens and self-hosted Park Display (Space Grotesk) and Park Body (Inter) font declarations. The application styles adapt its fund palette, bold uppercase headings, mint paper surfaces and square buttons with 4px grey shadows. Primary buttons use the kit's green-1 token for readable white labels at small sizes.
 

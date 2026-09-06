@@ -396,7 +396,14 @@ export default function App() {
     <>
       <header className="topbar app-header">
         <a className="project-name" href="#" onClick={explore}>
-          issue.fund
+          <img
+            className="project-mark"
+            src="/brand/issue-fund/mark.png"
+            alt=""
+            width="38"
+            height="38"
+          />
+          <span>issue.fund</span>
         </a>
         <nav aria-label="Main navigation">
           <button

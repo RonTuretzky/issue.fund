@@ -44,3 +44,9 @@ All 29 browser checks passed, including the empty-directory issue URL path with 
 The automatic email collector and claim relay remain a proposal in [backlog issue #3](https://github.com/RonTuretzky/issue.fund/issues/3), with the reply-credential disclosure dependency linked to issue #2.
 
 GitHub Pages completed the update from source `58dc98268e260db2a12d7048c04c4c14e0f1adb8`, confirmed by the live `/site-version.json`. Live HTTPS browser checks passed the bounty-derived directory with no bookmark controls or storage writes, real GitHub issue browsing, direct review of an open issue in xDAI, all 14 documentation entries, onboarding navigation/reload, and the existing Gnosis bounty. Desktop and mobile directory screenshots were reviewed with no overflow or page errors. These deployment checks sent no transactions.
+
+## issue.fund logo
+
+On September 6, 2026, the new issue.fund mark was added to the header alongside live text and configured as the favicon/home-screen icon. The transparent original and built-in generation prompt are preserved under `public/brand/issue-fund/`. Decentral Park attribution remains in the footer.
+
+The static Gnosis build and generated-documentation/TypeScript checks passed. All five handbook/branding/accessibility browser checks passed. A browser smoke check verified successful logo and favicon loading, the home link and funding dialog, and no logo/wallet overlap or horizontal page overflow at 1440, 1024, 800, 390, and 320 pixels. Desktop and mobile screenshots were reviewed. No contract code changed.

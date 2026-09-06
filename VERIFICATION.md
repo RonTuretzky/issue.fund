@@ -34,3 +34,11 @@ GitHub issued an approved certificate for both `issue.fund` and `www.issue.fund`
 A fresh browser session on the live HTTPS domain passed: all 14 guides listed, maintainer and contributor navigation, deep-link reload, public repository onboarding using GitHub's real API, funding review of an actual open issue in xDAI, and reading existing Gnosis bounty #1. No browser page errors occurred. The browser confirmed a secure context, and the mobile page fit a 390-pixel viewport. Desktop and mobile screenshots were reviewed. These deployment checks sent no transactions; the previously recorded on-chain claim and withdrawal remain the payment acceptance evidence.
 
 The published `/site-version.json` identifies source commit `4f704a88d1d94f31bc520cf1324d811dd30ef7a1`. See `deployments/hosting/github-pages.json` for the deployment record and `CLOUDFLARE.md` for configuration and repeat publishing instructions.
+
+## Issue-first funding and bookmark removal
+
+On September 6, 2026, repository add/save/remove controls and browser-storage helpers were removed, including the implicit bookmark write during funding. The optional repository directory now derives its entries from loaded escrow bounties. Funding starts directly from an open public GitHub issue URL, and the maintainer handbook and README describe this path.
+
+All 29 browser checks passed, including the empty-directory issue URL path with obsolete bookmarks present, directory reload without storage, public-only validation, issue browsing/search/pagination, final funding preflight, documentation, accessibility, mobile layout, and the actual local RSA claim/withdrawal integration. The real public-GitHub integration also passed direct issue URL review → local Anvil funding → expiry refund → withdrawal, restoring its chain snapshot afterward. The static Gnosis build, TypeScript, generated documentation, and diff checks passed. No contract change or new public-chain payment was needed.
+
+The automatic email collector and claim relay remain a proposal in [backlog issue #3](https://github.com/RonTuretzky/issue.fund/issues/3), with the reply-credential disclosure dependency linked to issue #2.

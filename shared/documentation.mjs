@@ -8,7 +8,7 @@ export const groups = [
   {
     id: "maintainers",
     title: "Maintainers & funders",
-    description: "Add your project, fund an issue, and review a contribution.",
+    description: "Choose an issue, fund the work, and review a contribution.",
   },
   {
     id: "contributors",
@@ -81,7 +81,7 @@ export const pages = [
         title: "Your role",
         paragraphs: [
           "You review code and decide what to merge using your normal GitHub process. You do not register a signing key, install a GitHub App, or approve a separate payout in this interface. The merged PR and linked issue event become the payment evidence.",
-          "A funder may be a maintainer, contributor, or sponsor. Adding a repository here is a browser bookmark, not a claim of ownership or an exclusive registration.",
+          "A funder may be a maintainer, contributor, or sponsor. Start with an issue URL; no repository registration or GitHub connection is required.",
         ],
       },
       {
@@ -94,14 +94,14 @@ export const pages = [
         ],
       },
       {
-        title: "Add your project",
+        title: "Start with an issue",
         steps: [
-          "Open Repositories and enter the repository URL or owner/repository name.",
-          "Choose Add repository. The app checks GitHub’s public metadata and saves the canonical name in this browser.",
-          "Browse or search issues. To open a new one, choose Create issue on GitHub, finish the form there, then return and refresh.",
-          "Choose an open issue and Fund this issue, or use Already have an issue URL? to go directly to funding.",
+          "Choose an open issue on GitHub, or create one there using the repository’s issue templates.",
+          "Open Fund an issue and paste the issue URL. The app checks the public repository, issue, and default branch automatically.",
+          "Review the reward and deadline, then confirm funding in your wallet.",
+          "The repository appears in Repositories once it has a bounty. This optional directory lets anyone browse and search its issues; there are no browser bookmarks to manage.",
         ],
-        links: [{ label: "Open Repositories", url: "#repositories" }],
+        links: [{ label: "Explore bounties", url: "#" }],
       },
       {
         title: "Publish the contribution instructions",

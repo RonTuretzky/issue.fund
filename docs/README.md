@@ -12,7 +12,7 @@ Understand the payment flow.
 
 ## Maintainers & funders
 
-Add your project, fund an issue, and review a contribution.
+Choose an issue, fund the work, and review a contribution.
 
 - [Maintainer onboarding](maintainers/getting-started.md) — Set up a public repository and a clear agreement with contributors.
 - [Fund an issue](maintainers/fund-issue.md) — Check the target, choose the reward and deadline, and create the escrow.

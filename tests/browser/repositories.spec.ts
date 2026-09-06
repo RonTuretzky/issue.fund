@@ -14,7 +14,22 @@ const issue = (number = 7, state = "open") => ({
   labels: [{ name: "good first issue" }],
   html_url: `https://github.com/Public/project/issues/${number}`,
 });
-async function setup(page: Page, bounties: unknown[] = []) {
+const knownBounty = {
+  id: 1,
+  issue: 99,
+  repo: "Public/project",
+  branch: "trunk",
+  status: 0,
+  funder: account,
+  amount: "10000000000000000",
+  deadline: 9999999999,
+  createdAt: 1,
+  recipient: account,
+  pr: 0,
+  bountyRef: "0x" + "ab".repeat(32),
+  keyHash: "123",
+};
+async function setup(page: Page, bounties: unknown[] = [knownBounty]) {
   const data = {
     private: false,
     closed: false,
@@ -111,12 +126,9 @@ async function setup(page: Page, bounties: unknown[] = []) {
   await page.goto("/#repositories");
   return data;
 }
-async function addRepo(page: Page) {
+async function openRepo(page: Page) {
   await page
-    .getByLabel("Public GitHub repository")
-    .fill("https://github.com/public/project");
-  await page
-    .getByRole("button", { name: "Add repository", exact: true })
+    .getByRole("button", { name: "Public/project Browse issues" })
     .click();
   await expect(
     page.getByRole("heading", { name: "Choose an issue" }),
@@ -141,11 +153,11 @@ async function review(page: Page) {
   await page.getByLabel("Reward in ETH").fill("0.01");
   await page.getByRole("checkbox", { name: /I understand the escrow/ }).check();
 }
-test("public repo onboarding persists canonical identity and renders issue text safely", async ({
+test("funded repository directory works without bookmarks and renders issue text safely", async ({
   page,
 }) => {
   await setup(page);
-  await addRepo(page);
+  await openRepo(page);
   await expect(
     page.getByRole("heading", { name: "Public/project", exact: true }),
   ).toBeVisible();
@@ -163,44 +175,70 @@ test("public repo onboarding persists canonical identity and renders issue text 
   await expect(
     page.getByRole("button", { name: "Public/project Browse issues" }),
   ).toBeVisible();
-  await page
-    .getByRole("button", {
-      name: "Remove Public/project from saved repositories",
-    })
-    .click();
   await expect(
-    page.getByRole("heading", { name: "Add your first repository" }),
-  ).toBeVisible();
+    page.getByRole("button", {
+      name: /Add repository|Remove .* from saved repositories/,
+    }),
+  ).toHaveCount(0);
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("mergebounty:public-repositories:v1"),
+    ),
+  ).toBeNull();
 });
-test("public-only rejection and rate limit failure recover without a GitHub connection", async ({
+test("direct issue funding works with an empty directory and ignores old bookmarks", async ({
   page,
 }) => {
-  const data = await setup(page);
-  data.private = true;
-  await page.getByLabel("Public GitHub repository").fill("Public/project");
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "mergebounty:public-repositories:v1",
+      JSON.stringify([{ id: 101, name: "Public/project" }]),
+    ),
+  );
+  const data = await setup(page, []);
+  await expect(
+    page.getByRole("heading", { name: "No funded projects yet" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Public/project Browse issues" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByLabel("Public GitHub repository", { exact: true }),
+  ).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Add repository", exact: true })
+    .getByRole("button", { name: "Fund an issue", exact: true })
     .click();
+  await page
+    .getByLabel("GitHub issue URL")
+    .fill("https://github.com/Public/project/issues/7");
+  data.private = true;
+  await page.getByRole("button", { name: "Check issue", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Only public repositories",
   );
   data.private = false;
   data.apiStatus = 429;
-  await page
-    .getByRole("button", { name: "Add repository", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Check issue", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("public API limit");
   data.apiStatus = 200;
-  await addRepo(page);
+  await page.getByRole("button", { name: "Check issue", exact: true }).click();
+  await expect(page.getByText("OPEN · PUBLIC REPOSITORY")).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Fix parser for empty input",
+      exact: true,
+    }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: /Connect GitHub/ }),
   ).toHaveCount(0);
+  expect(data.transactions).toBe(0);
 });
 test("issues paginate, search across the repository, and prevent funding closed issues", async ({
   page,
 }) => {
   const data = await setup(page);
-  await addRepo(page);
+  await openRepo(page);
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Issue 9", exact: true }),
@@ -232,7 +270,7 @@ test("issue creation hands off to GitHub and refreshes the returned issue", asyn
   page,
 }) => {
   const data = await setup(page);
-  await addRepo(page);
+  await openRepo(page);
   await page.getByRole("button", { name: "Create issue", exact: true }).click();
   await expect(
     page.getByRole("link", { name: "Open GitHub issue form" }),
@@ -256,7 +294,7 @@ test("final preflight catches an issue closed after review before any wallet tra
 }) => {
   const data = await setup(page);
   await connect(page);
-  await addRepo(page);
+  await openRepo(page);
   await review(page);
   await expect(page.getByLabel("Target branch")).toHaveCount(0);
   data.closed = true;
@@ -270,7 +308,7 @@ test("final preflight catches a changed default branch and private visibility", 
 }) => {
   const data = await setup(page);
   await connect(page);
-  await addRepo(page);
+  await openRepo(page);
   await review(page);
   data.branch = "main";
   await page.getByRole("button", { name: "Fund bounty", exact: true }).click();
@@ -287,7 +325,7 @@ test("changing an issue URL invalidates its reviewed payment terms", async ({
   page,
 }) => {
   await setup(page);
-  await addRepo(page);
+  await openRepo(page);
   await page.getByRole("button", { name: "Fund issue", exact: true }).click();
   await expect(page.getByText("OPEN · PUBLIC REPOSITORY")).toBeVisible();
   await page
@@ -317,7 +355,7 @@ test("duplicate bounty review is explicit and links back to existing escrow", as
     },
   ]);
   await connect(page);
-  await addRepo(page);
+  await openRepo(page);
   await review(page);
   await expect(
     page.getByRole("button", { name: "Fund bounty", exact: true }),
@@ -337,7 +375,7 @@ test("repo and funding screens fit mobile and pass accessibility checks", async 
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await setup(page);
-  await addRepo(page);
+  await openRepo(page);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,18 +10,8 @@ import {
   Plus,
   RefreshCw,
   Search,
-  Trash2,
 } from "lucide-react";
-import {
-  github,
-  parseRepo,
-  removeRepo,
-  saveRepo,
-  savedRepos,
-  type Issue,
-  type IssuePage,
-  type Repository,
-} from "./github";
+import { github, type Issue, type IssuePage, type Repository } from "./github";
 import { Modal } from "./Modal";
 import { friendly } from "./api";
 import type { Bounty } from "./types";
@@ -37,11 +27,8 @@ export function RepositoryHub({
   viewBounty: (b: Bounty) => void;
   back: () => void;
 }) {
-  const [saved, setSaved] = useState(savedRepos);
   const [repo, setRepo] = useState<Repository>();
-  const [input, setInput] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [issueLoading, setIssueLoading] = useState(false);
   const [issueError, setIssueError] = useState("");
@@ -55,46 +42,25 @@ export function RepositoryHub({
   const [createOpen, setCreateOpen] = useState(false);
   const generation = useRef(0);
   useEffect(() => {
-    const update = () => setSaved(savedRepos());
-    window.addEventListener("mergebounty:repositories", update);
-    window.addEventListener("storage", update);
     return () => {
       generation.current++;
-      window.removeEventListener("mergebounty:repositories", update);
-      window.removeEventListener("storage", update);
     };
   }, []);
   async function openRepo(name: string) {
     const current = ++generation.current;
     setLoading(true);
     setError("");
-    setNotice("");
     setRepo(undefined);
     setIssues(undefined);
     try {
       const result = await github.getRepo(name);
       if (current !== generation.current) return;
-      const previous = savedRepos().find(
-        (r) => r.name.toLowerCase() === parseRepo(name).toLowerCase(),
-      );
-      if (previous && previous.id !== result.id)
-        throw new Error(
-          "A different repository now uses this name. Remove the saved entry, then add the repository again after reviewing it on GitHub.",
-        );
       setRepo(result);
-      setInput("");
       setPage(1);
       setState("open");
       setQuery("");
       setQueryInput("");
       setDetail(undefined);
-      try {
-        saveRepo(result);
-      } catch {
-        setNotice(
-          "Opened successfully. Your browser could not save this repository for later.",
-        );
-      }
     } catch (e) {
       if (current === generation.current) setError(friendly(e));
     } finally {
@@ -122,13 +88,9 @@ export function RepositoryHub({
       active = false;
     };
   }, [repo, state, query, page, revision]);
-  const known = [...new Set(bounties.map((b) => b.repo))].filter(
-    (name) => !saved.some((r) => r.name.toLowerCase() === name.toLowerCase()),
-  );
-  async function add(event: FormEvent) {
-    event.preventDefault();
-    await openRepo(input);
-  }
+  const known = [
+    ...new Map(bounties.map((b) => [b.repo.toLowerCase(), b.repo])).values(),
+  ];
   const resetIssues = () => {
     setPage(1);
     setState("open");
@@ -144,49 +106,23 @@ export function RepositoryHub({
       </button>
       <div className="repo-heading">
         <div>
-          <div className="eyebrow">START WITH A PUBLIC REPOSITORY</div>
-          <h1>{repo ? repo.name : "Good projects. Open possibilities."}</h1>
+          <div className="eyebrow">DISCOVER FUNDED PROJECTS</div>
+          <h1>{repo ? repo.name : "Repositories with bounties"}</h1>
           <p>
             {repo
               ? repo.description ||
                 "Choose an open issue and give the next contribution a reward."
-              : "Add a repository, choose an issue, and fund the work you want to see."}
+              : "Explore projects with funded issues, or fund any open public GitHub issue directly."}
           </p>
         </div>
         <Github size={48} className="repo-heading-icon" />
       </div>
-      <form className="repo-add" onSubmit={add}>
-        <label htmlFor="repo-name">Public GitHub repository</label>
-        <div className="repo-input-row">
-          <input
-            id="repo-name"
-            required
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="owner/repo or a GitHub repository URL"
-          />
-          <button className="button primary" disabled={loading}>
-            {loading ? (
-              <Loader2 size={17} className="spin" />
-            ) : (
-              <Plus size={17} />
-            )}
-            Add repository
-          </button>
-        </div>
-        <p>
-          Public repositories only. No GitHub connection required. Your saved
-          list stays in this browser.
-        </p>
-      </form>
+      <button className="button primary" onClick={() => fund()}>
+        <Plus size={17} /> Fund an issue
+      </button>
       {error && (
         <div className="alert error" role="alert">
           {error}
-        </div>
-      )}
-      {notice && (
-        <div className="alert success" role="status">
-          {notice}
         </div>
       )}
       {loading && (
@@ -197,45 +133,20 @@ export function RepositoryHub({
       )}
       {!loading && !repo && (
         <>
-          <div className="section-heading">
-            <div>
-              <h2>Your repositories</h2>
-              <p>Saved here for your next contribution.</p>
-            </div>
-            <button className="text-button" onClick={() => fund()}>
-              Already have an issue URL?
-              <ArrowRight size={16} />
-            </button>
-          </div>
-          {saved.length ? (
+          {known.length ? (
             <div className="repo-grid">
-              {saved.map((r) => (
-                <article className="repo-card" key={r.id}>
+              {known.map((name) => (
+                <article className="repo-card" key={name}>
                   <button
                     className="repo-card-main"
-                    onClick={() => openRepo(r.name)}
+                    onClick={() => openRepo(name)}
                   >
                     <Github size={22} />
-                    <h3>{r.name}</h3>
+                    <h3>{name}</h3>
                     <span>
                       Browse issues
                       <ArrowRight size={15} />
                     </span>
-                  </button>
-                  <button
-                    className="icon-button"
-                    aria-label={`Remove ${r.name} from saved repositories`}
-                    onClick={() => {
-                      try {
-                        removeRepo(r.id);
-                      } catch {
-                        setError(
-                          "Your browser could not update the saved list.",
-                        );
-                      }
-                    }}
-                  >
-                    <Trash2 size={16} />
                   </button>
                 </article>
               ))}
@@ -243,32 +154,11 @@ export function RepositoryHub({
           ) : (
             <div className="empty">
               <GitBranch size={28} />
-              <h3>Add your first repository</h3>
+              <h3>No funded projects yet</h3>
               <p>
-                Paste its name above. There is no registration fee or ownership
-                claim.
+                Paste an open GitHub issue URL to fund the first bounty. Its
+                repository will appear here automatically.
               </p>
-            </div>
-          )}
-          {known.length > 0 && (
-            <div className="known-repos">
-              <h2>Repositories with bounties</h2>
-              <p>
-                Discovered from the escrow. Each repository is checked on GitHub
-                before it can be added.
-              </p>
-              <div className="inline-actions">
-                {known.map((name) => (
-                  <button
-                    className="button"
-                    key={name}
-                    onClick={() => openRepo(name)}
-                  >
-                    {name}
-                    <ArrowRight size={15} />
-                  </button>
-                ))}
-              </div>
             </div>
           )}
         </>
@@ -591,8 +481,8 @@ function CreateIssue({
         <ExternalLink size={16} />
       </a>
       <p className="field-note">
-        Nothing is created until you submit on GitHub. issue.fund never asks
-        for a GitHub token.
+        Nothing is created until you submit on GitHub. issue.fund never asks for
+        a GitHub token.
       </p>
       <div className="modal-actions">
         <button className="button" onClick={() => fund()}>

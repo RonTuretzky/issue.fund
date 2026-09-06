@@ -14,7 +14,7 @@ Content lives in `shared/documentation.mjs`. Run `npm run docs:build` after edit
 
 ## Use the app
 
-1. **Add a public repository.** Paste its GitHub URL. Browse, search and paginate its issues. Bookmarks stay in this browser. The app reads GitHub anonymously; it has no GitHub connection or OAuth flow. “Create issue on GitHub” opens GitHub's form, then you return and refresh.
+1. **Start with an issue URL.** Choose Fund an issue and paste an open public GitHub issue URL. The app checks its repository automatically, without registration, bookmarks, or a GitHub connection. The optional Repositories directory is populated from existing bounties and supports browsing, searching, and paginating issues.
 2. **Fund an open issue.** Review the canonical repository, issue, default branch, amount and completion deadline. A fresh public-API check runs before the wallet request. Additional funding for an already listed issue requires an explicit duplicate-bounty acknowledgement.
 3. **Prepare the PR.** Copy the exact title markers `[wallet 0x…] [bounty 0x…]` from the bounty. Add `Closes #ISSUE` to the PR body and merge into the funded default branch. Subscribe to both the issue and PR, and enable email notifications before merging.
 4. **Download two originals.** Use your mail provider's “Show original” / “Download original” for the native merged-PR email and the native issue-closed-via-PR email. A forwarded email, screenshot, comment, or manually closed issue is insufficient.

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { parseEther } from "viem";
 import { Modal } from "./Modal";
-import { github, saveRepo, type FundingCheck } from "./github";
+import { github, type FundingCheck } from "./github";
 import { friendly } from "./api";
 import type { Bounty } from "./types";
 
@@ -103,12 +103,6 @@ export function FundDialog({
       if (duplicates.length && !duplicateConsent)
         throw new Error("Review the existing bounty before creating another.");
       const fresh = await github.inspectIssue(url, check);
-      // Persistence is best effort; a full browser store must not prevent a payment.
-      try {
-        saveRepo(fresh.repo);
-      } catch {
-        /* repo remains discoverable through its bounty */
-      }
       await onFund({ check: fresh, amount, days });
     } catch (e) {
       setError(friendly(e));

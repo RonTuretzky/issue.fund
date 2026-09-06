@@ -53,15 +53,16 @@ test("real public GitHub issue → checked funding → expiry refund → withdra
   const creditBefore = await read("credits", [account]);
   expect(creditBefore).toBe(0n);
   try {
-    await page.goto("/#repositories");
-    await page.getByLabel("Public GitHub repository").fill(fixture.repo);
+    await page.goto("/");
     await page
-      .getByRole("button", { name: "Add repository", exact: true })
+      .getByRole("button", { name: "Fund an issue", exact: true })
       .click();
-    await expect(
-      page.getByRole("heading", { name: fixture.repo, exact: true }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: "Fund issue", exact: true }).click();
+    await page
+      .getByLabel("GitHub issue URL")
+      .fill(`https://github.com/${fixture.repo}/issues/${fixture.issue}`);
+    await page
+      .getByRole("button", { name: "Check issue", exact: true })
+      .click();
     await expect(page.getByText("OPEN · PUBLIC REPOSITORY")).toBeVisible();
     await page.getByLabel("Reward in ETH").fill("0.001");
     await page.getByLabel("Time to complete").selectOption("7");

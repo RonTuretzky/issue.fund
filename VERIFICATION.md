@@ -24,3 +24,13 @@ Both deployed contract sources were verified on Gnosisscan. The genuine two-emai
 On September 6, 2026, all 29 browser checks passed after the rename and documentation integration. These cover repository discovery and funding, wallet errors, disclosure-gated local RSA checking, a real local-contract claim and withdrawal, and the new handbook. All 14 guides were opened through the catalogue; hash links, reload and browser history, missing-page recovery, offline reading, mobile navigation at 320/390 pixels, and footer-only Decentral Park attribution passed. Automated WCAG checks passed for the documentation hub and representative onboarding, PR, privacy and contract pages. Desktop and mobile screenshots were reviewed.
 
 The static Gnosis build, generated-documentation consistency check, TypeScript check and Cloudflare Wrangler dry run passed. The initial Cloudflare publish was rejected with authentication error 10000; a successful dry run is not a live deployment. The hosting setup was subsequently changed to GitHub Pages with Cloudflare DNS; see [hosting configuration](CLOUDFLARE.md). Contract code and deployed addresses were unchanged by this update.
+
+## GitHub Pages and issue.fund
+
+On September 6, 2026, the static app was published to the `codex/pages` branch of `RonTuretzky/issue.fund` and GitHub Pages completed its deployment. Cloudflare DNS points the apex to all four GitHub Pages IPv4 addresses, with `www` pointing to `ronturetzky.github.io`. All five records use DNS-only mode.
+
+GitHub issued an approved certificate for both `issue.fund` and `www.issue.fund`, and HTTPS enforcement was enabled. A direct anonymous HTTPS request returned 200; HTTP, the `www` variant, and the default GitHub Pages URL all redirected to `https://issue.fund/`.
+
+A fresh browser session on the live HTTPS domain passed: all 14 guides listed, maintainer and contributor navigation, deep-link reload, public repository onboarding using GitHub's real API, funding review of an actual open issue in xDAI, and reading existing Gnosis bounty #1. No browser page errors occurred. The browser confirmed a secure context, and the mobile page fit a 390-pixel viewport. Desktop and mobile screenshots were reviewed. These deployment checks sent no transactions; the previously recorded on-chain claim and withdrawal remain the payment acceptance evidence.
+
+The published `/site-version.json` identifies source commit `4f704a88d1d94f31bc520cf1324d811dd30ef7a1`. See `deployments/hosting/github-pages.json` for the deployment record and `CLOUDFLARE.md` for configuration and repeat publishing instructions.

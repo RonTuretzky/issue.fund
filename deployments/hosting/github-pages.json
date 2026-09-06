@@ -1,0 +1,56 @@
+{
+  "verifiedAt": "2026-09-06",
+  "url": "https://issue.fund/",
+  "repository": "RonTuretzky/issue.fund",
+  "hosting": "GitHub Pages",
+  "buildType": "legacy",
+  "sourceBranch": "codex/pages",
+  "sourcePath": "/",
+  "sourceCommit": "4f704a88d1d94f31bc520cf1324d811dd30ef7a1",
+  "status": "built",
+  "httpsEnforced": true,
+  "certificateState": "approved",
+  "certificateDomains": [
+    "issue.fund",
+    "www.issue.fund"
+  ],
+  "dnsProvider": "Cloudflare",
+  "dnsProxy": false,
+  "dnsRecords": [
+    {
+      "type": "A",
+      "name": "issue.fund",
+      "content": "185.199.108.153"
+    },
+    {
+      "type": "A",
+      "name": "issue.fund",
+      "content": "185.199.109.153"
+    },
+    {
+      "type": "A",
+      "name": "issue.fund",
+      "content": "185.199.110.153"
+    },
+    {
+      "type": "A",
+      "name": "issue.fund",
+      "content": "185.199.111.153"
+    },
+    {
+      "type": "CNAME",
+      "name": "www.issue.fund",
+      "content": "ronturetzky.github.io"
+    }
+  ],
+  "readOnlyBrowserChecks": [
+    "documentation catalogue and onboarding guides",
+    "deep-link reload",
+    "public GitHub repository onboarding",
+    "open issue funding review in xDAI",
+    "existing Gnosis bounty read",
+    "mobile viewport",
+    "secure context and zero page errors"
+  ],
+  "transactionsSentByDeploymentChecks": 0
+}

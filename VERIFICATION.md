@@ -66,3 +66,5 @@ The selected ticket identity was published from source `ce12b20203a5982eceac5d27
 Added a shared maintainer-service note to the homepage, repository directory, maintainer onboarding, and funding guide. It offers premium setup of email collection/submission so contributors can skip uploads and links to `mailto:turetzkyron@gmail.com` with an inquiry subject. It describes an arranged service; no collector implementation or payment behavior changed.
 
 The static Gnosis build, TypeScript, generated-documentation consistency, and diff checks passed. All five documentation/branding/accessibility browser checks passed. The note and exact mail link were checked on all four routes, with mobile overflow and desktop/mobile screenshot checks. No emails or transactions were sent.
+
+GitHub Pages published the contact update from `bd41ad0396697d2900f339d2d72168e08a19dfa0`, confirmed by the live version manifest and successful Pages build. The note and exact mail link passed checks on all four live HTTPS routes; the existing live browser tab was refreshed. No emails or transactions were sent.

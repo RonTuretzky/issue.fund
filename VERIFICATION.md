@@ -60,3 +60,9 @@ The user selected option 3, Bounty Ticket. The header and browser/home-screen ic
 The static Gnosis build, TypeScript, documentation consistency, and diff checks passed. Four handbook/branding browser cases passed on the first run; the accessibility case timed out during an unusually long run, then passed on its isolated retry. The logo/font/favicon and home-link/funding-dialog smoke check passed at 1440, 1024, 800, 390, and 320 pixels, with no header overlap, horizontal page overflow, or browser page errors. Desktop and mobile screenshots were reviewed. These checks sent no transactions.
 
 The selected ticket identity was published from source `ce12b20203a5982eceac5d27907af74213a7d9b4`, confirmed by the live version manifest and successful GitHub Pages build. Logo, locally hosted wordmark font, favicon, responsive-header, navigation, and funding-dialog checks passed on the live HTTPS site with zero page errors and zero transactions sent. The existing user-facing live tab was refreshed to the new asset.
+
+## Premium automation contact for maintainers
+
+Added a shared maintainer-service note to the homepage, repository directory, maintainer onboarding, and funding guide. It offers premium setup of email collection/submission so contributors can skip uploads and links to `mailto:turetzkyron@gmail.com` with an inquiry subject. It describes an arranged service; no collector implementation or payment behavior changed.
+
+The static Gnosis build, TypeScript, generated-documentation consistency, and diff checks passed. All five documentation/branding/accessibility browser checks passed. The note and exact mail link were checked on all four routes, with mobile overflow and desktop/mobile screenshot checks. No emails or transactions were sent.

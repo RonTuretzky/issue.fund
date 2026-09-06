@@ -1,4 +1,17 @@
 // Canonical documentation content. Used by the site and exported as Markdown.
+export const maintainerAutomation = {
+  title: "Premium automation for maintainers",
+  paragraphs: [
+    "Let contributors focus on the code. We can set up a premium service to collect and submit the required GitHub emails for your project, so contributors don’t have to upload them. Get in touch to discuss setup.",
+  ],
+  links: [
+    {
+      label: "Contact turetzkyron@gmail.com",
+      url: "mailto:turetzkyron@gmail.com?subject=issue.fund%20premium%20automation",
+    },
+  ],
+};
+
 export const groups = [
   {
     id: "start",
@@ -84,6 +97,7 @@ export const pages = [
           "A funder may be a maintainer, contributor, or sponsor. Start with an issue URL; no repository registration or GitHub connection is required.",
         ],
       },
+      maintainerAutomation,
       {
         title: "Before funding",
         bullets: [
@@ -135,6 +149,7 @@ export const pages = [
           "Choose Fund bounty. The app checks GitHub again before asking your wallet to confirm. Wait for the transaction to succeed, then share the new bounty page.",
         ],
       },
+      maintainerAutomation,
       {
         title: "Terms fixed by the transaction",
         table: {

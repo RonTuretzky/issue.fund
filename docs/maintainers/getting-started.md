@@ -11,6 +11,12 @@ You review code and decide what to merge using your normal GitHub process. You d
 A funder may be a maintainer, contributor, or sponsor. Start with an issue URL; no repository registration or GitHub connection is required.
 
 
+## Premium automation for maintainers
+
+Let contributors focus on the code. We can set up a premium service to collect and submit the required GitHub emails for your project, so contributors don’t have to upload them. Get in touch to discuss setup.
+
+- [Contact turetzkyron@gmail.com](mailto:turetzkyron@gmail.com?subject=issue.fund%20premium%20automation)
+
 ## Before funding
 
 - Write clear acceptance criteria in an open GitHub issue: expected behavior, scope, and how you will review the fix.

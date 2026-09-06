@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { github, type Issue, type IssuePage, type Repository } from "./github";
 import { Modal } from "./Modal";
+import { MaintainerAutomation } from "./MaintainerAutomation";
 import { friendly } from "./api";
 import type { Bounty } from "./types";
 
@@ -394,6 +395,7 @@ export function RepositoryHub({
           )}
         </>
       )}
+      <MaintainerAutomation />
       {detail && repo && (
         <Modal
           title={`Issue #${detail.number}`}

@@ -41,6 +41,7 @@ import { ClaimPanel } from "./ClaimPanel";
 import type { Bounty, Config } from "./types";
 import { Modal } from "./Modal";
 import { RepositoryHub } from "./RepositoryHub";
+import { MaintainerAutomation } from "./MaintainerAutomation";
 import { FundDialog, type FundingRequest } from "./FundDialog";
 
 const date = (n: number) =>
@@ -833,6 +834,7 @@ export default function App() {
                 Understand the protocol <ArrowRight size={17} />
               </a>
             </section>
+            <MaintainerAutomation />
           </>
         ) : (
           <>

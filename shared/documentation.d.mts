@@ -18,3 +18,8 @@ export type DocPage = {
 };
 export const groups: { id: string; title: string; description: string }[];
 export const pages: DocPage[];
+export const maintainerAutomation: {
+  title: string;
+  paragraphs: string[];
+  links: { label: string; url: string }[];
+};

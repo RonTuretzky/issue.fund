@@ -18,6 +18,12 @@ Use Connect wallet and select Browser wallet. If prompted, switch to Gnosis (cha
 5. Choose Fund bounty. The app checks GitHub again before asking your wallet to confirm. Wait for the transaction to succeed, then share the new bounty page.
 
 
+## Premium automation for maintainers
+
+Let contributors focus on the code. We can set up a premium service to collect and submit the required GitHub emails for your project, so contributors don’t have to upload them. Get in touch to discuss setup.
+
+- [Contact turetzkyron@gmail.com](mailto:turetzkyron@gmail.com?subject=issue.fund%20premium%20automation)
+
 ## Terms fixed by the transaction
 
 | Term | What it means |

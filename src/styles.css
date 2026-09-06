@@ -1971,6 +1971,43 @@ footer > span:not(.brand) {
   color: var(--color-surface-grey-2);
   font-size: 14px;
 }
+.maintainer-service {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 32px;
+  margin-top: 32px;
+  padding: 24px;
+  border-left: 3px solid var(--color-green-1);
+  background: var(--color-paper-1);
+}
+.maintainer-service > div {
+  flex: 1 1 400px;
+  min-width: 0;
+}
+.maintainer-service h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+.maintainer-service p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-surface-grey-2);
+}
+.maintainer-service > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  color: var(--color-green-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.maintainer-service > a span {
+  overflow-wrap: anywhere;
+}
 .repo-heading-icon {
   color: var(--color-green-1);
   flex: 0 0 auto;

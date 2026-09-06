@@ -6,7 +6,7 @@
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "f964c855b45059385b3d93128a78f97977031f94",
+  "sourceCommit": "ce12b20203a5982eceac5d27907af74213a7d9b4",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -54,9 +54,9 @@
     "secure context and zero page errors"
   ],
   "transactionsSentByDeploymentChecks": 0,
-  "latestChange": "issue.fund header logo and browser icon",
+  "latestChange": "Selected Bounty Ticket logo, condensed wordmark, and browser icon",
   "latestChangeBrowserChecks": [
-    "logo and favicon load successfully",
+    "ticket logo, local wordmark font, and favicon load successfully",
     "home link and funding dialog work",
     "no logo/wallet overlap at 1440, 1024, 800, 390, and 320 pixels",
     "no horizontal page overflow or browser page errors"

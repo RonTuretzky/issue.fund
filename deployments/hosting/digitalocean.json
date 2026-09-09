@@ -8,12 +8,20 @@
   "baseMonthlyUsd": 6,
   "providerBackupsEnabled": true,
   "monitoringEnabled": true,
-  "sourceCommit": "9da14c601d96eb9d7b586d2d9c2155c80fe67e16",
+  "sourceCommit": "8f2d96d334d648060fc528f81a9777d04b195284",
+  "ciUrl": "https://github.com/RonTuretzky/issue.fund/actions/runs/34416415413",
   "runtime": "Node.js 24.21.0",
   "frontEndHosting": "GitHub Pages",
   "automaticDisclosure": false,
   "relayEnabled": false,
   "relayAddress": "0x3Dfcfff86f6D704A946CdADd910899D96A01aB34",
+  "latestReleaseChecks": [
+    "public API healthy with disclosure disabled and missing mailbox reported",
+    "separate credential access and signer private network verified",
+    "invalid signer request rejected with signer_policy_rejected",
+    "both database snapshots restored successfully",
+    "durable index queue and sweep active with two bounties and zero transactions"
+  ],
   "checks": [
     "HTTPS health endpoint and HTTP redirect",
     "CORS and missing maintainer installation response",

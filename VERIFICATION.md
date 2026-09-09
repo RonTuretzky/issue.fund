@@ -125,3 +125,16 @@ budget. Regression tests also cover a reorg during log retrieval, transactional
 event checkpoints, and settled jobs whose later settlement is orphaned while
 their original funding remains canonical. These tests use controlled RPC fixtures
 alongside the existing real Anvil relay suite; they are not live-chain fault tests.
+
+[CI run 34416415413](https://github.com/RonTuretzky/issue.fund/actions/runs/34416415413)
+then passed for `8f2d96d334d648060fc528f81a9777d04b195284`, including all 30
+automation tests, 50 Solidity tests, two deployment tests and 34 browser cases.
+The JavaScript/local-chain checks and static build passed; the optional private
+original-email chain test was skipped in CI as intended.
+
+That source is deployed on DigitalOcean. The service health, private signer
+network, credential separation, exact invalid-sign policy rejection and both
+database restores passed again. The live collector has the new queue/sweep schema,
+two indexed bounties, no pending discovery backlog and zero relay transactions.
+The relay address and disclosure validation remain unconfigured. Backlog issue #3
+now records the implementation checkpoint while leaving live acceptance open.

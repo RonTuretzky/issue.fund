@@ -7,22 +7,31 @@ import {
   ShieldCheck,
   Wallet,
 } from "lucide-react";
-import { parseEther } from "viem";
+import { formatEther, parseEther } from "viem";
+import { AutomationSetup } from "./AutomationSetup";
+import {
+  automationRequest,
+  type AutomationReadiness,
+  type CollectionMode,
+} from "./automation";
 import { Modal } from "./Modal";
 import { github, type FundingCheck } from "./github";
 import { friendly } from "./api";
-import type { Bounty } from "./types";
+import type { Bounty, Config } from "./types";
+import { bountyLink, claimQuote } from "./deployments";
 
 export type FundingRequest = {
   check: FundingCheck;
   amount: bigint;
   days: number;
+  collectionMode?: CollectionMode;
 };
 export function FundDialog({
   initialUrl = "",
   close,
   browse,
   symbol,
+  config,
   account,
   connect,
   ready,
@@ -35,6 +44,7 @@ export function FundDialog({
   close: () => void;
   browse: () => void;
   symbol: string;
+  config?: Config;
   account?: string;
   connect: () => void;
   ready: boolean;
@@ -44,6 +54,15 @@ export function FundDialog({
   onFund: (request: FundingRequest) => Promise<void>;
 }) {
   const [url, setUrl] = useState(initialUrl);
+  const [collectionMode, setCollectionMode] = useState<CollectionMode>(
+    config?.automationUrl ? "automatic" : "manual",
+  );
+  const [automation, setAutomation] = useState<AutomationReadiness>();
+  const [reward, setReward] = useState("");
+  const feeBps = config?.protocol === "rsa-dkim-v2" ? (config.feeBps ?? 0) : 0;
+  const quote = /^\d+(\.\d{1,18})?$/.test(reward)
+    ? claimQuote(parseEther(reward), feeBps)
+    : undefined;
   const [check, setCheck] = useState<FundingCheck>();
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
@@ -103,7 +122,35 @@ export function FundDialog({
       if (duplicates.length && !duplicateConsent)
         throw new Error("Review the existing bounty before creating another.");
       const fresh = await github.inspectIssue(url, check);
-      await onFund({ check: fresh, amount, days });
+      if (collectionMode === "automatic") {
+        if (!config?.automationUrl || automation?.state !== "ready")
+          throw Error(
+            "Wait for Notifications ready or choose manual collection.",
+          );
+        const current = await automationRequest<AutomationReadiness>(
+          config.automationUrl,
+          `/v1/issues/status?url=${encodeURIComponent(fresh.issue.url)}`,
+        ).catch((error) => {
+          setAutomation({
+            state: "attention",
+            code: error.code ?? "service_unavailable",
+          });
+          throw error;
+        });
+        setAutomation(current);
+        if (
+          current.state !== "ready" ||
+          current.repoId !== fresh.repo.id ||
+          current.issueId !== fresh.issue.id ||
+          current.branch !== fresh.repo.branch
+        ) {
+          setAutomation({ ...current, state: "attention" });
+          throw Error(
+            "Notification readiness changed. Retry setup or choose manual collection before funding.",
+          );
+        }
+      }
+      await onFund({ check: fresh, amount, days, collectionMode });
     } catch (e) {
       setError(friendly(e));
     } finally {
@@ -178,11 +225,25 @@ export function FundDialog({
                 <strong>{check.repo.branch}</strong> · default branch
               </p>
             </div>
+            {config?.automationUrl && (
+              <AutomationSetup
+                key={check.issue.url}
+                base={config.automationUrl}
+                issueUrl={check.issue.url}
+                mode={collectionMode}
+                onMode={setCollectionMode}
+                onReadiness={setAutomation}
+                state={automation}
+                disabled={funding}
+              />
+            )}
             <div className="form-grid">
               <label>
                 Reward in {symbol}
                 <input
                   name="amount"
+                  value={reward}
+                  onChange={(event) => setReward(event.target.value)}
                   required
                   inputMode="decimal"
                   pattern="[0-9]+(\.[0-9]{1,18})?"
@@ -199,6 +260,30 @@ export function FundDialog({
                   <option value="90">90 days</option>
                 </select>
               </label>
+            </div>
+            <div
+              className="fee-summary"
+              aria-label="Claim fee and contributor reward"
+            >
+              <span>
+                Claim fee{" "}
+                <strong>
+                  {feeBps / 100}%
+                  {quote ? ` · ${formatEther(quote.fee)} ${symbol}` : ""}
+                </strong>
+              </span>
+              <span>
+                Contributor receives{" "}
+                <strong>
+                  {quote
+                    ? `${formatEther(quote.net)} ${symbol}`
+                    : "Enter a reward"}
+                </strong>
+              </span>
+              <small>
+                The fee is deducted only after a successful claim. Refunds
+                return the full reward.
+              </small>
             </div>
             <p className="field-note">
               GitHub closes linked issues when the PR merges into its default
@@ -217,8 +302,8 @@ export function FundDialog({
                 <div className="inline-actions">
                   {duplicates.map((b) => (
                     <a
-                      key={b.id}
-                      href={`#bounty-${b.id}`}
+                      key={b.bountyRef}
+                      href={bountyLink(b)}
                       onClick={(e) => {
                         if (funding) e.preventDefault();
                         else close();
@@ -255,8 +340,9 @@ export function FundDialog({
                 required
                 disabled={funding}
               />
-              I understand the escrow terms and will arrange for the required
-              GitHub email notifications.
+              {collectionMode === "automatic"
+                ? "I understand the escrow terms and automatic receipt collection."
+                : "I understand the escrow terms and will arrange for the required GitHub email notifications."}
             </label>
           </>
         )}
@@ -293,6 +379,8 @@ export function FundDialog({
                 busy ||
                 wrongNetwork ||
                 !ready ||
+                (collectionMode === "automatic" &&
+                  automation?.state !== "ready") ||
                 (!!duplicates.length && !duplicateConsent)
               }
             >

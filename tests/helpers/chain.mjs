@@ -18,13 +18,13 @@ export async function restore(snapshot) {
   await rpc("evm_setTime", [Math.floor(Date.now() / 1000)]);
   await rpc("evm_mine");
 }
-export async function fixture(bits = 1024) {
+export async function fixture(bits = 1024, { version = 1 } = {}) {
   if ((await client.getChainId()) !== 31337)
     throw Error("Local test chain required");
   const accounts = await wallet.getAddresses();
   const s = signer(bits),
     v = artifact("GithubDkimVerifier"),
-    e = artifact("MergeBounty");
+    e = artifact(version === 2 ? "MergeBountyV2" : "MergeBounty");
   const deploy = async (a, args) => {
     const hash = await wallet.deployContract({
       account: accounts[0],
@@ -40,7 +40,10 @@ export async function fixture(bits = 1024) {
     return r.contractAddress;
   };
   const verifier = await deploy(v, [s.key.modulus]);
-  const contract = await deploy(e, [verifier]);
+  const contract = await deploy(
+    e,
+    version === 2 ? [verifier, accounts[2], 100n] : [verifier],
+  );
   const read = (functionName, args = []) =>
     client.readContract({ address: contract, abi: e.abi, functionName, args });
   const write = async (
@@ -82,7 +85,8 @@ export async function fixture(bits = 1024) {
   const merged = s.email(options),
     closed = s.email({ ...options, kind: "closure" });
   const config = {
-    protocol: "rsa-dkim-v1",
+    protocol: version === 2 ? "rsa-dkim-v2" : "rsa-dkim-v1",
+    ...(version === 2 ? { feeBps: 100, feeRecipient: accounts[2] } : {}),
     experimental: true,
     chainId: 31337,
     chainName: "Anvil · test ETH",

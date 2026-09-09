@@ -1,0 +1,312 @@
+import { test, expect, type Page } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { fixture, rpc, restore } from "../helpers/chain.mjs";
+import { parseEther } from "viem";
+
+test.use({ actionTimeout: 10000 });
+
+async function connect(page: Page, n = 1) {
+  await page.locator(".wallet-button").click();
+  await page.getByRole("button", { name: /Local test wallet/ }).click();
+  await page
+    .getByRole("button", { name: new RegExp(`Test wallet ${n}`) })
+    .click();
+}
+const publicRepo = {
+  id: 901,
+  full_name: "Public/project",
+  name: "project",
+  owner: { login: "Public" },
+  default_branch: "main",
+  private: false,
+  visibility: "public",
+  has_issues: true,
+  archived: false,
+  disabled: false,
+  html_url: "https://github.com/Public/project",
+};
+const issue = {
+  id: 902,
+  number: 7,
+  state: "open",
+  title: "Handle empty input",
+  body: "Return an empty result",
+  labels: [],
+  html_url: "https://github.com/Public/project/issues/7",
+};
+async function autoSetup(page: Page) {
+  const f = await fixture(1024, { version: 2 });
+  const data = {
+    state: "preparing",
+    code: "waiting_for_first_notification",
+    requests: [] as string[],
+    getsFail: false,
+  };
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    await route.fulfill({
+      json:
+        path === "/api/config"
+          ? { ...f.config, automationUrl: "https://collector.example.invalid" }
+          : path === "/api/bounties"
+            ? []
+            : { amount: "0" },
+    });
+  });
+  await page.route("https://api.github.com/**", (route) =>
+    route.fulfill({
+      json: new URL(route.request().url()).pathname.endsWith("/issues/7")
+        ? issue
+        : new URL(route.request().url()).pathname.includes("/branches/")
+          ? { name: "main" }
+          : publicRepo,
+    }),
+  );
+  await page.route("https://collector.example.invalid/**", (route) => {
+    data.requests.push(route.request().method() + " " + route.request().url());
+    expect(route.request().postData() ?? "").not.toContain("signature");
+    return route.fulfill({
+      json: {
+        state:
+          data.getsFail && route.request().method() === "GET"
+            ? "attention"
+            : data.state,
+        code: data.code,
+        repoId: 901,
+        issueId: 902,
+        repo: "Public/project",
+        issue: 7,
+        branch: "main",
+        lastCheckedAt: Date.now(),
+        ...(data.state === "ready" ? { lastDeliveryAt: Date.now() } : {}),
+      },
+    });
+  });
+  await page.goto("/");
+  await connect(page);
+  await page
+    .getByRole("button", { name: /Fund an issue/, exact: true })
+    .first()
+    .click();
+  await page.getByLabel("GitHub issue URL").fill(issue.html_url);
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
+  await page.getByRole("textbox", { name: "Reward in ETH" }).fill("2");
+  await page
+    .getByRole("checkbox", { name: /I understand the escrow terms/ })
+    .check();
+  return { f, data };
+}
+
+test("automatic funding waits for delivery readiness, shows exact fee/net and rechecks before sending", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  const snapshot = await rpc("evm_snapshot");
+  try {
+    const { f, data } = await autoSetup(page);
+    await expect(
+      page.getByRole("button", { name: "Fund bounty", exact: true }),
+    ).toBeDisabled();
+    await expect(
+      page.getByLabel("Claim fee and contributor reward"),
+    ).toContainText("1% · 0.02 ETH");
+    await expect(
+      page.getByLabel("Claim fee and contributor reward"),
+    ).toContainText("1.98 ETH");
+    data.state = "ready";
+    data.code = "";
+    await page.getByRole("button", { name: "Retry setup" }).click();
+    await expect(
+      page.getByText("Notifications ready", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Fund bounty", exact: true }),
+    ).toBeEnabled();
+    const next = await f.read("nextId");
+    data.getsFail = true;
+    await page
+      .getByRole("button", { name: "Fund bounty", exact: true })
+      .click();
+    await expect(page.getByRole("alert")).toContainText(
+      "Notification readiness changed",
+    );
+    await expect(
+      page.getByText("Notifications ready", { exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Fund bounty", exact: true }),
+    ).toBeDisabled();
+    expect(await f.read("nextId")).toBe(next);
+    expect(data.requests.some((r) => r.startsWith("GET"))).toBe(true);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByRole("dialog")).toBeVisible();
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: ".local/automation-funding-mobile.png",
+      fullPage: true,
+    });
+  } finally {
+    await restore(snapshot);
+  }
+});
+
+test("explicit manual collection can fund when automatic preparation is unavailable", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  const snapshot = await rpc("evm_snapshot");
+  try {
+    const { f } = await autoSetup(page);
+    const next = await f.read("nextId");
+    await page
+      .getByRole("radio", {
+        name: "I’ll arrange the emails and submit manually",
+      })
+      .check();
+    await expect(
+      page.getByRole("button", { name: "Fund bounty", exact: true }),
+    ).toBeEnabled();
+    await page
+      .getByRole("button", { name: "Fund bounty", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 60000 });
+    expect(await f.read("nextId")).toBe(next + 1n);
+    expect((await f.read("getBounty", [next])).repo).toBe("Public/project");
+  } finally {
+    await restore(snapshot);
+  }
+});
+
+test("legacy links claim against V1 and each escrow balance withdraws independently", async ({
+  page,
+}) => {
+  test.setTimeout(150000);
+  const snapshot = await rpc("evm_snapshot");
+  try {
+    const old = await fixture();
+    const current = await fixture(1024, { version: 2 });
+    await current.write("claim", [
+      1n,
+      current.merged.receipt,
+      current.closed.receipt,
+    ]);
+    const config = {
+      ...current.config,
+      legacyLinkContract: old.config.contract,
+      legacyDeployments: [old.config],
+    };
+    await page.route("**/api/**", async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      let body: unknown = {};
+      if (path === "/api/config") body = config;
+      if (path === "/api/bounties")
+        body = (
+          await Promise.all(
+            [old, current].map(async (f) =>
+              (await f.bounties()).map((b) => ({
+                ...b,
+                chainId: 31337,
+                contract: f.config.contract,
+              })),
+            ),
+          )
+        ).flat();
+      if (path.startsWith("/api/credits/")) {
+        const address = path.slice(13);
+        const escrows = await Promise.all(
+          [current, old].map(async (f) => ({
+            contract: f.config.contract,
+            amount: String(await f.read("credits", [address])),
+          })),
+        );
+        body = {
+          escrows,
+          amount: escrows.reduce((n, b) => n + BigInt(b.amount), 0n).toString(),
+        };
+      }
+      await route.fulfill({ json: body });
+    });
+    await page.goto("/#bounty-1");
+    await expect(page.locator(".facts")).toContainText(
+      "0% on a successful claim",
+    );
+    await expect(page.locator(".facts")).toContainText("earlier version");
+    await connect(page, 3);
+    await page.getByLabel("Merged PR email", { exact: true }).setInputFiles({
+      name: "merge.eml",
+      mimeType: "message/rfc822",
+      buffer: old.merged.raw,
+    });
+    await page
+      .getByLabel("Issue closure email", { exact: true })
+      .setInputFiles({
+        name: "closure.eml",
+        mimeType: "message/rfc822",
+        buffer: old.closed.raw,
+      });
+    await page
+      .getByRole("button", { name: "Check receipts", exact: true })
+      .click();
+    await page
+      .getByRole("checkbox", { name: /Submitting makes these emails public/ })
+      .check();
+    await page
+      .getByRole("button", { name: "Submit claim", exact: true })
+      .click();
+    await expect(page.getByText("This bounty has been paid.")).toBeVisible({
+      timeout: 60000,
+    });
+    expect(await old.read("credits", [old.accounts[1]])).toBe(
+      parseEther("0.01"),
+    );
+    expect(await current.read("credits", [current.accounts[1]])).toBe(
+      parseEther("0.0099"),
+    );
+    await connect(page, 2);
+    await expect(page.getByText("0.0199 ETH ready to withdraw")).toBeVisible();
+    await page
+      .getByRole("button", { name: "Withdraw ETH", exact: true })
+      .click();
+    await page
+      .getByRole("combobox", { name: /Balance to withdraw/ })
+      .selectOption(old.config.contract);
+    await expect(page.locator(".modal-intro")).toContainText(
+      "Withdraw 0.01 ETH",
+    );
+    await page
+      .getByRole("button", { name: "Confirm withdrawal", exact: true })
+      .click();
+    await expect(
+      page.getByText("Withdrawal confirmed. The ETH is in your wallet."),
+    ).toBeVisible({ timeout: 60000 });
+    expect(await old.read("credits", [old.accounts[1]])).toBe(0n);
+    expect(await current.read("credits", [current.accounts[1]])).toBe(
+      parseEther("0.0099"),
+    );
+    await page.goto(
+      `/#bounty/31337/${current.config.contract.toLowerCase()}/1`,
+    );
+    await expect(page.locator(".facts")).toContainText(
+      "1% on a successful claim",
+    );
+    await expect(page.getByText(/PR #43 earned 0.0099 ETH/)).toBeVisible();
+    await expect(page.locator(".detail-reward")).toContainText("0.0099");
+    await page.screenshot({
+      path: ".local/automation-v2-bounty.png",
+      fullPage: true,
+    });
+  } finally {
+    await restore(snapshot);
+  }
+});

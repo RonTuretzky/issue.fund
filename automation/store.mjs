@@ -1,6 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync, chmodSync } from "node:fs";
 import { dirname } from "node:path";
+import { fail } from "./errors.mjs";
 import {
   createCipheriv,
   createDecipheriv,
@@ -80,6 +81,25 @@ export class Store {
       CREATE INDEX IF NOT EXISTS event_history ON chain_events(chain_id, escrow, event_name, block_number);
       CREATE TABLE IF NOT EXISTS health (name TEXT PRIMARY KEY, checked_at INTEGER NOT NULL, ok INTEGER NOT NULL, code TEXT);
       CREATE TABLE IF NOT EXISTS leases (name TEXT PRIMARY KEY, owner TEXT NOT NULL, until_at INTEGER NOT NULL);
+    `);
+    if (
+      !this.all("PRAGMA table_info(jobs)").some(
+        (column) => column.name === "terminal_at",
+      )
+    ) {
+      this.db.exec("ALTER TABLE jobs ADD COLUMN terminal_at INTEGER");
+      this.db.exec(
+        "UPDATE jobs SET terminal_at=updated_at WHERE state IN ('credited','withdrawn','refunded')",
+      );
+    }
+    this.db.exec(`
+      CREATE TRIGGER IF NOT EXISTS job_terminal_insert AFTER INSERT ON jobs
+      WHEN NEW.state IN ('credited','withdrawn','refunded')
+      BEGIN UPDATE jobs SET terminal_at=NEW.updated_at WHERE bounty_key=NEW.bounty_key; END;
+      CREATE TRIGGER IF NOT EXISTS job_terminal_update AFTER UPDATE OF state ON jobs
+      BEGIN UPDATE jobs SET terminal_at=CASE WHEN NEW.state IN ('credited','withdrawn','refunded')
+        THEN COALESCE(OLD.terminal_at, NEW.updated_at) ELSE NULL END
+        WHERE bounty_key=NEW.bounty_key; END;
     `);
     const marker = this.getMeta("encryption-check");
     if (marker) {
@@ -202,13 +222,7 @@ export class Store {
         { raw: Buffer.from(raw).toString("base64"), prepared },
         `receipt:${id}`,
       );
-      const bytes = this.get(
-        "SELECT COALESCE(SUM(byte_length),0) AS bytes FROM receipts",
-      ).bytes;
-      if (bytes + cipher.length > maxBytes)
-        throw Object.assign(Error("Receipt storage capacity reached"), {
-          code: "storage_full",
-        });
+      this.ensureCapacity(cipher.length, maxBytes);
       const s = prepared.summary;
       this.run(
         "INSERT INTO receipts VALUES (?,?,?,?,?,?,?,?,?,?,?)",
@@ -235,19 +249,42 @@ export class Store {
       });
     return this.open(r.ciphertext, `receipt:${id}`);
   }
+  ensureCapacity(additionalBytes, maxBytes = 100_000_000) {
+    const { bytes } = this.get(`SELECT
+      (SELECT COALESCE(SUM(byte_length),0) FROM receipts) +
+      (SELECT COALESCE(SUM(length(signed_ciphertext)),0) FROM transactions) AS bytes`);
+    if (bytes + additionalBytes > maxBytes) fail("storage_full");
+  }
+  sealTransaction(value, context) {
+    const encrypted = this.seal(value, context);
+    this.ensureCapacity(encrypted.length);
+    return encrypted;
+  }
   expireReceipts(now = Date.now()) {
-    // Release evidence only after terminal settlement AND its retention window.
-    this.run(
-      "UPDATE jobs SET merge_id=NULL,closure_id=NULL WHERE state IN ('credited','withdrawn','refunded') AND updated_at<?",
-      now - 30 * 86400_000,
-    );
-    // Active queued/signed jobs retain evidence until they reach a terminal state.
-    this.run(
-      `DELETE FROM receipts WHERE expires_at<? AND id NOT IN (
+    this.transaction(() => {
+      // Release evidence only after terminal settlement AND its retention window.
+      this.run(
+        "UPDATE jobs SET merge_id=NULL,closure_id=NULL WHERE terminal_at<? AND bounty_key NOT IN (SELECT bounty_key FROM transactions WHERE state IN ('signed','submitted','replaced'))",
+        now - 30 * 86400_000,
+      );
+      // Active queued/signed jobs retain evidence until they reach a terminal state.
+      this.run(
+        `DELETE FROM receipts WHERE expires_at<? AND id NOT IN (
       SELECT merge_id FROM jobs WHERE merge_id IS NOT NULL UNION SELECT closure_id FROM jobs WHERE closure_id IS NOT NULL
     )`,
-      now,
-    );
+        now,
+      );
+      // Keep nonce/hash history, but discard broadcastable bytes after settlement.
+      // Pending replacements pin their entire nonce family until it settles.
+      this.run(
+        `UPDATE transactions SET signed_ciphertext=X''
+      WHERE state IN ('confirmed','reverted','superseded') AND created_at<?
+      AND bounty_key IN (SELECT bounty_key FROM jobs WHERE terminal_at<?)
+      AND nonce NOT IN (SELECT nonce FROM transactions WHERE state IN ('signed','submitted','replaced'))`,
+        now - 30 * 86400_000,
+        now - 30 * 86400_000,
+      );
+    });
   }
   close() {
     this.db.close();

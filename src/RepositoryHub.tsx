@@ -319,7 +319,7 @@ export function RepositoryHub({
                                 {existing.map((b) => (
                                   <button
                                     className="text-button"
-                                    key={b.id}
+                                    key={b.bountyRef}
                                     onClick={() => viewBounty(b)}
                                   >
                                     View bounty #{b.id}

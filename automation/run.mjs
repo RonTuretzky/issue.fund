@@ -91,6 +91,8 @@ try {
   });
   const server = app.listen(Number(process.env.PORT ?? 4320), "127.0.0.1");
   let stopping = false;
+  let timer;
+  let inFlight;
   const tick = async () => {
     if (stopping) return;
     try {
@@ -103,20 +105,25 @@ try {
       for (const row of stale) await registry.reconcile(row.id);
       if (relay) await relay.tick();
       store.expireReceipts();
+      store.health("worker", true);
     } catch (error) {
       store.health("worker", false, safeCode(error));
     }
-    if (!stopping) setTimeout(tick, 15000).unref();
-    else
-      server.close(() => {
-        store.close();
-        process.exit(0);
-      });
+  };
+  const schedule = () => {
+    inFlight = tick().finally(() => {
+      if (!stopping) timer = setTimeout(schedule, 15000).unref();
+    });
   };
   for (const signal of ["SIGINT", "SIGTERM"])
-    process.once(signal, () => {
+    process.once(signal, async () => {
+      if (stopping) return;
       stopping = true;
-      server.close();
+      clearTimeout(timer);
+      const closed = new Promise((resolve) => server.close(resolve));
+      await inFlight;
+      await closed;
+      store.close();
     });
   console.log(
     JSON.stringify({
@@ -125,7 +132,7 @@ try {
       automaticDisclosure: Boolean(validationId),
     }),
   );
-  await tick();
+  schedule();
 } catch (error) {
   console.error(
     JSON.stringify({ event: "collector_start_failed", code: safeCode(error) }),

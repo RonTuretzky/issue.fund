@@ -18,6 +18,7 @@ Choose an issue, fund the work, and review a contribution.
 - [Fund an issue](maintainers/fund-issue.md) — Check the target, choose the reward and deadline, and create the escrow.
 - [Review and merge](maintainers/review-and-merge.md) — Make sure the accepted PR produces receipts that can settle the bounty.
 - [Manage rewards and refunds](maintainers/manage-bounties.md) — Understand bounty states, expiry, and the funder’s withdrawal path.
+- [Set up automatic claims](maintainers/automatic-claims.md) — Let the collector receive GitHub emails and submit claims for contributors.
 
 ## Contributors & users
 
@@ -27,6 +28,7 @@ Prepare your PR, collect receipts, and claim your reward.
 - [Prepare your pull request](contributors/prepare-pr.md) — Bind the PR to the right bounty, wallet, issue, and target branch.
 - [Collect the email receipts](contributors/collect-emails.md) — Enable notifications and download the two original messages the contract accepts.
 - [Claim and withdraw](contributors/claim-and-withdraw.md) — Check the receipts locally, submit a claim, and collect the credited reward.
+- [Follow an automatic claim](contributors/automatic-claims.md) — Check collection progress, confirm the payout wallet, and withdraw your reward.
 
 ## Reference
 

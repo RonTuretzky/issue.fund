@@ -6,7 +6,7 @@ Set up a public repository and a clear agreement with contributors.
 
 ## Your role
 
-You review code and decide what to merge using your normal GitHub process. You do not register a signing key, install a GitHub App, or approve a separate payout in this interface. The merged PR and linked issue event become the payment evidence.
+You review code and decide what to merge using your normal GitHub process. Manual receipt claims need no signing-key registration, GitHub App, or separate maintainer payout approval. Automatic collection, where offered, uses a maintainer-installed collector App. The merged PR and linked issue event remain the payment evidence.
 
 A funder may be a maintainer, contributor, or sponsor. Start with an issue URL; no repository registration or GitHub connection is required.
 

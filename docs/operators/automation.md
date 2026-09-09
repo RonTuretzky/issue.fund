@@ -1,8 +1,8 @@
 # Automation operator guide
 
 Implementation status: the collector, registry API, encrypted store, chain indexer,
-restricted signer and relay have local integration tests. Production onboarding,
-DigitalOcean deployment, the GitHub App installation, real-mail security tests,
+restricted signer and relay have local integration tests. The frontend has automatic/manual setup, fee quotes, per-escrow links and
+withdrawals, with local browser coverage. DigitalOcean deployment, the GitHub App installation, real-mail security tests,
 and the genuine GitHub-to-Gnosis acceptance run are still in progress. The live
 frontend continues to use the original deployment until that work is verified.
 
@@ -173,8 +173,15 @@ API, not by copying a live database while ignoring its WAL. Keep the encryption
 keys in a separate protected backup. Test restore before production. Unmatched
 mail is discarded; unrelated authenticated notifications can update delivery
 health without retaining their body. Receipt admission is capped at 100 MB.
-Active jobs retain evidence; terminal-job retention and signed-transaction cleanup
-need operational review before enabling unattended long-term operation.
+Active jobs and pending nonce families retain evidence. Settled jobs keep a separate
+terminal timestamp that indexing does not reset; after 30 days, the collector
+unpins expired receipts and erases settled signed-transaction payloads while keeping
+hashes and nonce history. A reorg resets the terminal timestamp. Receipt and signed
+transaction admission share a 100 MB encrypted-payload cap; SQLite metadata, WAL and
+backup disk use still need monitoring. Backups may retain deleted records for their
+own 30-day window. Automatic recent-transaction reorg recovery is bounded by both
+the last 200 settlements and payload retention; older incidents need operator
+reconciliation. Keys are never part of database snapshots.
 
 No secrets or raw errors are logged. Components expose enumerated error codes.
 `relay_needs_gas`, `github_permissions_missing`, `mailbox_unavailable`,
@@ -194,3 +201,22 @@ npm run build:gnosis
 Automation integration tests start isolated Anvil processes and terminate them.
 They use generated RSA keys and synthetic native-email fixtures exclusively on
 chain 31337. The genuine production acceptance run is tracked separately.
+
+## DigitalOcean deployment files
+
+`ops/digitalocean/provision.mjs` provisions one dedicated Ubuntu 24.04 droplet, a
+separate SSH key and a tagged firewall. Its $6/month base size has provider backups
+enabled at additional cost. SSH is restricted to the provisioning machine’s public
+IPv4; update that firewall rule in DigitalOcean if the operator address changes.
+The bootstrap installs the pinned Node 24.21.0 LTS archive after checking its
+published SHA-256, Caddy, system users and security updates. No credentials are
+placed in cloud-init user data.
+
+The collector and signer use separate Unix users and protected environment files.
+The signer unit has a private network namespace and accepts only its Unix socket.
+Root-owned source releases are read-only to both services. Caddy terminates HTTPS
+for `api.issue.fund` and forwards only to the loopback API. The database backup
+timer takes daily online snapshots and verifies SQLite integrity. Keep a protected
+off-host copy and separate key backup, then restore with both services stopped.
+Before starting a restored signer, reconcile its ledger with live chain and pending
+nonces; never treat an old snapshot as proof that a nonce was unused.

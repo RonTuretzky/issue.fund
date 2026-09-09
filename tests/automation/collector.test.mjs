@@ -264,6 +264,96 @@ test("storage ciphertext is authenticated and a job pins its evidence against re
   f.store.close();
 });
 
+test("settlement retention survives indexing, resets on reorg, and prunes only settled payloads", async () => {
+  const f = fixture();
+  const day = 86400_000;
+  try {
+    await f.collector.ingest(email());
+    await f.collector.ingest(email({ kind: "closure" }));
+    const key = f.store.get("SELECT bounty_key FROM jobs").bounty_key;
+    const tx = (hash, nonce, state) =>
+      f.store.run(
+        "INSERT INTO transactions(hash,bounty_key,nonce,signed_ciphertext,gas_budget,created_at,state) VALUES (?,?,?,?,?,?,?)",
+        hash,
+        key,
+        nonce,
+        f.store.sealTransaction(
+          { signed: "sensitive transaction" },
+          `transaction:${hash}`,
+        ),
+        "1",
+        start,
+        state,
+      );
+    tx("confirmed", 1, "confirmed");
+    tx("pending", 2, "submitted");
+    f.store.run("UPDATE jobs SET state='credited',updated_at=?", start + day);
+    f.store.run(
+      "UPDATE jobs SET state='withdrawn',updated_at=?",
+      start + 10 * day,
+    );
+    assert.equal(
+      f.store.get("SELECT terminal_at FROM jobs").terminal_at,
+      start + day,
+    );
+    f.store.expireReceipts(start + 40 * day);
+    assert.equal(f.store.get("SELECT count(*) AS n FROM receipts").n, 2);
+    f.store.run(
+      "UPDATE jobs SET state='waiting',updated_at=?",
+      start + 40 * day,
+    );
+    assert.equal(f.store.get("SELECT terminal_at FROM jobs").terminal_at, null);
+    f.store.run(
+      "UPDATE transactions SET state='superseded' WHERE hash='pending'",
+    );
+    f.store.run(
+      "UPDATE jobs SET state='credited',updated_at=?",
+      start + 41 * day,
+    );
+    f.store.expireReceipts(start + 50 * day);
+    assert.equal(f.store.get("SELECT count(*) AS n FROM receipts").n, 2);
+    f.store.run(
+      "UPDATE jobs SET state='credited',updated_at=?",
+      start + 79 * day,
+    );
+    f.store.expireReceipts(start + 80 * day);
+    assert.equal(f.store.get("SELECT count(*) AS n FROM receipts").n, 0);
+    assert.equal(
+      f.store.get(
+        "SELECT SUM(length(signed_ciphertext)) AS n FROM transactions",
+      ).n,
+      0,
+    );
+    assert.equal(f.store.get("SELECT count(*) AS n FROM transactions").n, 2);
+  } finally {
+    f.store.close();
+  }
+});
+
+test("storage admission includes encrypted transaction payloads", async () => {
+  const f = fixture();
+  try {
+    await f.collector.ingest(email());
+    const size = f.store.get(
+      "SELECT SUM(byte_length) AS bytes FROM receipts",
+    ).bytes;
+    f.store.ensureCapacity(1, size + 1);
+    assert.throws(() => f.store.ensureCapacity(2, size + 1), {
+      code: "storage_full",
+    });
+    f.store.run(
+      "INSERT INTO transactions(hash,bounty_key,nonce,signed_ciphertext,gas_budget,created_at) VALUES ('hash','31337:0xescrow:1',0,?,'0',?)",
+      Buffer.alloc(1024),
+      start,
+    );
+    assert.throws(() => f.store.ensureCapacity(1, size + 1024), {
+      code: "storage_full",
+    });
+  } finally {
+    f.store.close();
+  }
+});
+
 test("mailbox restart respects UIDVALIDITY and never marks messages read", async () => {
   const store = new Store(":memory:", randomBytes(32));
   const received = [];

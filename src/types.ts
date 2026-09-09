@@ -10,13 +10,21 @@ export type Config = {
   contract: Address;
   verifier: Address;
   keyHash: string;
-  protocol: "rsa-dkim-v1";
+  protocol: "rsa-dkim-v1" | "rsa-dkim-v2";
+  feeBps?: number;
+  feeRecipient?: Address;
+  legacyDeployments?: Config[];
+  legacyLinkContract?: Address;
+  automationUrl?: string;
   experimental: boolean;
   dkimKey: DkimKey;
   local: boolean;
   abi: Abi;
 };
 export type Bounty = {
+  contract?: Address;
+  chainId?: number;
+  feeBps?: number;
   id: number;
   funder: Address;
   amount: string;
@@ -50,3 +58,8 @@ declare global {
     };
   }
 }
+
+export type CreditBalance = {
+  amount: string;
+  escrows?: { contract: Address; amount: string }[];
+};

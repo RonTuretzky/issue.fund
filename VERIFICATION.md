@@ -68,3 +68,21 @@ Added a shared maintainer-service note to the homepage, repository directory, ma
 The static Gnosis build, TypeScript, generated-documentation consistency, and diff checks passed. All five documentation/branding/accessibility browser checks passed. The note and exact mail link were checked on all four routes, with mobile overflow and desktop/mobile screenshot checks. No emails or transactions were sent.
 
 GitHub Pages published the contact update from `bd41ad0396697d2900f339d2d72168e08a19dfa0`, confirmed by the live version manifest and successful Pages build. The note and exact mail link passed checks on all four live HTTPS routes; the existing live browser tab was refreshed. No emails or transactions were sent.
+
+## Automation frontend and persistence checkpoint
+
+Added collector preparation/readiness, explicit manual fallback, automatic claim
+status, immutable V2 fee/net quotes, contract-qualified bounty links, legacy link
+resolution and per-escrow credit withdrawal. The existing 32-case browser run
+passed 31 cases; the failure was a stale navigation count after adding two guides.
+After correcting it, all eight automation/documentation cases passed, including
+readiness loss immediately before funding and independent V1/V2 withdrawal.
+Paid bounty headlines now show the net credit. TypeScript and the static Gnosis
+build pass. These tests used local Anvil and synthetic email fixtures.
+
+25 automation tests pass, including terminal-retention/reorg behavior, encrypted
+payload capacity and an online SQLite backup/restore while the writer remains
+open. The collector now closes its store after in-flight work on shutdown.
+DigitalOcean droplet 599168492 was provisioned with a dedicated key, restricted
+firewall, backups and DNS at api.issue.fund. Runtime deployment verification is
+still in progress; automatic disclosure remains gated and V2 is not on Gnosis.

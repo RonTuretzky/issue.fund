@@ -93,7 +93,7 @@ export const pages = [
       {
         title: "Your role",
         paragraphs: [
-          "You review code and decide what to merge using your normal GitHub process. You do not register a signing key, install a GitHub App, or approve a separate payout in this interface. The merged PR and linked issue event become the payment evidence.",
+          "You review code and decide what to merge using your normal GitHub process. Manual receipt claims need no signing-key registration, GitHub App, or separate maintainer payout approval. Automatic collection, where offered, uses a maintainer-installed collector App. The merged PR and linked issue event remain the payment evidence.",
           "A funder may be a maintainer, contributor, or sponsor. Start with an issue URL; no repository registration or GitHub connection is required.",
         ],
       },
@@ -173,7 +173,7 @@ export const pages = [
             ],
             [
               "Platform fee",
-              "The escrow takes no platform fee. Wallet transactions still use gas.",
+              "The funding form shows the immutable claim fee and the contributor’s net reward. The original V1 escrow has no fee; fee-bearing V2 escrows deduct only on successful claims. Refunds return the full reward. Wallet transactions still use gas.",
             ],
           ],
         },
@@ -309,6 +309,62 @@ export const pages = [
     ],
   },
   {
+    id: "maintainers/automatic-claims",
+    group: "maintainers",
+    title: "Set up automatic claims",
+    summary:
+      "Let the collector receive GitHub emails and submit claims for contributors.",
+    sections: [
+      {
+        title: "Choose automatic collection",
+        paragraphs: [
+          "When automatic collection is offered in Fund an issue, paste an issue URL and choose Automatically through the collector. Funders and contributors do not connect a GitHub account to issue.fund. A maintainer separately enables the repository integration.",
+          "The setup panel reports Preparing notifications, Notifications ready, or Attention needed. Fund with automatic collection only after Notifications ready. You can explicitly choose manual collection instead; prepare your own email delivery before the merge.",
+        ],
+      },
+      {
+        title: "Enable the repository integration",
+        steps: [
+          "A repository maintainer follows Maintainer: enable collector from the setup panel and installs the collector’s GitHub App on the selected public repository.",
+          "The App needs metadata read, issues write and pull requests write permissions. It checks the collection account’s repository role and locks completed bounty conversations. It does not run contributor code or decide what should be merged.",
+          "Keep the dedicated collection account outside the repository’s collaborators and privileged organization roles. A lock cannot protect a reply credential belonging to an account that is exempt from it.",
+          "Wait for a real GitHub notification to reach the mailbox. If no normal activity is expected, coordinate a harmless setup notification with the service operator. A subscription API response alone does not establish email delivery.",
+          "Review the displayed claim fee, contributor’s net reward and deadline, then fund. The service rechecks readiness before wallet confirmation.",
+        ],
+      },
+      {
+        title: "After reviewing a contribution",
+        paragraphs: [
+          "Review and merge normally, preserving the exact bounty reference and payout wallet in the PR title and linking the funded issue. The collector needs both original native event emails.",
+          "Before submitting the collected receipts, the integration locks both the completed issue and PR and checks the collector’s role. Keep these conversations locked: unlocking them or later granting the collector privileges can make already-public reply credentials usable again.",
+          "A successful claim credits the wallet in the signed PR title. The contributor still authorizes a separate withdrawal transaction.",
+        ],
+      },
+      {
+        title: "If the collector needs attention",
+        bullets: [
+          "Do not merge until email delivery is prepared if you expect an automatic claim. Late subscription cannot recover historical original emails.",
+          "Mailbox outages, missing installation permissions, gas limits and missing receipts appear in the bounty’s automatic-claim status. The reward remains governed by its on-chain completion deadline and seven-day claim window.",
+          "Manual and independent receipt submissions remain possible. Read Email privacy before publishing receipts from a personal account.",
+        ],
+        links: [
+          {
+            label: "Email privacy",
+            url: "#docs/reference/privacy",
+          },
+          {
+            label: "Contributor: follow an automatic claim",
+            url: "#docs/contributors/automatic-claims",
+          },
+          {
+            label: "Contact the service operator",
+            url: "mailto:turetzkyron@gmail.com",
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "contributors/getting-started",
     group: "contributors",
     title: "Contributor onboarding",
@@ -338,7 +394,7 @@ export const pages = [
           "Connect your intended payout wallet so the PR-title template contains its address.",
           "Follow Prepare your pull request and copy both title markers from the selected bounty.",
           "Enable email notifications before the maintainer merges.",
-          "After the merge, collect the two receipts, check them in the app, claim, and withdraw.",
+          "After the merge, follow the automatic claim status if the bounty uses the collector, or collect and submit both receipts manually. Then withdraw the credited reward.",
         ],
       },
       {
@@ -530,6 +586,79 @@ export const pages = [
     ],
   },
   {
+    id: "contributors/automatic-claims",
+    group: "contributors",
+    title: "Follow an automatic claim",
+    summary:
+      "Check collection progress, confirm the payout wallet, and withdraw your reward.",
+    sections: [
+      {
+        title: "Before you start",
+        steps: [
+          "Open the bounty and confirm with the maintainer whether automatic receipt collection is ready. If it is not ready, arrange manual notifications before the merge.",
+          "Review the gross reward, success fee and contributor amount in Bounty details. The fee is deducted only after a valid claim; the amount credited to you is the displayed net reward.",
+          "Copy this bounty’s exact title markers into your PR, including the Gnosis payout wallet you control. Link the funded issue in the PR description and merge into the funded target branch.",
+        ],
+      },
+      {
+        title: "Understand the status",
+        table: {
+          headers: ["Status", "What happens next"],
+          rows: [
+            [
+              "Waiting for GitHub emails",
+              "The collector needs the native merged-PR and linked issue-closure emails.",
+            ],
+            [
+              "Receipts collected",
+              "The relay checks eligibility, both conversation locks, and gas limits.",
+            ],
+            [
+              "Claim submitted",
+              "A transaction is pending confirmation. This is not yet a wallet payment.",
+            ],
+            [
+              "Reward credited",
+              "Connect the payout wallet and withdraw its available escrow balance.",
+            ],
+            [
+              "Withdrawal confirmed",
+              "The credited wallet withdrew after the claim.",
+            ],
+            [
+              "Attention needed",
+              "Read the recovery message. Coordinate with the maintainer/operator or use original receipts for a manual claim before the claim window closes.",
+            ],
+          ],
+        },
+      },
+      {
+        title: "Withdraw from the correct escrow",
+        paragraphs: [
+          "Your wallet may have balances in more than one escrow version. The withdrawal dialog lists them separately; each balance needs its own transaction. The original V1 balances retain their original no-fee terms.",
+          "A relayer pays claim gas when it submits for you. Your wallet still needs native xDAI for withdrawal gas. Anyone can relay a valid claim, but they cannot change the signed beneficiary.",
+        ],
+      },
+      {
+        title: "If automation is unavailable",
+        paragraphs: [
+          "The manual upload controls remain on an open bounty. Use the two original GitHub emails and confirm their payout wallet before submission. Automatic collection does not extend the bounty’s deadline or recover emails that were never delivered.",
+          "Submitting receipts publishes email data and notification links. A dedicated collector mailbox reduces exposure of your personal mailbox; it does not make receipt contents private. Read Email privacy before using your own receipts.",
+        ],
+        links: [
+          {
+            label: "Collect receipts manually",
+            url: "#docs/contributors/collect-emails",
+          },
+          {
+            label: "Email privacy",
+            url: "#docs/reference/privacy",
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "reference/verification",
     group: "reference",
     title: "How verification works",
@@ -588,7 +717,7 @@ export const pages = [
       {
         title: "During Check receipts",
         paragraphs: [
-          "Selected files are read in your browser and checked with WebCrypto. The app does not upload them to a proving service or receipt-processing server. It does not save them to browser storage; leaving or reloading the bounty clears the selected files. Normal public GitHub and blockchain reads do not require your email contents.",
+          "For manual claims, selected files are read in your browser and checked with WebCrypto. The app does not upload them to a proving service or receipt-processing server. It does not save them to browser storage; leaving or reloading the bounty clears the selected files. Normal public GitHub and blockchain reads do not require your email contents.",
         ],
       },
       {

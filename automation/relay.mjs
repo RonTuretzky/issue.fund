@@ -123,7 +123,7 @@ export class RelayWorker {
           hash,
           job.bounty_key,
           latest,
-          this.store.seal(
+          this.store.sealTransaction(
             {
               signed,
               gas: gas.toString(),
@@ -163,7 +163,7 @@ export class RelayWorker {
   }
   async checkReorganizations() {
     const settled = this.store.all(
-      "SELECT * FROM transactions WHERE state IN ('confirmed','reverted') ORDER BY block_number DESC LIMIT 200",
+      "SELECT * FROM transactions WHERE state IN ('confirmed','reverted') AND length(signed_ciphertext)>0 ORDER BY block_number DESC LIMIT 200",
     );
     for (const tx of settled) {
       const head = await this.client.getBlockNumber();
@@ -400,7 +400,7 @@ export class RelayWorker {
         hash,
         tx.bounty_key,
         tx.nonce,
-        this.store.seal(
+        this.store.sealTransaction(
           {
             signed,
             gas: gas.toString(),

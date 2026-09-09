@@ -10,7 +10,7 @@
     "build": "npm run docs:check && tsc -b && vite build",
     "test": "node --test tests/github.test.mjs tests/dkim.test.mjs",
     "test:contracts": "forge test -vv",
-    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts tests/browser/documentation.spec.ts",
+    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts tests/browser/documentation.spec.ts tests/browser/automation.spec.ts",
     "test:public-flow": "RUN_PUBLIC_FLOW=1 playwright test tests/browser/public-flow.spec.ts",
     "test:chain": "node --test tests/chain.test.mjs",
     "test:e2e": "playwright test",

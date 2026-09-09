@@ -37,8 +37,16 @@ import { defineChain } from "viem";
 import { api, friendly, short } from "./api";
 import { STATIC_MODE } from "./static-api";
 import { Documentation, docsPath } from "./Documentation";
+import { AutomationStatus } from "./AutomationStatus";
 import { ClaimPanel } from "./ClaimPanel";
-import type { Bounty, Config } from "./types";
+import type { Bounty, Config, CreditBalance } from "./types";
+import {
+  bountyLink,
+  parseBountyLink,
+  matchesBounty,
+  deploymentFor,
+  claimQuote,
+} from "./deployments";
 import { Modal } from "./Modal";
 import { RepositoryHub } from "./RepositoryHub";
 import { MaintainerAutomation } from "./MaintainerAutomation";
@@ -103,8 +111,8 @@ export default function App() {
   const [localAccounts, setLocalAccounts] = useState<Address[]>([]);
   const [filter, setFilter] = useState("Open");
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<number | undefined>(
-    () => Number(location.hash.match(/^#bounty-(\d+)$/)?.[1]) || undefined,
+  const [selected, setSelected] = useState<string | undefined>(() =>
+    parseBountyLink(location.hash) ? location.hash : undefined,
   );
   const [createOpen, setCreateOpen] = useState(false);
   const [fundIssueUrl, setFundIssueUrl] = useState("");
@@ -133,9 +141,29 @@ export default function App() {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState("");
-  const [credit, setCredit] = useState("0");
+  const [creditValue, setCredit] = useState("0");
+  const [creditAccount, setCreditAccount] = useState<string>();
+  const [creditRows, setCreditRows] = useState<
+    NonNullable<CreditBalance["escrows"]>
+  >([]);
+  const [withdrawSource, setWithdrawSource] = useState<string>("");
+  const credit = creditAccount === account ? creditValue : "0";
+  const availableCredits =
+    creditAccount === account
+      ? creditRows.filter((row) => BigInt(row.amount) > 0n)
+      : [];
+  const withdrawal =
+    availableCredits.find(
+      (row) => row.contract.toLowerCase() === withdrawSource.toLowerCase(),
+    ) ?? availableCredits[0];
   const [lastTx, setLastTx] = useState("");
-  const bounty = bounties.find((b) => b.id === selected);
+  const bounty = bounties.find(
+    (b) => selected && matchesBounty(b, selected, config),
+  );
+  const bountyConfig =
+    bounty && config ? deploymentFor(config, bounty.contract) : config;
+  const bountyFeeBps =
+    bountyConfig?.protocol === "rsa-dkim-v2" ? (bountyConfig.feeBps ?? 0) : 0;
   const chain = config
     ? defineChain({
         id: config.chainId,
@@ -155,6 +183,19 @@ export default function App() {
         api<Config>("/config"),
         api<Bounty[]>("/bounties"),
       ]);
+      const route = parseBountyLink(location.hash);
+      if (route && !list.some((b) => matchesBounty(b, location.hash, cfg))) {
+        try {
+          const d = deploymentFor(
+            cfg,
+            route.contract ?? cfg.legacyLinkContract ?? cfg.contract,
+          );
+          if (!route.chainId || route.chainId === d.chainId)
+            list.push(await api<Bounty>(`/bounties/${d.contract}/${route.id}`));
+        } catch {
+          /* The requested bounty may not exist in a known escrow. */
+        }
+      }
       setConfig(cfg);
       setBounties(list);
       setConnectionError("");
@@ -174,9 +215,20 @@ export default function App() {
       setCredit("0");
       return;
     }
-    api<{ amount: string }>(`/credits/${account}`)
-      .then((x) => setCredit(x.amount))
+    let cancelled = false;
+    api<CreditBalance>(`/credits/${account}`)
+      .then((x) => {
+        if (cancelled) return;
+        setCredit(x.amount);
+        setCreditAccount(account);
+        setCreditRows(
+          x.escrows ?? [{ contract: config.contract, amount: x.amount }],
+        );
+      })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [account, config, bounties]);
   useEffect(() => {
     const wallet = window.ethereum;
@@ -199,9 +251,9 @@ export default function App() {
   const choose = (b: Bounty) => {
     setDocPath(null);
     setRepositoriesOpen(false);
-    setSelected(b.id);
+    setSelected(bountyLink(b));
     setError("");
-    history.replaceState(null, "", `#bounty-${b.id}`);
+    history.replaceState(null, "", bountyLink(b));
   };
   useEffect(() => {
     const navigate = () => {
@@ -210,8 +262,8 @@ export default function App() {
       setWalletOpen(false);
       setWithdrawOpen(false);
       setRepositoriesOpen(location.hash === "#repositories");
-      const id = Number(location.hash.match(/^#bounty-(\d+)$/)?.[1]);
-      setSelected(id || undefined);
+      setSelected(parseBountyLink(location.hash) ? location.hash : undefined);
+      void refresh();
       setError("");
     };
     window.addEventListener("hashchange", navigate);
@@ -289,7 +341,15 @@ export default function App() {
       setError(friendly(e));
     }
   }
-  async function transact(name: string, args: unknown[], value?: bigint) {
+  async function transact(
+    name: string,
+    args: unknown[],
+    value?: bigint,
+    target?: Config,
+  ) {
+    const deployment =
+      target ?? (name === "create" ? config : bountyConfig) ?? config;
+    if (!deployment) throw Error("The escrow is not ready.");
     if (!account) {
       setWalletOpen(true);
       throw new Error("Connect a wallet to continue.");
@@ -306,8 +366,8 @@ export default function App() {
         transport: localWallet ? http(rpcUrl) : custom(window.ethereum!),
       });
       const { request } = await client.simulateContract({
-        address: config!.contract,
-        abi: config!.abi,
+        address: deployment.contract,
+        abi: deployment.abi,
         functionName: name,
         args,
         account,
@@ -373,7 +433,12 @@ export default function App() {
         return [];
       }
     })[0];
-    const added = after.find((b) => b.id === Number(funded));
+    const added = after.find(
+      (b) =>
+        b.id === Number(funded) &&
+        (b.contract ?? config!.contract).toLowerCase() ===
+          config!.contract.toLowerCase(),
+    );
     if (added) choose(added);
   }
   const available = bounties.filter(
@@ -555,6 +620,29 @@ export default function App() {
             viewBounty={choose}
             back={explore}
           />
+        ) : selected && !bounty ? (
+          <section className="panel">
+            <h1>{loading ? "Loading bounty" : "Bounty unavailable"}</h1>
+            <p>
+              {loading
+                ? "Checking the escrow for this bounty."
+                : "This bounty could not be loaded from a supported escrow. Check the link or retry the connection."}
+            </p>
+            <div className="inline-actions">
+              <button
+                className="button"
+                onClick={() => {
+                  setLoading(true);
+                  void refresh();
+                }}
+              >
+                Retry bounty
+              </button>
+              <button className="text-button" onClick={explore}>
+                All bounties
+              </button>
+            </div>
+          </section>
         ) : !bounty ? (
           <>
             <section className="hero">
@@ -778,7 +866,7 @@ export default function App() {
                     <button
                       className="bounty-row"
                       onClick={() => choose(b)}
-                      key={b.id}
+                      key={b.bountyRef}
                     >
                       <span className="repo-avatar">
                         {b.repo.split("/")[0].slice(0, 2).toUpperCase()}
@@ -804,7 +892,15 @@ export default function App() {
                         </div>
                       </div>
                       <div className="reward-value">
-                        {money(b.amount)} <span>{symbol}</span>
+                        {money(
+                          b.status === 1
+                            ? claimQuote(
+                                BigInt(b.amount),
+                                b.feeBps ?? 0,
+                              ).net.toString()
+                            : b.amount,
+                        )}{" "}
+                        <span>{symbol}</span>
                         <small>
                           {b.status === 0
                             ? "Escrowed reward"
@@ -866,7 +962,15 @@ export default function App() {
               </div>
               <div className="detail-reward">
                 <span>
-                  {money(bounty.amount)} <small>{symbol}</small>
+                  {money(
+                    bounty.status === 1
+                      ? claimQuote(
+                          BigInt(bounty.amount),
+                          bountyFeeBps,
+                        ).net.toString()
+                      : bounty.amount,
+                  )}{" "}
+                  <small>{symbol}</small>
                 </span>
                 <p>
                   {bounty.status === 0
@@ -936,13 +1040,29 @@ export default function App() {
                     <h2>Verify the merge. Claim the reward.</h2>
                     <LockKeyhole size={19} />
                   </div>
+                  {config?.automationUrl && (
+                    <AutomationStatus
+                      key={bounty.bountyRef}
+                      bounty={bounty}
+                      config={{
+                        ...bountyConfig!,
+                        automationUrl: config.automationUrl,
+                      }}
+                    />
+                  )}
                   {bounty.status === 1 ? (
                     <div className="settled">
                       <CheckCircle2 size={38} />
                       <h3>This bounty has been paid.</h3>
                       <p>
-                        PR #{bounty.pr} earned {money(bounty.amount)} {symbol}{" "}
-                        for {short(bounty.recipient)}.
+                        PR #{bounty.pr} earned{" "}
+                        {money(
+                          claimQuote(
+                            bounty.amount,
+                            bountyFeeBps,
+                          ).net.toString(),
+                        )}{" "}
+                        {symbol} for {short(bounty.recipient)}.
                       </p>
                       <p>
                         {account?.toLowerCase() ===
@@ -965,9 +1085,9 @@ export default function App() {
                   ) : (
                     config && (
                       <ClaimPanel
-                        key={`${config.contract}:${bounty.id}`}
+                        key={`${bountyConfig!.contract}:${bounty.id}`}
                         bounty={bounty}
-                        config={config}
+                        config={bountyConfig!}
                         account={account}
                         pending={!!pending}
                         wrongNetwork={wrongNetwork}
@@ -1002,7 +1122,21 @@ export default function App() {
                     <dt>Funded</dt>
                     <dd>{date(bounty.createdAt)}</dd>
                     <dt>Platform fee</dt>
-                    <dd>0%</dd>
+                    <dd>{bountyFeeBps / 100}% on a successful claim</dd>
+                    <dt>Contributor receives</dt>
+                    <dd>
+                      {money(
+                        claimQuote(bounty.amount, bountyFeeBps).net.toString(),
+                      )}{" "}
+                      {symbol}
+                    </dd>
+                    <dt>Escrow</dt>
+                    <dd>
+                      {short(bountyConfig!.contract)}
+                      {bountyConfig!.contract !== config?.contract
+                        ? " · earlier version"
+                        : ""}
+                    </dd>
                   </dl>
                   <hr />
                   <div className="inline-note">
@@ -1076,6 +1210,7 @@ export default function App() {
           }}
           browse={openRepositories}
           symbol={symbol}
+          config={config}
           account={account}
           connect={() => setWalletOpen(true)}
           ready={!!config && !pending}
@@ -1091,8 +1226,8 @@ export default function App() {
           close={() => setWithdrawOpen(false)}
         >
           <p className="modal-intro">
-            Withdraw {money(credit)} {symbol} from your credited balance. Your
-            connected wallet authorizes the transfer.
+            Withdraw {money(withdrawal?.amount ?? "0")} {symbol} from the
+            selected escrow. Your connected wallet authorizes the transfer.
           </p>
           <form
             onSubmit={async (e) => {
@@ -1107,11 +1242,41 @@ export default function App() {
                 return;
               }
               try {
-                await transact("withdraw", [destination]);
+                if (!withdrawal || !config)
+                  throw Error("Choose an escrow with an available balance.");
+                await transact(
+                  "withdraw",
+                  [destination],
+                  undefined,
+                  deploymentFor(config, withdrawal.contract),
+                );
                 setWithdrawOpen(false);
               } catch {}
             }}
           >
+            {availableCredits.length > 1 && (
+              <label>
+                Balance to withdraw
+                <select
+                  name="escrow"
+                  value={withdrawal?.contract ?? ""}
+                  onChange={(event) => setWithdrawSource(event.target.value)}
+                  disabled={!!pending}
+                >
+                  {availableCredits.map((row) => (
+                    <option key={row.contract} value={row.contract}>
+                      {money(row.amount)} {symbol} · {short(row.contract)}
+                      {row.contract !== config?.contract
+                        ? " · earlier escrow"
+                        : ""}
+                    </option>
+                  ))}
+                </select>
+                <span className="field-note">
+                  Each escrow balance needs its own withdrawal transaction.
+                </span>
+              </label>
+            )}
             <label>
               Destination wallet
               <input

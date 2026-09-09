@@ -56,7 +56,7 @@ not establish that every current GitHub email variant is supported.
 
 - 50 Solidity tests pass, including the existing RSA/policy/escrow cases and 15
   V2 fee cases; fuzz cases run 128 inputs each.
-- 22 automation tests pass, including a real local EVM path using **locally
+- 25 automation tests pass, including a real local EVM path using **locally
   generated RSA signatures**, encrypted receipt persistence, out-of-order/dedup
   handling, admission/readiness checks, disclosure gating before RPC, fee payout,
   withdrawal, gas depletion, restart after a lost broadcast response, replacement,
@@ -67,10 +67,16 @@ not establish that every current GitHub email variant is supported.
 
 ## Release work still required
 
-Finish the frontend automatic/manual onboarding and status flows; preserve V1
-bounties/credits alongside V2; disclose exact fee/net reward before funding and
-claiming; deploy and supervise the service; validate signer IPC and environment
-isolation; finish retention/backup/alerting; install the maintainer App; configure
+The frontend now includes automatic/manual onboarding, status flows, exact fee/net
+quotes and separate V1/V2 bounty identities and withdrawal balances. Local browser
+checks cover readiness loss, manual fallback, old links and independent withdrawal.
+The static build passes; static multi-escrow RPC coverage and live rollout remain.
+Retention uses a persistent settlement timestamp and prunes settled encrypted
+payloads after 30 days, while active transactions pin their evidence. An online
+backup/restore test passes. DigitalOcean provisioning and DNS are underway.
+
+Deploy and supervise the service; validate signer IPC and environment isolation;
+verify production backup/restore and alerting; install the maintainer App; configure
 compatible watching and mailbox credentials; run the real reply-lock/replay
 matrix; deploy V2 to the agreed treasury; and complete a genuine GitHub-to-Gnosis
 fund/collect/claim/withdraw acceptance run. Review the final source and deployed

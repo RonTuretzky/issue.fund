@@ -74,7 +74,6 @@ try {
     JSON.stringify({
       deployed: commit,
       host: "api.issue.fund",
-      automaticDisclosure: false,
     }),
   );
 } catch (error) {

@@ -24,6 +24,8 @@ and deployment are still pending.
 | Mutable locks and account roles                                        | Public tokens may become useful again after unlocking or privilege changes                              | Operational dependency, not an on-chain guarantee. Persistent-lock obligations and residual risk are documented; live validation remains required.                                                                     |
 | A fee sent directly to a receiver during settlement could block payout | Rejecting/reentrant fee receiver could disrupt otherwise valid claims                                   | V2 uses pull credits for both beneficiary and treasury. Failure to withdraw cannot block settlement or take the other credit.                                                                                          |
 | Reusing a nonce after uncertain broadcast or restart                   | Duplicate gas expenditure, stuck jobs or wrong transaction replacement                                  | Signed payload persisted before broadcast; same-nonce recovery/replacement, restricted cancellation, budget ledger and block-hash checks. Tested locally with lost responses, competing claims and a reorg.            |
+| Unbounded bounty rereads and repeated enrollment attempts | Growth or spam could delay the mailbox/relay and exhaust GitHub API capacity | Indexing now checkpoints a durable funding queue, bounds per-poll bounty reads and rotates active work across restarts. Unenrolled discovery has a separate retry budget. |
+| Settled jobs excluded from active sweeps after a reorg | An orphaned refund/withdrawal could remain visible as completed | Detected scan reorgs also enqueue settled jobs; open bounties clear orphaned settlement even without repository enrollment. Local regression tests cover this case. |
 
 ## Contract properties checked
 
@@ -56,7 +58,7 @@ not establish that every current GitHub email variant is supported.
 
 - 50 Solidity tests pass, including the existing RSA/policy/escrow cases and 15
   V2 fee cases; fuzz cases run 128 inputs each.
-- 25 automation tests pass, including a real local EVM path using **locally
+- 30 automation tests pass, including a real local EVM path using **locally
   generated RSA signatures**, encrypted receipt persistence, out-of-order/dedup
   handling, admission/readiness checks, disclosure gating before RPC, fee payout,
   withdrawal, gas depletion, restart after a lost broadcast response, replacement,

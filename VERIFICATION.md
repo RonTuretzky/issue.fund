@@ -102,3 +102,26 @@ snapshots restored successfully; a protected off-server backup copy has the same
 SHA-256 as the source archive. Automatic disclosure and relay are disabled. Health
 reports the missing mailbox; preparation returns maintainer_installation_required.
 No production claims or fund transfers were made by these deployment checks.
+
+## CI, V2 release tooling and bounded indexing
+
+[CI run 34415924566](https://github.com/RonTuretzky/issue.fund/actions/runs/34415924566)
+completed successfully for source `160e12fce96b051947717f6a4ef3cd8614df7824`:
+50 Solidity tests, 25 automation tests, two V2 deployment tests, the existing
+JavaScript/local-chain checks, static build and all 34 browser cases. The original
+Etherform installer failed before contract tests; the corrected workflow pins a
+working official Foundry action and executes the entire contract suite directly.
+
+V2 deployment now has a read-only cost/terms plan, a signed-transaction checkpoint
+written before broadcast, recovery without changing the deployment nonce, and
+verification of immutable fees, bytecode, confirmations and legacy escrow links.
+An isolated Anvil test verifies recovery after a lost broadcast response. No new
+Gnosis deployment has been made; the fee treasury is still required.
+
+Subsequent indexer changes pass all 30 automation tests locally. A persistent
+funding queue and rotating active sweep bound bounty reads; failed RPC reads and
+process restarts retain progress. Enrollment discovery has a separate retry
+budget. Regression tests also cover a reorg during log retrieval, transactional
+event checkpoints, and settled jobs whose later settlement is orphaned while
+their original funding remains canonical. These tests use controlled RPC fixtures
+alongside the existing real Anvil relay suite; they are not live-chain fault tests.

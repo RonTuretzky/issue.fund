@@ -79,6 +79,12 @@ export class Store {
         PRIMARY KEY(chain_id, escrow, tx_hash, log_index)
       );
       CREATE INDEX IF NOT EXISTS event_history ON chain_events(chain_id, escrow, event_name, block_number);
+      CREATE TABLE IF NOT EXISTS index_pending (
+        bounty_key TEXT PRIMARY KEY, chain_id INTEGER NOT NULL, escrow TEXT NOT NULL,
+        bounty_id TEXT NOT NULL, funded_block INTEGER NOT NULL, funded_hash TEXT NOT NULL,
+        next_attempt INTEGER NOT NULL DEFAULT 0
+      );
+      CREATE INDEX IF NOT EXISTS index_pending_ready ON index_pending(chain_id, escrow, next_attempt, bounty_key);
       CREATE TABLE IF NOT EXISTS health (name TEXT PRIMARY KEY, checked_at INTEGER NOT NULL, ok INTEGER NOT NULL, code TEXT);
       CREATE TABLE IF NOT EXISTS leases (name TEXT PRIMARY KEY, owner TEXT NOT NULL, until_at INTEGER NOT NULL);
     `);

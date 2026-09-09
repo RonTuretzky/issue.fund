@@ -165,6 +165,15 @@ was replaced or reverted. Fees accrue to the fee wallet separately from relay ga
 
 Recent transaction reorg checks cover the latest 200 settled transactions; funding
 scan rollback rewinds 5,000 blocks and also checks active funding block hashes.
+Each poll scans at most 500 blocks per escrow and durably queues discovered
+funding before advancing its checkpoint. It refreshes at most 25 queued and 25
+active bounties per escrow, with a persistent rotating sweep. Failed queued reads
+retry after 30 seconds without blocking later bounties. These are work-count
+limits, not a wall-clock guarantee; RPC latency still affects cycle time. Automatic
+issue discovery makes at most one registration attempt per poll, and retries the
+same unenrolled issue no more than once per 15 minutes. An explicit user preparation
+request can still enroll it immediately. A detected scan reorg also queues settled
+jobs whose funding remains canonical, so orphaned refunds/withdrawals are reread.
 For a deeper incident, pause the relay and rebuild/check the index from deployment
 blocks before resuming. Do not run multiple signer processes with different
 ledgers for the same wallet.

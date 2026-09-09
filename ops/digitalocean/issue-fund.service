@@ -12,6 +12,7 @@ Group=issue-fund
 SupplementaryGroups=issue-fund-ipc
 WorkingDirectory=/opt/issue-fund/current
 Environment=NODE_ENV=production
+Environment=BACKUP_STATUS_FILE=/var/lib/issue-fund-health/backup.json
 EnvironmentFile=/etc/issue-fund/collector/service.env
 ExecStart=/usr/local/bin/node automation/run.mjs
 Restart=on-failure

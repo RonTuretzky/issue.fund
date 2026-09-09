@@ -88,6 +88,13 @@ try {
     store,
     registry,
     installUrl: process.env.GITHUB_APP_INSTALL_URL ?? null,
+    monitoring: {
+      mailboxExpected: Boolean(
+        mailbox.address || mailbox.password || mailbox.accessToken,
+      ),
+      relayExpected: Boolean(relay),
+      backupStatusFile: process.env.BACKUP_STATUS_FILE,
+    },
   });
   const server = app.listen(Number(process.env.PORT ?? 4320), "127.0.0.1");
   let stopping = false;

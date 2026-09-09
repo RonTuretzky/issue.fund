@@ -7,9 +7,40 @@ import {
   readdirSync,
   statSync,
   existsSync,
+  writeFileSync,
+  openSync,
+  fsyncSync,
+  closeSync,
 } from "node:fs";
-import { resolve, join } from "node:path";
+import { resolve, join, dirname } from "node:path";
+import { randomUUID } from "node:crypto";
 import { safeCode } from "./errors.mjs";
+
+function report(ok, databases) {
+  const path = process.env.BACKUP_STATUS_FILE;
+  if (!path) return;
+  // The status directory is root-owned; the collector can only read this small
+  // report, never the snapshots or backup credentials. Publish after both copies.
+  const staging = `${path}.${randomUUID()}.partial`;
+  try {
+    writeFileSync(
+      staging,
+      JSON.stringify({ version: 1, ok, databases, checkedAt: Date.now() }) +
+        "\n",
+      { mode: 0o644, flag: "wx", flush: true },
+    );
+    chmodSync(staging, 0o644);
+    renameSync(staging, path);
+    const directory = openSync(dirname(path), "r");
+    try {
+      fsyncSync(directory);
+    } finally {
+      closeSync(directory);
+    }
+  } finally {
+    rmSync(staging, { force: true });
+  }
+}
 
 // Root-owned service timer: database copies never include the separate secret files.
 try {
@@ -50,6 +81,7 @@ try {
     const path = join(directory, name);
     if (statSync(path).mtimeMs < Date.now() - 30 * 86400_000) rmSync(path);
   }
+  report(true, sources.length);
   console.log(
     JSON.stringify({
       event: "backup_verified",
@@ -58,6 +90,11 @@ try {
     }),
   );
 } catch (error) {
+  try {
+    report(false, 0);
+  } catch {
+    /* A stale/missing report also fails the probe. */
+  }
   console.error(
     JSON.stringify({ event: "backup_failed", code: safeCode(error) }),
   );

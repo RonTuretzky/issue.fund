@@ -4,6 +4,7 @@ Description=Verify online SQLite snapshots for issue.fund
 Type=oneshot
 User=root
 WorkingDirectory=/opt/issue-fund/current
+Environment=BACKUP_STATUS_FILE=/var/lib/issue-fund-health/backup.json
 ExecStart=/usr/local/bin/node automation/backup.mjs
 UMask=0077
 TimeoutStartSec=120
@@ -14,4 +15,5 @@ ProtectSystem=strict
 ProtectHome=yes
 NoNewPrivileges=yes
 ReadWritePaths=/var/backups/issue-fund
+ReadWritePaths=/var/lib/issue-fund-health
 ReadOnlyPaths=/var/lib/issue-fund /var/lib/issue-fund-signer

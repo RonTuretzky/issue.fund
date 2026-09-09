@@ -73,6 +73,34 @@ try {
     { code: "signer_policy_rejected" },
   );
   command("systemctl", ["start", "issue-fund-backup.service"]);
+  const backupReport = "/var/lib/issue-fund-health/backup.json";
+  assert.equal(statSync(backupReport).uid, 0);
+  assert.equal(
+    spawnSync("runuser", ["-u", "issue-fund", "--", "test", "-r", backupReport])
+      .status,
+    0,
+  );
+  assert.notEqual(
+    spawnSync("runuser", ["-u", "issue-fund", "--", "test", "-w", backupReport])
+      .status,
+    0,
+  );
+  assert.notEqual(
+    spawnSync("runuser", [
+      "-u",
+      "issue-fund",
+      "--",
+      "test",
+      "-w",
+      "/var/lib/issue-fund-health",
+    ]).status,
+    0,
+  );
+  const operational = await fetch(
+    "http://127.0.0.1:4320/v1/health/operational",
+  );
+  assert.equal(operational.status, 200);
+  assert.equal((await operational.json()).checks.backup, true);
   const backups = readdirSync("/var/backups/issue-fund")
     .filter((x) => x.endsWith(".sqlite"))
     .sort();
@@ -110,6 +138,8 @@ try {
       secretIsolation: "passed",
       signerNetworkIsolation: "passed",
       invalidSignRequest: "rejected",
+      operationalProbe: "healthy",
+      backupReportIsolation: "passed",
       restore: results,
     }),
   );

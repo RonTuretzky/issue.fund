@@ -132,6 +132,10 @@ clients while users have open bounties or credits there.
   hashes, never raw emails or credentials.
 - `GET /healthz` reports process availability. `/v1/health` exposes component
   health. Process availability alone does not mean automatic claims are ready.
+- `GET /v1/health/operational` returns HTTP 503 for stale/failed worker or chain
+  health, expected mailbox failures, reported relay or repository failures, missing
+  disclosure validation in automatic mode, or stale/failed local backups. It returns
+  only check names and booleans, never private errors or receipt data.
 
 Ready requires a recent subscription check, healthy mailbox polling, an actual
 verified notification received after watching began, and completed disclosure
@@ -255,15 +259,29 @@ service does not implement a credential-exchange route.
 ### External availability monitoring
 
 `ops/digitalocean/monitoring.mjs` provisions a single DigitalOcean HTTPS check for
-`https://api.issue.fund/healthz` from US East, US West and Europe. It defaults to
+`https://api.issue.fund/v1/health/operational` from US East, US West and Europe. It defaults to
 a read-only plan; `--apply` creates or reconciles that named check. It reuses the
 existing resource and refuses conflicting targets or duplicate names. Provider
 credentials stay on the operator machine. September 9 verification found all
 three regions UP and confirmed a rerun did not create another check.
 
-This probe measures HTTP/TLS process availability. It does not prove notification
-delivery, worker freshness, claim eligibility, relay balance or backup success.
-Component-level and backup-failure alert delivery remain launch requirements.
+The operational probe requires worker and chain heartbeats no older than two
+minutes. A configured mailbox is checked too; automatic mode additionally checks
+disclosure validation, reported relay errors and repository errors. An idle relay
+without a result is reported as unobserved. The probe does not independently
+simulate a claim or check the current gas balance; a detected relay error is
+reported after the relay attempts its work.
+
+The root-owned backup timer publishes a small atomic status report only after
+both database snapshots pass integrity checks. The collector can read that report
+but cannot change it or access the backup files. Missing, malformed, future-dated,
+failed, incomplete or older-than-30-hour reports produce HTTP 503. This checks
+local snapshots, not off-host backup freshness. A failed attempt replaces the old
+success report, including when only the first database was copied successfully.
+
+A healthy `mode: setup` explicitly leaves automatic claims disabled. Operational
+health does not establish genuine notification delivery or claim eligibility.
+Notification delivery for these health failures remains a launch requirement.
 DigitalOcean [prices Uptime](https://docs.digitalocean.com/products/uptime/details/pricing/)
 at $1 per check per month, billed hourly, with a 672-hour monthly first-check
 credit. No Spaces bucket has been provisioned by this setup.

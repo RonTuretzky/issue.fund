@@ -58,11 +58,14 @@ not establish that every current GitHub email variant is supported.
 
 - 50 Solidity tests pass, including the existing RSA/policy/escrow cases and 15
   V2 fee cases; fuzz cases run 128 inputs each.
-- 30 automation tests pass, including a real local EVM path using **locally
+- 35 automation tests pass, including a real local EVM path using **locally
   generated RSA signatures**, encrypted receipt persistence, out-of-order/dedup
   handling, admission/readiness checks, disclosure gating before RPC, fee payout,
   withdrawal, gas depletion, restart after a lost broadcast response, replacement,
   competing-claim cancellation and recent reorg recovery.
+- Operational health regression tests cover stale/future heartbeats, conditional
+  mailbox/disclosure checks, private-error redaction, incomplete/stale backup
+  reports, and HTTP 503 while the process liveness endpoint still returns 200.
 - 16 existing JavaScript GitHub/DKIM tests pass; the static Gnosis build passes.
 - DigitalOcean and supplied GitHub token authentication succeed. The supplied
   fine-grained PAT cannot perform per-repository watching.

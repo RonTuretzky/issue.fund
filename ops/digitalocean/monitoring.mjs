@@ -57,7 +57,7 @@ const list = async (path, field) => {
 const checkSpec = {
   name: "issue.fund API availability",
   type: "https",
-  target: "https://api.issue.fund/healthz",
+  target: "https://api.issue.fund/v1/health/operational",
   regions: ["us_east", "us_west", "eu_west"],
   enabled: true,
 };
@@ -99,7 +99,10 @@ const matches = (actual, expected) =>
 try {
   const checks = await list("/uptime/checks", "checks");
   let check = unique(checks, "name", checkSpec.name);
-  if (check && check.target !== checkSpec.target)
+  if (
+    check &&
+    ![checkSpec.target, "https://api.issue.fund/healthz"].includes(check.target)
+  )
     throw Error("Named check points to another target");
   console.log(
     JSON.stringify({

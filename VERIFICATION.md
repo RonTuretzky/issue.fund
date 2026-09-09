@@ -155,3 +155,14 @@ alerts for an explicitly chosen email address. The address choice is pending.
 The documented Spaces key endpoint returned 404 with current account access;
 the browser console is signed out. No bucket or storage key was created, and
 recurring off-host export remains pending alongside the real-mail launch inputs.
+
+## Operational health and backup failure detection
+
+The monitoring target is being upgraded from process liveness to
+`/v1/health/operational`. The new probe uses worker/chain freshness, configured
+mailbox health, reported relay/repository errors, disclosure state and a root-owned
+backup report. Backup status is written atomically after both snapshots pass
+integrity checks; a partial failure cannot retain a previous success report.
+Setup mode remains distinct from enabled automatic claims. All 35 automation
+tests pass locally, including the added operational-health and partial-backup
+regressions. Deployment and live failure/recovery verification follow separately.

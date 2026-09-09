@@ -2,6 +2,7 @@ import express from "express";
 import { parseIssueUrl } from "./github.mjs";
 import { bountyKey } from "./indexer.mjs";
 import { ServiceError, safeCode } from "./errors.mjs";
+import { operationalHealth } from "./operational-health.mjs";
 
 export function createApi({
   store,
@@ -9,6 +10,7 @@ export function createApi({
   origins = ["https://issue.fund"],
   installUrl = null,
   now = Date.now,
+  monitoring = {},
 }) {
   const app = express();
   app.disable("x-powered-by");
@@ -62,6 +64,15 @@ export function createApi({
       disclosureValidated: Boolean(registry.validationId),
       installUrl,
     });
+  });
+  app.get("/v1/health/operational", (_req, res) => {
+    const report = operationalHealth({
+      ...monitoring,
+      store,
+      now: now(),
+      disclosureValidated: Boolean(registry.validationId),
+    });
+    res.status(report.status === "ok" ? 200 : 503).json(report);
   });
   app.post(
     "/v1/issues/prepare",
@@ -121,14 +132,12 @@ export function createApi({
         : ["entity.too.large", "entity.parse.failed"].includes(error.type)
           ? 400
           : 503;
-    res
-      .status(status)
-      .json({
-        code: safeCode(error),
-        ...(error.code === "maintainer_installation_required"
-          ? { installUrl }
-          : {}),
-      });
+    res.status(status).json({
+      code: safeCode(error),
+      ...(error.code === "maintainer_installation_required"
+        ? { installUrl }
+        : {}),
+    });
   });
   return app;
 }

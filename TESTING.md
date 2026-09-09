@@ -36,3 +36,11 @@ Both commands run in CI with Node 24.21.0, matching the deployed backend runtime
 These tests generate synthetic signatures only on isolated chains. Passing them
 does not complete genuine GitHub-mail/Gnosis acceptance or authorize automatic
 receipt disclosure. CI has no deployment or mailbox secrets.
+
+The pinned Etherform CI wrapper's setup action invokes the current `foundryup`
+binary through `bash`, which fails before tests start. CI therefore uses the
+official Foundry action pinned to
+`908c540300062bd5a7e473851cdb4282204cee09` and runs the complete `forge test -vv`
+suite directly. This changes tool installation, not contract test coverage. The
+legacy V1 Etherform deployment workflow remains separate from the V2 deployment
+commands documented in GNOSIS.md.

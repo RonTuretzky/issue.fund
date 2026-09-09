@@ -26,3 +26,11 @@ systemctl restart issue-fund-signer.service
 systemctl restart issue-fund.service
 systemctl start issue-fund-backup.timer
 systemctl reload caddy
+for TASK_HEALTH_ATTEMPT in $(seq 1 15); do
+  if systemctl is-active --quiet issue-fund issue-fund-signer && test -S /run/issue-fund-ipc/signer.sock && curl --fail --silent http://127.0.0.1:4320/healthz >/dev/null; then
+    exit 0
+  fi
+  sleep 2
+done
+printf 'The release did not become healthy. Inspect the service journal.\n' >&2
+exit 1

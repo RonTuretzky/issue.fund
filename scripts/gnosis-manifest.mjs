@@ -6,7 +6,7 @@ export const dkimKey = JSON.parse(
 );
 export const artifact = (name) =>
   JSON.parse(fs.readFileSync(`out/${name}.sol/${name}.json`, "utf8"));
-function normalize(code, references) {
+export function normalize(code, references) {
   let hex = code.toLowerCase().replace(/^0x/, "");
   for (const refs of Object.values(references ?? {}))
     for (const { start, length } of refs)

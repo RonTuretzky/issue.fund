@@ -23,7 +23,9 @@
     "deploy:pages": "npm run build:gnosis && node scripts/deploy-pages.mjs",
     "test:automation": "node --test tests/automation/*.test.mjs",
     "start:automation": "node automation/run.mjs",
-    "start:signer": "node automation/run-signer.mjs"
+    "start:signer": "node automation/run-signer.mjs",
+    "test:deployment": "node --test tests/deployment.test.mjs",
+    "deploy:v2:plan": "node scripts/deploy-v2-gnosis.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1",

@@ -22,3 +22,17 @@ The browser integration verifies that email-bearing requests are absent during â
 For an explicitly authorized tiny Gnosis test, prepare a disposable **public** repository using `scripts/github-gnosis-fixture.mjs`, serve `npm run build:gnosis` on port 5175, and run `node scripts/run-gnosis-e2e.mjs fund`. That helper reads the signer through hidden terminal input or a secret environment variable. Merge only after funding, obtain fresh `.local/rsa-gnosis-merge.eml` and `.local/rsa-gnosis-closure.eml`, then run the helper with `claim`. Live tests are gated behind `RUN_GNOSIS_E2E=1`, limit transaction destinations and amounts, and disable traces. Direct claims intentionally publish the signed email data.
 
 CI uses Breadchain's pinned Etherform contract workflow and a separate Node/browser job. It runs full local RSA integration without mailbox access, real money, or private artifacts. Original emails, private keys, traces and local transaction state are ignored by Git.
+
+## Automated collector and V2 deployment
+
+`npm run test:automation` exercises collector admission, delivery policy, receipt
+persistence, disclosure gating, relay recovery, fee settlement, retention and
+backup/restore. `npm run test:deployment` starts an isolated Anvil instance and
+checks V2 deployment planning, durable recovery after an ambiguous broadcast,
+immutable fee/runtime verification and preserved V1 funding/links. It also rejects
+changed checkpoint terms, substituted signed transactions and the wrong deployer.
+Both commands run in CI with Node 24.21.0, matching the deployed backend runtime.
+
+These tests generate synthetic signatures only on isolated chains. Passing them
+does not complete genuine GitHub-mail/Gnosis acceptance or authorize automatic
+receipt disclosure. CI has no deployment or mailbox secrets.

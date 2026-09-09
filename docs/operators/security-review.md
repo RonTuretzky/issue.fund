@@ -70,13 +70,15 @@ not establish that every current GitHub email variant is supported.
 The frontend now includes automatic/manual onboarding, status flows, exact fee/net
 quotes and separate V1/V2 bounty identities and withdrawal balances. Local browser
 checks cover readiness loss, manual fallback, old links and independent withdrawal.
-The static build passes; static multi-escrow RPC coverage and live rollout remain.
+The static build passes; browser RPC coverage verifies both deployed local escrows and rejects changed
+immutable fees. The production frontend rollout remains.
 Retention uses a persistent settlement timestamp and prunes settled encrypted
 payloads after 30 days, while active transactions pin their evidence. An online
-backup/restore test passes. DigitalOcean provisioning and DNS are underway.
+backup/restore test passes. DigitalOcean deployment and HTTPS are live, with relay and automatic disclosure
+disabled. Separate users, secret access, the private signer network and a live
+database restore have been checked.
 
-Deploy and supervise the service; validate signer IPC and environment isolation;
-verify production backup/restore and alerting; install the maintainer App; configure
+Verify external alert delivery and off-host backup scheduling; install the maintainer App; configure
 compatible watching and mailbox credentials; run the real reply-lock/replay
 matrix; deploy V2 to the agreed treasury; and complete a genuine GitHub-to-Gnosis
 fund/collect/claim/withdraw acceptance run. Review the final source and deployed

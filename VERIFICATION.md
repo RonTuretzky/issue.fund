@@ -86,3 +86,19 @@ open. The collector now closes its store after in-flight work on shutdown.
 DigitalOcean droplet 599168492 was provisioned with a dedicated key, restricted
 firewall, backups and DNS at api.issue.fund. Runtime deployment verification is
 still in progress; automatic disclosure remains gated and V2 is not on Gnosis.
+
+The complete browser suite now passes all 34 cases. Additional browser RPC checks
+read both locally deployed escrow versions, resolve the same bounty ID independently,
+and reject a manifest with altered immutable fees. Automatic status cannot show
+credited funds while the browser's chain read still reports an open bounty. The
+static Gnosis build passes. The public frontend still serves the previous release.
+
+DigitalOcean now serves https://api.issue.fund with a valid HTTPS certificate and
+HTTP redirect. The service API, separate Unix identities, protected credential
+files, private signer network, and rejection of an invalid signing request were
+checked on the deployed host. A forced-stop drill restarted both supervised
+processes with their persistent databases and Unix socket intact. Both database
+snapshots restored successfully; a protected off-server backup copy has the same
+SHA-256 as the source archive. Automatic disclosure and relay are disabled. Health
+reports the missing mailbox; preparation returns maintainer_installation_required.
+No production claims or fund transfers were made by these deployment checks.

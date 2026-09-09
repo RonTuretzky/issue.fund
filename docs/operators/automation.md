@@ -2,7 +2,8 @@
 
 Implementation status: the collector, registry API, encrypted store, chain indexer,
 restricted signer and relay have local integration tests. The frontend has automatic/manual setup, fee quotes, per-escrow links and
-withdrawals, with local browser coverage. DigitalOcean deployment, the GitHub App installation, real-mail security tests,
+withdrawals, with local browser coverage. The DigitalOcean service is deployed at
+https://api.issue.fund with automatic disclosure disabled. The GitHub App installation, real-mail security tests,
 and the genuine GitHub-to-Gnosis acceptance run are still in progress. The live
 frontend continues to use the original deployment until that work is verified.
 
@@ -109,8 +110,9 @@ The signer never receives GitHub or mailbox credentials. The public HTTP service
 has no sign endpoint and no mail-upload endpoint. Source deployments require
 Node 22.13+ (SQLite is experimental in the installed Node 22 runtime), installed
 npm dependencies, persistent storage, TLS reverse proxy, and process supervision.
-The production runtime version and restart/backup behavior still need deployment
-verification; do not infer that from the in-process integration tests.
+The deployed runtime is Node 24.21.0 LTS. Separate user/file/network isolation and
+on-host database restore have been checked. Complete the real-mail acceptance
+matrix before enabling relay; infrastructure health is not delivery readiness.
 
 `DEPLOYMENTS_FILE` contains an array of approved manifests, including chain ID,
 escrow/verifier addresses, ABI, pinned DKIM key and `fromBlock`. Add the new V2
@@ -220,3 +222,37 @@ timer takes daily online snapshots and verifies SQLite integrity. Keep a protect
 off-host copy and separate key backup, then restore with both services stopped.
 Before starting a restored signer, reconcile its ledger with live chain and pending
 nonces; never treat an old snapshot as proof that a nonce was unused.
+
+## One-time App registration
+
+Run `node ops/digitalocean/register-app.mjs` locally and open
+http://127.0.0.1:4331 in a browser signed into the GitHub account that should own
+the service App. The manifest preconfigures Metadata read, Issues write and Pull
+requests write, disables webhooks and user OAuth, and returns the generated App
+configuration to a loopback callback. The callback verifies a random state and
+saves the private key and other credentials only to the ignored mode-0600 file
+`.local/secrets/github-app.json`. It then opens GitHub's installation page. Start
+with the designated public acceptance repository.
+
+`prepare-config.mjs` includes a saved App configuration when present. It generates
+a setup environment with automatic disclosure and relay still disabled. Do not
+use it to overwrite an already-enabled production environment; edit that protected
+configuration deliberately, preserving the validation record and operational limits.
+Never put the operator registration server on the public API hostname. The public
+service does not implement a credential-exchange route.
+
+## Verified deployment checkpoint
+
+The service at https://api.issue.fund currently indexes V1 with automatic disclosure
+and the relay worker disabled. The public frontend remains on its previous Pages
+release. The 2026-09-09 deployment checks covered separate secret access, the
+signer's private network namespace, IPC policy rejection, recovery of both
+processes after a forced stop, database restore and a matching protected off-host
+backup copy. A full live notification/claim run is still required.
+
+The signer unit holds an exclusive file lock before removing a stale socket, and
+its runtime directory persists across restarts so the collector's mount does not
+point to a replaced directory. Run production only through these service units;
+do not launch a second signer manually against the same key and ledger. The
+release installer waits for both processes, the Unix socket and loopback health
+before reporting success.

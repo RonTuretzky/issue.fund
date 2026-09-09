@@ -70,6 +70,7 @@ try {
       nonce: 0,
       data: "0x",
     }),
+    { code: "signer_policy_rejected" },
   );
   command("systemctl", ["start", "issue-fund-backup.service"]);
   const backups = readdirSync("/var/backups/issue-fund")

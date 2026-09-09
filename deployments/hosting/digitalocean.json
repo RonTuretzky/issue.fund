@@ -1,0 +1,35 @@
+{
+  "verifiedAt": "2026-09-09",
+  "url": "https://api.issue.fund",
+  "provider": "DigitalOcean",
+  "dropletId": 599168492,
+  "region": "nyc3",
+  "size": "s-1vcpu-1gb",
+  "baseMonthlyUsd": 6,
+  "providerBackupsEnabled": true,
+  "monitoringEnabled": true,
+  "sourceCommit": "9da14c601d96eb9d7b586d2d9c2155c80fe67e16",
+  "runtime": "Node.js 24.21.0",
+  "frontEndHosting": "GitHub Pages",
+  "automaticDisclosure": false,
+  "relayEnabled": false,
+  "relayAddress": "0x3Dfcfff86f6D704A946CdADd910899D96A01aB34",
+  "checks": [
+    "HTTPS health endpoint and HTTP redirect",
+    "CORS and missing maintainer installation response",
+    "separate Unix users and mutually inaccessible credentials",
+    "signer private network namespace and restricted IPC rejection",
+    "both services recover after forced process termination",
+    "online database snapshots and on-host restore",
+    "matching off-host backup checksum"
+  ],
+  "remaining": [
+    "classic watching PAT",
+    "Gmail mailbox credentials",
+    "GitHub App registration and installation",
+    "live reply-lock and forged/forwarded mail validation",
+    "fee treasury and V2 Gnosis deployment",
+    "external alert delivery and recurring off-host database export",
+    "production frontend rollout and genuine GitHub-to-Gnosis acceptance"
+  ]
+}

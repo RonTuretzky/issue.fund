@@ -47,7 +47,9 @@ export function AutomationStatus({
         ? progress?.state === "withdrawn"
           ? "withdrawn"
           : "credited"
-        : (progress?.state ?? "loading");
+        : ["credited", "withdrawn", "refunded"].includes(progress?.state ?? "")
+          ? "waiting_confirmation"
+          : (progress?.state ?? "loading");
   const copy: Record<string, [string, string]> = {
     loading: [
       "Checking automatic claim",

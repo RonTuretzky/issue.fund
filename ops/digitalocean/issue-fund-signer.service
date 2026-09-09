@@ -11,13 +11,14 @@ Group=issue-fund-ipc
 WorkingDirectory=/opt/issue-fund/current
 Environment=NODE_ENV=production
 EnvironmentFile=/etc/issue-fund/signer/service.env
-ExecStart=/usr/local/bin/node automation/run-signer.mjs
+ExecStart=/usr/bin/flock --nonblock --no-fork /var/lib/issue-fund-signer/process.lock /bin/sh -c 'rm -f /run/issue-fund-ipc/signer.sock; exec /usr/local/bin/node automation/run-signer.mjs'
 Restart=on-failure
 RestartSec=15
 TimeoutStopSec=30
 UMask=0077
 RuntimeDirectory=issue-fund-ipc
 RuntimeDirectoryMode=0770
+RuntimeDirectoryPreserve=yes
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes

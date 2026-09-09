@@ -4,6 +4,8 @@ set -euo pipefail
 TASK_RELEASE_DIR=${1:?release path required}
 case "$TASK_RELEASE_DIR" in /opt/issue-fund/releases/*) ;; *) exit 2;; esac
 cd "$TASK_RELEASE_DIR"
+chown root:root /etc/issue-fund
+chmod 0755 /etc/issue-fund
 npm ci --omit=dev --ignore-scripts --no-audit --no-fund
 chown -R root:root "$TASK_RELEASE_DIR"
 chmod -R go-w "$TASK_RELEASE_DIR"

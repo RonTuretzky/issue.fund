@@ -310,3 +310,118 @@ test("legacy links claim against V1 and each escrow balance withdraws independen
     await restore(snapshot);
   }
 });
+
+test("static API reads both deployed escrows and rejects changed immutable fees", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  const snapshot = await rpc("evm_snapshot");
+  try {
+    const old = await fixture();
+    const current = await fixture(1024, { version: 2 });
+    const config = {
+      ...current.config,
+      rpcUrl: "http://127.0.0.1:8547",
+      legacyDeployments: [old.config],
+      legacyLinkContract: old.config.contract,
+    };
+    await page.route("**/api/**", (route) =>
+      route.fulfill({
+        json:
+          new URL(route.request().url()).pathname === "/api/config"
+            ? config
+            : [],
+      }),
+    );
+    await page.goto("/");
+    const run = async (path: string) =>
+      page.evaluate(async (path) => {
+        // Exercise the exact browser RPC implementation, using isolated local escrows.
+        const module = await import("/src/static-api.ts");
+        return module.staticApi(path);
+      }, path);
+    const checked = await run("/config");
+    expect(checked.feeBps).toBe(100);
+    const list = await run("/bounties");
+    expect(list).toHaveLength(2);
+    expect(new Set(list.map((b: any) => b.contract.toLowerCase())).size).toBe(
+      2,
+    );
+    expect(list.map((b: any) => b.id)).toEqual([1, 1]);
+    const direct = await run(`/bounties/${old.config.contract}/1`);
+    expect(direct.bountyRef).toBe((await old.bounties())[0].bountyRef);
+    const credits = await run(`/credits/${old.accounts[1]}`);
+    expect(credits.escrows).toHaveLength(2);
+    expect(credits.amount).toBe("0");
+    config.feeBps = 200;
+    await page.reload();
+    await expect(run("/config")).rejects.toThrow(/deployed fee differs/);
+    await expect(
+      run("/bounties/0x1111111111111111111111111111111111111111/1"),
+    ).rejects.toThrow(/not listed/);
+  } finally {
+    await restore(snapshot);
+  }
+});
+
+test("automatic claim progress keeps manual recovery and reconciles settlement with chain state", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  const snapshot = await rpc("evm_snapshot");
+  try {
+    const f = await fixture(1024, { version: 2 });
+    let progress: any = { state: "waiting" };
+    await page.route("**/api/**", async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      return route.fulfill({
+        status: path.includes("/bounties/") ? 404 : 200,
+        json:
+          path === "/api/config"
+            ? {
+                ...f.config,
+                automationUrl: "https://collector.example.invalid",
+              }
+            : path === "/api/bounties"
+              ? await f.bounties()
+              : { amount: "0" },
+      });
+    });
+    await page.route("https://collector.example.invalid/**", (route) =>
+      route.fulfill({ json: progress }),
+    );
+    for (const [state, title] of Object.entries({
+      waiting: "Waiting for GitHub emails",
+      queued: "Receipts collected",
+      submitted: "Claim submitted",
+      credited: "Checking settlement",
+      attention: "Automatic claim needs attention",
+    })) {
+      progress = {
+        state,
+        code: state === "attention" ? "relay_needs_gas" : null,
+      };
+      await page.goto("/#bounty-1");
+      await page.reload();
+      const box = page.getByLabel("Automatic claim status");
+      await expect(box).toContainText(title);
+      await expect(box).toContainText(
+        "You can also submit your own original receipts below",
+      );
+      if (state === "attention")
+        await expect(box).toContainText("relay needs gas funds");
+    }
+    await page.goto("/#bounty-999");
+    await expect(
+      page.getByRole("heading", { name: "Bounty unavailable" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "All bounties", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Find your next contribution" }),
+    ).toBeVisible();
+  } finally {
+    await restore(snapshot);
+  }
+});

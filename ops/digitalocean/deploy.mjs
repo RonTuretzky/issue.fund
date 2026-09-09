@@ -9,6 +9,8 @@ const ssh = [
   "-o",
   "IdentitiesOnly=yes",
   "-o",
+  "IdentityAgent=none",
+  "-o",
   "BatchMode=yes",
   "-o",
   "StrictHostKeyChecking=yes",
@@ -59,7 +61,7 @@ try {
     run("ssh", [
       ...ssh,
       `root@${state.ip}`,
-      `tar -xzf /root/service-config.tgz -C /etc/issue-fund && chown -R issue-fund:issue-fund /etc/issue-fund/collector && chown -R issue-fund-signer:issue-fund-signer /etc/issue-fund/signer && chmod 700 /etc/issue-fund/collector /etc/issue-fund/signer && chmod 600 /etc/issue-fund/collector/* /etc/issue-fund/signer/* && chown root:root /etc/issue-fund/deployments.json && chmod 644 /etc/issue-fund/deployments.json && rm /root/service-config.tgz`,
+      `tar -xzf /root/service-config.tgz -C /etc/issue-fund && chown root:root /etc/issue-fund && chmod 755 /etc/issue-fund && chown -R issue-fund:issue-fund /etc/issue-fund/collector && chown -R issue-fund-signer:issue-fund-signer /etc/issue-fund/signer && chmod 700 /etc/issue-fund/collector /etc/issue-fund/signer && chmod 600 /etc/issue-fund/collector/* /etc/issue-fund/signer/* && chown root:root /etc/issue-fund/deployments.json && chmod 644 /etc/issue-fund/deployments.json && rm /root/service-config.tgz`,
     ]);
   }
   const result = run("ssh", [

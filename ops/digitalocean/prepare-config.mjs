@@ -36,6 +36,25 @@ const env = (path, values) => {
     { mode: 0o600 },
   );
 };
+const app = existsSync(".local/secrets/github-app.json")
+  ? JSON.parse(readFileSync(".local/secrets/github-app.json", "utf8"))
+  : null;
+if (app) {
+  if (
+    !Number.isSafeInteger(app.id) ||
+    !app.pem?.startsWith("-----BEGIN RSA PRIVATE KEY-----")
+  )
+    throw Error("Invalid GitHub App configuration");
+  const keyPath = root + "/collector/github-app.pem";
+  if (
+    existsSync(keyPath) &&
+    readFileSync(keyPath, "utf8").trim() !== app.pem.trim()
+  )
+    throw Error(
+      "A different App key is already configured; review before replacing",
+    );
+  secret(keyPath, app.pem.trim());
+}
 env(root + "/collector/service.env", {
   DEPLOYMENTS_FILE: "/etc/issue-fund/deployments.json",
   COLLECTOR_DATABASE: "/var/lib/issue-fund/collector.sqlite",
@@ -46,6 +65,13 @@ env(root + "/collector/service.env", {
   MAIL_PASSWORD: supplied.MAIL_PASSWORD || "",
   MAIL_ACCESS_TOKEN: supplied.MAIL_ACCESS_TOKEN || "",
   SIGNER_SOCKET: "/run/issue-fund-ipc/signer.sock",
+  ...(app
+    ? {
+        GITHUB_APP_ID: String(app.id),
+        GITHUB_APP_PRIVATE_KEY_FILE: "/etc/issue-fund/collector/github-app.pem",
+        GITHUB_APP_INSTALL_URL: app.html_url + "/installations/new",
+      }
+    : {}),
 });
 env(root + "/signer/service.env", {
   DEPLOYMENTS_FILE: "/etc/issue-fund/deployments.json",

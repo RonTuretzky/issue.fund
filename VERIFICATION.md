@@ -138,3 +138,20 @@ database restores passed again. The live collector has the new queue/sweep schem
 two indexed bounties, no pending discovery backlog and zero relay transactions.
 The relay address and disclosure validation remain unconfigured. Backlog issue #3
 now records the implementation checkpoint while leaving live acceptance open.
+
+## External monitoring checkpoint
+
+Created DigitalOcean HTTPS availability check
+`aa4cd079-dd99-4edc-a4ea-d1497fbc2c83` for `https://api.issue.fund/healthz`.
+Provider state reports UP from US East, US West and Europe. Reapplying the operator
+script retained the same ID and exactly one matching check. Its syntax and
+read-only plan were checked before applying. No alert destinations are configured,
+and no notification-delivery claim is made. This process/TLS check does not validate
+the worker, mailbox, relay or backups. Runtime source and public frontend were
+unchanged by this control-plane setup.
+
+The operator script also prepares scoped outage, certificate, CPU, memory and disk
+alerts for an explicitly chosen email address. The address choice is pending.
+The documented Spaces key endpoint returned 404 with current account access;
+the browser console is signed out. No bucket or storage key was created, and
+recurring off-host export remains pending alongside the real-mail launch inputs.

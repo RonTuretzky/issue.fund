@@ -8,6 +8,15 @@
   "baseMonthlyUsd": 6,
   "providerBackupsEnabled": true,
   "monitoringEnabled": true,
+  "uptimeCheck": {
+    "id": "aa4cd079-dd99-4edc-a4ea-d1497fbc2c83",
+    "target": "https://api.issue.fund/healthz",
+    "regions": ["us_east", "us_west", "eu_west"],
+    "observedStatus": "UP in all three regions",
+    "verifiedAt": "2026-09-09T23:28:25Z",
+    "notificationsConfigured": false,
+    "notificationDeliveryVerified": false
+  },
   "sourceCommit": "8f2d96d334d648060fc528f81a9777d04b195284",
   "ciUrl": "https://github.com/RonTuretzky/issue.fund/actions/runs/34416415413",
   "runtime": "Node.js 24.21.0",

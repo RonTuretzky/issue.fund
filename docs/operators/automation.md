@@ -252,6 +252,47 @@ service does not implement a credential-exchange route.
 
 ## Verified deployment checkpoint
 
+### External availability monitoring
+
+`ops/digitalocean/monitoring.mjs` provisions a single DigitalOcean HTTPS check for
+`https://api.issue.fund/healthz` from US East, US West and Europe. It defaults to
+a read-only plan; `--apply` creates or reconciles that named check. It reuses the
+existing resource and refuses conflicting targets or duplicate names. Provider
+credentials stay on the operator machine. September 9 verification found all
+three regions UP and confirmed a rerun did not create another check.
+
+This probe measures HTTP/TLS process availability. It does not prove notification
+delivery, worker freshness, claim eligibility, relay balance or backup success.
+Component-level and backup-failure alert delivery remain launch requirements.
+DigitalOcean [prices Uptime](https://docs.digitalocean.com/products/uptime/details/pricing/)
+at $1 per check per month, billed hourly, with a 672-hour monthly first-check
+credit. No Spaces bucket has been provisioned by this setup.
+
+After the operator chooses the notification address, run:
+
+```sh
+ALERT_EMAIL='operator@example.com' node ops/digitalocean/monitoring.mjs --apply --enable-alerts
+```
+
+Replace the example with the approved address; DigitalOcean requires a verified
+account address for Uptime email alerts. This reconciles global outage (2 minutes),
+certificate expiry (14 days), CPU over 85% (10 minutes), memory over 85% (5 minutes)
+and disk over 80% (5 minutes). Resource alerts target only the issue.fund droplet.
+Read-back verifies the configured targets, thresholds and recipients. Configured
+alerts still need a controlled notification-delivery drill; the script does not
+claim that API success means an email was received. A check-only rerun leaves
+existing notifications in place. Alert recipients and provider tokens are not
+included in its output or public deployment record.
+
+The current check has **no alert destinations**. Choosing an address, enabling
+alerts and confirming delivery remain pending. The documented Spaces key API
+returned 404 for the supplied account access, and the browser console requires
+login. Recurring off-host database export therefore still needs a private storage
+destination and scoped credentials. Existing online snapshots, provider backups
+and the verified one-time off-host copy remain available.
+
+### Service verification
+
 The service at https://api.issue.fund currently indexes V1 with automatic disclosure
 and the relay worker disabled. The public frontend remains on its previous Pages
 release. The 2026-09-09 deployment checks covered separate secret access, the

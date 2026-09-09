@@ -20,11 +20,15 @@
     "test:vectors": "node scripts/make-test-receipts.mjs",
     "docs:build": "node scripts/export-docs.mjs",
     "docs:check": "node scripts/export-docs.mjs --check",
-    "deploy:pages": "npm run build:gnosis && node scripts/deploy-pages.mjs"
+    "deploy:pages": "npm run build:gnosis && node scripts/deploy-pages.mjs",
+    "test:automation": "node --test tests/automation/*.test.mjs",
+    "start:automation": "node automation/run.mjs",
+    "start:signer": "node automation/run-signer.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1",
     "express": "5.1.0",
+    "imapflow": "2.0.0",
     "lucide-react": "0.468.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",

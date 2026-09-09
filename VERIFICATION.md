@@ -166,3 +166,24 @@ integrity checks; a partial failure cannot retain a previous success report.
 Setup mode remains distinct from enabled automatic claims. All 35 automation
 tests pass locally, including the added operational-health and partial-backup
 regressions. Deployment and live failure/recovery verification follow separately.
+
+Source `5e347729a19c04ddb07c404f984df2418ebba069` is deployed. Host verification
+passed the operational probe, root-owned backup-report read/write isolation,
+credential and signer-network separation, invalid-sign rejection and both database
+restores. A controlled partial-backup attempt in setup mode returned failure and
+made the public operational probe return 503 with `backup` listed. Running the
+normal backup service restored HTTP 200 and a successful two-database report.
+The temporary test copy was removed; no live database or escrow state was changed.
+
+The existing DigitalOcean check now targets the operational probe and reports UP
+in all three regions. Alert destinations remain unconfigured.
+[CI run 34417480650](https://github.com/RonTuretzky/issue.fund/actions/runs/34417480650)
+passed 50 Solidity, 35 automation, two deployment and 34 browser tests, plus the
+JavaScript/local-chain checks and static build. The optional private-email test
+remains skipped in CI.
+
+The Chrome session is signed in as RonTuretzky, but GitHub requires its Confirm
+access re-authentication before collector App registration. That handoff is open;
+no App credential or installation has yet been created. The compatible watching
+PAT, Gmail credentials, fee treasury, alert recipient and off-host storage access
+are still missing. Automatic disclosure and relay remain disabled.

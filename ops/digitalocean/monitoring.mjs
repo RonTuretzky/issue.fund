@@ -91,9 +91,21 @@ const unique = (rows, field, name) => {
     throw Error("Duplicate named monitoring resources require reconciliation");
   return matches[0];
 };
+const canonical = (value) => {
+  if (Array.isArray(value)) return value.map(canonical).sort();
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, canonical(value[key])]),
+    );
+  return value;
+};
 const matches = (actual, expected) =>
   Object.entries(expected).every(
-    ([key, value]) => JSON.stringify(actual[key]) === JSON.stringify(value),
+    ([key, value]) =>
+      JSON.stringify(canonical(actual[key])) ===
+      JSON.stringify(canonical(value)),
   );
 
 try {

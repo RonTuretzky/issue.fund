@@ -10,15 +10,15 @@
   "monitoringEnabled": true,
   "uptimeCheck": {
     "id": "aa4cd079-dd99-4edc-a4ea-d1497fbc2c83",
-    "target": "https://api.issue.fund/healthz",
+    "target": "https://api.issue.fund/v1/health/operational",
     "regions": ["us_east", "us_west", "eu_west"],
     "observedStatus": "UP in all three regions",
-    "verifiedAt": "2026-09-09T23:28:25Z",
+    "verifiedAt": "2026-09-09T23:35:58Z",
     "notificationsConfigured": false,
     "notificationDeliveryVerified": false
   },
-  "sourceCommit": "8f2d96d334d648060fc528f81a9777d04b195284",
-  "ciUrl": "https://github.com/RonTuretzky/issue.fund/actions/runs/34416415413",
+  "sourceCommit": "5e347729a19c04ddb07c404f984df2418ebba069",
+  "ciUrl": "https://github.com/RonTuretzky/issue.fund/actions/runs/34417480650",
   "runtime": "Node.js 24.21.0",
   "frontEndHosting": "GitHub Pages",
   "automaticDisclosure": false,
@@ -29,6 +29,8 @@
     "separate credential access and signer private network verified",
     "invalid signer request rejected with signer_policy_rejected",
     "both database snapshots restored successfully",
+    "root-owned backup status is readable but not writable by the collector",
+    "controlled partial backup failure returned public HTTP 503 and a fresh backup restored 200",
     "durable index queue and sweep active with two bounties and zero transactions"
   ],
   "checks": [

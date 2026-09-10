@@ -342,6 +342,21 @@ test("static API reads both deployed escrows and rejects changed immutable fees"
       }, path);
     const checked = await run("/config");
     expect(checked.feeBps).toBe(100);
+    await current.write(
+      "setFeeRecipient",
+      [current.accounts[3]],
+      current.accounts[2],
+    );
+    const rotated = await run("/config");
+    expect(rotated.feeRecipient.toLowerCase()).toBe(
+      current.accounts[3].toLowerCase(),
+    );
+    expect(rotated.feeOwner.toLowerCase()).toBe(
+      current.accounts[2].toLowerCase(),
+    );
+    expect(rotated.initialFeeRecipient.toLowerCase()).toBe(
+      current.accounts[2].toLowerCase(),
+    );
     const list = await run("/bounties");
     expect(list).toHaveLength(2);
     expect(new Set(list.map((b: any) => b.contract.toLowerCase())).size).toBe(
@@ -421,6 +436,102 @@ test("automatic claim progress keeps manual recovery and reconciles settlement w
     await expect(
       page.getByRole("heading", { name: "Find your next contribution" }),
     ).toBeVisible();
+  } finally {
+    await restore(snapshot);
+  }
+});
+
+test("fee owner rotates recipient, cancels a transfer, and hands control to the accepting wallet", async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  const snapshot = await rpc("evm_snapshot");
+  try {
+    const f = await fixture(1024, { version: 2 });
+    await page.route("**/api/**", async (route) => {
+      const path = new URL(route.request().url()).pathname;
+      await route.fulfill({
+        json:
+          path === "/api/config"
+            ? f.config
+            : path === "/api/bounties"
+              ? await f.bounties()
+              : { amount: "0" },
+      });
+    });
+    await page.goto("/");
+    await connect(page, 1);
+    await expect(page.locator(".fee-settings")).toHaveCount(0);
+    await connect(page, 3);
+    await page.locator(".fee-settings summary").click();
+    const panel = page.locator(".fee-settings");
+    const update = panel.getByRole("button", {
+      name: "Update fee recipient",
+      exact: true,
+    });
+    await panel
+      .getByLabel("New fee recipient")
+      .fill("0x0000000000000000000000000000000000000000");
+    await expect(update).toBeDisabled();
+    await panel.getByLabel("New fee recipient").fill(f.config.contract);
+    await expect(update).toBeDisabled();
+    await panel.getByLabel("New fee recipient").fill(f.accounts[0]);
+    await update.click();
+    await expect(panel.getByRole("status")).toContainText(
+      "Fee recipient updated",
+      { timeout: 30000 },
+    );
+    expect((await f.read("feeRecipient")).toLowerCase()).toBe(
+      f.accounts[0].toLowerCase(),
+    );
+    expect((await f.read("owner")).toLowerCase()).toBe(
+      f.accounts[2].toLowerCase(),
+    );
+    await panel.getByLabel("New owner wallet").fill(f.accounts[1]);
+    await panel.getByRole("button", { name: "Propose owner transfer" }).click();
+    await expect(
+      panel.getByRole("button", { name: "Cancel owner transfer" }),
+    ).toBeEnabled({ timeout: 30000 });
+    await panel.getByRole("button", { name: "Cancel owner transfer" }).click();
+    await expect(panel.getByRole("status")).toHaveText(
+      "Pending owner transfer cancelled.",
+      { timeout: 30000 },
+    );
+    await panel.getByLabel("New owner wallet").fill(f.accounts[1]);
+    await panel.getByRole("button", { name: "Propose owner transfer" }).click();
+    await expect(panel.getByRole("status")).toContainText("Transfer proposed", {
+      timeout: 30000,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: ".local/fee-settings-mobile.png",
+      fullPage: true,
+    });
+    await connect(page, 2);
+    await expect(
+      panel.getByRole("button", { name: "Update fee recipient" }),
+    ).toHaveCount(0);
+    await panel.getByRole("button", { name: "Accept ownership" }).click();
+    await expect(
+      panel.getByRole("button", { name: "Update fee recipient" }),
+    ).toBeVisible({ timeout: 30000 });
+    expect((await f.read("owner")).toLowerCase()).toBe(
+      f.accounts[1].toLowerCase(),
+    );
+    await connect(page, 3);
+    await expect(panel).toHaveCount(0);
   } finally {
     await restore(snapshot);
   }

@@ -743,8 +743,8 @@ footer button {
 }
 .tx-hash {
   display: block;
-  font-size: 9px;
-  opacity: 0.75;
+  font-size: 12px;
+  opacity: 1;
 }
 .credit-bar {
   display: flex;
@@ -2541,5 +2541,52 @@ footer .brand.small {
   .fee-summary > span {
     flex-wrap: wrap;
     gap: 4px;
+  }
+}
+
+.fee-settings {
+  margin: 20px 0;
+  font-size: 14px;
+}
+.fee-settings summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.fee-settings p,
+.fee-settings form,
+.fee-routing {
+  margin-top: 16px;
+}
+.fee-settings code {
+  overflow-wrap: anywhere;
+}
+.fee-routing dd {
+  margin: 4px 0 12px;
+}
+.fee-settings label {
+  display: block;
+  margin-bottom: 8px;
+}
+.fee-setting-action {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fee-setting-action input {
+  flex: 1 1 280px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--white);
+}
+.fee-settings small {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  .fee-setting-action .button {
+    width: 100%;
   }
 }

@@ -1,4 +1,11 @@
-import { createPublicClient, http, isAddress, keccak256 } from "viem";
+import {
+  createPublicClient,
+  http,
+  isAddress,
+  keccak256,
+  zeroAddress,
+  type Address,
+} from "viem";
 import { deployments, deploymentFor } from "./deployments";
 import type { Bounty, Config } from "./types";
 export const STATIC_MODE = import.meta.env.VITE_STATIC === "true";
@@ -98,7 +105,7 @@ export async function staticApi<T>(path: string): Promise<T> {
       client.getBlock(),
     ]);
     if (id !== c.chainId) throw Error("The RPC and escrow network disagree.");
-    await Promise.all(
+    const checked = await Promise.all(
       deployments(c).map(async (d) => {
         const [keyHash, verifier] = await Promise.all([
           read(d, "githubKeyHash"),
@@ -111,23 +118,50 @@ export async function staticApi<T>(path: string): Promise<T> {
           throw Error(
             "The deployed verifier differs from this site's configuration.",
           );
+        if (
+          d.runtimeHash &&
+          keccak256((await client.getCode({ address: d.contract })) ?? "0x") !==
+            d.runtimeHash
+        )
+          throw Error(
+            "The deployed escrow bytecode differs from this site's configuration.",
+          );
         if (d.protocol === "rsa-dkim-v2") {
-          const [bps, treasury] = await Promise.all([
-            read(d, "feeBps"),
-            read(d, "feeRecipient"),
-          ]);
+          const [bps, initialTreasury, treasury, owner, pendingOwner] =
+            await Promise.all([
+              read(d, "feeBps"),
+              read(d, "initialFeeRecipient"),
+              read(d, "feeRecipient"),
+              read(d, "owner"),
+              read(d, "pendingOwner"),
+            ]);
           if (
             Number(bps) !== d.feeBps ||
-            String(treasury).toLowerCase() !== d.feeRecipient!.toLowerCase()
+            String(initialTreasury).toLowerCase() !==
+              (d.initialFeeRecipient ?? d.feeRecipient)!.toLowerCase() ||
+            !isAddress(String(treasury)) ||
+            String(treasury).toLowerCase() === zeroAddress ||
+            String(treasury).toLowerCase() === d.contract.toLowerCase() ||
+            !isAddress(String(owner)) ||
+            String(owner).toLowerCase() === zeroAddress
           )
             throw Error(
               "The deployed fee differs from this site's configuration.",
             );
+          return {
+            ...d,
+            initialFeeRecipient: initialTreasury as Address,
+            feeRecipient: treasury as Address,
+            feeOwner: owner as Address,
+            pendingFeeOwner: pendingOwner as Address,
+          };
         }
+        return d;
       }),
     );
     return {
-      ...c,
+      ...checked[0],
+      legacyDeployments: checked.slice(1),
       chainTime: Number(block.timestamp),
       local: id === 31337,
     } as T;

@@ -4,6 +4,7 @@ import { parseEther, keccak256 } from "viem";
 import { isolatedAnvil } from "./helpers/anvil.mjs";
 import { signer } from "./helpers/receipts.mjs";
 import { artifact } from "../scripts/gnosis-manifest.mjs";
+import { verifyDeployments } from "../automation/config.mjs";
 import {
   planDeployment,
   resumeDeployment,
@@ -115,6 +116,16 @@ test("V2 deployment recovers a lost response once, verifies fees, and preserves 
       accounts[2].address.toLowerCase(),
     );
     await verifyLegacy(client, result.manifest);
+    assert.equal(
+      (
+        await client.readContract({
+          address: result.manifest.contract,
+          abi: result.manifest.abi,
+          functionName: "owner",
+        })
+      ).toLowerCase(),
+      accounts[2].address.toLowerCase(),
+    );
     await assert.rejects(
       resumeDeployment({
         ...options,
@@ -145,6 +156,24 @@ test("V2 deployment recovers a lost response once, verifies fees, and preserves 
     await assert.rejects(
       verifyLegacy(client, { ...result.manifest, feeBps: 200 }),
       /Legacy fee mismatch/,
+    );
+    const change = await wallet.writeContract({
+      account: accounts[2],
+      address: result.manifest.contract,
+      abi: result.manifest.abi,
+      functionName: "setFeeRecipient",
+      args: [accounts[1].address],
+    });
+    await client.waitForTransactionReceipt({ hash: change });
+    await verifyLegacy(client, result.manifest);
+    await verifyDeployments(client, [result.manifest]);
+    assert.equal(
+      await client.readContract({
+        address: result.manifest.contract,
+        abi: result.manifest.abi,
+        functionName: "initialFeeRecipient",
+      }),
+      accounts[2].address,
     );
   } finally {
     await chain.close();

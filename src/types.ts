@@ -13,6 +13,10 @@ export type Config = {
   protocol: "rsa-dkim-v1" | "rsa-dkim-v2";
   feeBps?: number;
   feeRecipient?: Address;
+  initialFeeRecipient?: Address;
+  feeOwner?: Address;
+  pendingFeeOwner?: Address;
+  runtimeHash?: `0x${string}`;
   legacyDeployments?: Config[];
   legacyLinkContract?: Address;
   automationUrl?: string;

@@ -3,7 +3,12 @@ pragma solidity ^0.8.30;
 import {MergeBountyV2} from "../MergeBountyV2.sol";
 import {IDkimVerifier} from "../IDkimVerifier.sol";
 import {ReceiptPolicy} from "../ReceiptPolicy.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Vm, UnitVerifier, RejectEther} from "./MergeBounty.t.sol";
+
+interface VmV2 is Vm {
+    function expectRevert(bytes calldata) external;
+}
 
 contract V2ReentrantRecipient {
     MergeBountyV2 immutable escrow;
@@ -20,15 +25,14 @@ contract V2ReentrantRecipient {
     receive() external payable {
         try escrow.withdraw(payable(address(this))) {
             revert("reentered");
-        }
-            catch {
+        } catch {
             blocked = true;
         }
     }
 }
 
 contract MergeBountyV2Test {
-    Vm constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    VmV2 constant vm = VmV2(address(uint160(uint256(keccak256("hevm cheat code")))));
     MergeBountyV2 escrow;
     address constant CONTRIBUTOR = address(0x1234);
     address constant TREASURY = address(0x5678);
@@ -176,12 +180,81 @@ contract MergeBountyV2Test {
 
     function testInvalidFeeConfiguration() public {
         UnitVerifier verifier = new UnitVerifier();
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableInvalidOwner.selector, address(0)));
         new MergeBountyV2(verifier, address(0), 100);
         vm.expectRevert(MergeBountyV2.InvalidInput.selector);
         new MergeBountyV2(verifier, TREASURY, 501);
         vm.expectRevert(MergeBountyV2.InvalidInput.selector);
         new MergeBountyV2(IDkimVerifier(address(0)), TREASURY, 100);
+    }
+
+    function testRecipientRotationOnlyAffectsFutureFeesAndKeepsAccruedCredits() public {
+        settle(1, CONTRIBUTOR);
+        escrow.create{value: 2 ether}("owner/repo", 1, "main", DEADLINE);
+        vm.prank(TREASURY);
+        escrow.setFeeRecipient(RELAYER);
+        settle(2, CONTRIBUTOR);
+        require(escrow.owner() == TREASURY && escrow.initialFeeRecipient() == TREASURY);
+        require(escrow.feeRecipient() == RELAYER && escrow.feeBps() == 100);
+        require(escrow.credits(TREASURY) == 0.01 ether);
+        require(escrow.credits(RELAYER) == 0.02 ether);
+        require(escrow.credits(CONTRIBUTOR) == 2.97 ether);
+        vm.prank(TREASURY);
+        escrow.withdraw(payable(TREASURY));
+        require(TREASURY.balance == 0.01 ether);
+        require(address(escrow).balance == 2.99 ether);
+    }
+
+    function testOnlyOwnerCanRouteFeesAndNoInvalidDestinations() public {
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, address(this)));
+        escrow.setFeeRecipient(CONTRIBUTOR);
+        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.prank(TREASURY);
+        escrow.setFeeRecipient(address(0));
+        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.prank(TREASURY);
+        escrow.setFeeRecipient(address(escrow));
+        require(escrow.feeRecipient() == TREASURY);
+        require(address(escrow).balance == 1 ether);
+    }
+
+    function testOwnershipTransferRequiresAcceptanceAndOldOwnerLosesAuthority() public {
+        require(escrow.owner() == TREASURY);
+        vm.prank(TREASURY);
+        escrow.transferOwnership(RELAYER);
+        require(escrow.pendingOwner() == RELAYER && escrow.owner() == TREASURY);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, RELAYER));
+        vm.prank(RELAYER);
+        escrow.setFeeRecipient(RELAYER);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, address(this)));
+        escrow.acceptOwnership();
+        vm.prank(RELAYER);
+        escrow.acceptOwnership();
+        require(escrow.owner() == RELAYER && escrow.pendingOwner() == address(0));
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, TREASURY));
+        vm.prank(TREASURY);
+        escrow.setFeeRecipient(CONTRIBUTOR);
+        vm.prank(RELAYER);
+        escrow.setFeeRecipient(CONTRIBUTOR);
+        settle(1, CONTRIBUTOR);
+        require(escrow.credits(CONTRIBUTOR) == 1 ether);
+    }
+
+    function testOwnershipCannotBeAbandonedOrTransferredToEscrowAndPendingCanBeCancelled() public {
+        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.prank(TREASURY);
+        escrow.renounceOwnership();
+        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.prank(TREASURY);
+        escrow.transferOwnership(address(escrow));
+        vm.prank(TREASURY);
+        escrow.transferOwnership(RELAYER);
+        vm.prank(TREASURY);
+        escrow.transferOwnership(address(0));
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, RELAYER));
+        vm.prank(RELAYER);
+        escrow.acceptOwnership();
+        require(escrow.owner() == TREASURY);
     }
 
     function testZeroFeeAndTinyRewards() public {

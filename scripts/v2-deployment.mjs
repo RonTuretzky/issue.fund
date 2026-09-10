@@ -84,7 +84,10 @@ export async function verifyLegacy(client, legacy) {
     if (
       d.protocol === "rsa-dkim-v2" &&
       (Number(await read("feeBps")) !== d.feeBps ||
-        !same(await read("feeRecipient"), d.feeRecipient))
+        !same(
+          await read("initialFeeRecipient"),
+          d.initialFeeRecipient ?? d.feeRecipient,
+        ))
     )
       throw Error("Legacy fee mismatch");
   }
@@ -286,10 +289,13 @@ export async function resumeDeployment({
   if (
     Number(await read("feeBps")) !== terms.feeBps ||
     !same(await read("feeRecipient"), terms.feeRecipient) ||
+    !same(await read("initialFeeRecipient"), terms.feeRecipient) ||
+    !same(await read("owner"), terms.feeRecipient) ||
+    !same(await read("pendingOwner"), zeroAddress) ||
     !same(await read("verifier"), terms.legacy.verifier) ||
     (await read("githubKeyHash")) !== terms.legacy.keyHash
   )
-    throw Error("Deployed immutable terms mismatch");
+    throw Error("Deployed fee or ownership terms mismatch");
   checkpoint.blockNumber = Number(receipt.blockNumber);
   checkpoint.blockHash = receipt.blockHash;
   checkpoint.runtimeHash = runtimeHash;
@@ -309,6 +315,7 @@ export async function resumeDeployment({
     abi: a.abi,
     feeBps: terms.feeBps,
     feeRecipient: terms.feeRecipient,
+    initialFeeRecipient: terms.feeRecipient,
     fromBlock: checkpoint.blockNumber,
     runtimeHash,
     deployedAt: new Date().toISOString(),

@@ -15,6 +15,18 @@ The public static app uses native xDAI on Gnosis, chain ID 100. The deployment m
 - [Download the current deployment manifest](https://issue.fund/deployment.gnosis.json)
 - [Source and deployment records](https://github.com/RonTuretzky/issue.fund/tree/main/deployments/gnosis)
 
+## Claim fees and changing the fee recipient
+
+V2 deducts a fixed success fee when a valid claim settles. The funding form shows both the fee and the contributor’s net reward. Refunds return the full reward, and V1 bounties retain their original no-fee terms.
+
+The V2 owner can change the wallet credited with fees from future claims. The owner cannot change the fee percentage, redirect contributor rewards, withdraw other wallets’ credits, replace the verifier or move active bounty funds. Previously earned fees remain credited to the old recipient.
+
+1. Connect the current owner wallet on Gnosis. Open Fee settings below the wallet balance area on the bounty or repository page.
+2. Enter New fee recipient, select Update fee recipient and confirm the transaction. The site reads the new address directly from the contract; no website redeployment is needed.
+3. To transfer control as well, enter New owner wallet and select Propose owner transfer. Connect that new wallet and select Accept ownership. The current owner can cancel a pending transfer before acceptance.
+4. To withdraw earned fees, connect the wallet that earned them and use Withdraw xDAI. Changing the fee recipient does not move old credits or transfer ownership.
+
+
 ## Supported receipt format
 
 - GitHub notifications signed for github.com with selector pf2023, RSA-SHA256 and relaxed/relaxed canonicalization.

@@ -118,7 +118,10 @@ matrix before enabling relay; infrastructure health is not delivery readiness.
 escrow/verifier addresses, ABI, pinned DKIM key and `fromBlock`. Add the new V2
 escrow alongside V1 when it is deployed. The backend validates the chain and
 immutable verifier/key; include `runtimeHash` for bytecode pinning. V2 manifests
-also pin `feeBps` and `feeRecipient`. Never delete the legacy deployment from
+also pin `feeBps` and `initialFeeRecipient` (the initial owner). `feeRecipient`,
+`owner` and `pendingOwner` are read from the chain and may change through authorized
+transactions. The initial recipient is recorded separately so a valid routing
+change does not stop the API or frontend. Never delete the legacy deployment from
 clients while users have open bounties or credits there.
 
 ## API and readiness

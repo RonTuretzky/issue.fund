@@ -52,8 +52,8 @@ export async function verifyDeployments(client, deployments) {
       fail("deployment_runtime_mismatch");
     if (d.protocol === "rsa-dkim-v2") {
       if (
-        (await read("feeRecipient")).toLowerCase() !==
-          d.feeRecipient.toLowerCase() ||
+        (await read("initialFeeRecipient")).toLowerCase() !==
+          (d.initialFeeRecipient ?? d.feeRecipient).toLowerCase() ||
         Number(await read("feeBps")) !== d.feeBps
       )
         fail("deployment_fee_mismatch");

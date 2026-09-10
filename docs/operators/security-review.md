@@ -1,6 +1,6 @@
 # Security review — automation and claim fees
 
-Date: 2026-09-09. This is an implementation review with local regression tests,
+Date: 2026-09-10. This is an implementation review with local regression tests,
 not an independent audit or a statement that production launch is complete.
 
 ## Scope and deployment boundary
@@ -8,9 +8,9 @@ not an independent audit or a statement that production launch is complete.
 Reviewed `MergeBounty`, `GithubDkimVerifier`, `ReceiptPolicy`, `RsaSha256`, the new
 `MergeBountyV2`, and the collector/relay boundaries introduced on
 `codex/automation-production`. V1 source and deployed economics are preserved.
-V2 is a separate immutable deployment; the fee percentage and treasury are not
-silently substituted into already funded escrows. The final production fee wallet
-and deployment are still pending.
+V2 is a separate deployment with a fixed fee percentage and owner-controlled fee routing.
+The initial fee recipient and owner is `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844`.
+Existing V1 balances retain their original terms.
 
 ## Findings and disposition
 
@@ -24,8 +24,8 @@ and deployment are still pending.
 | Mutable locks and account roles                                        | Public tokens may become useful again after unlocking or privilege changes                              | Operational dependency, not an on-chain guarantee. Persistent-lock obligations and residual risk are documented; live validation remains required.                                                                     |
 | A fee sent directly to a receiver during settlement could block payout | Rejecting/reentrant fee receiver could disrupt otherwise valid claims                                   | V2 uses pull credits for both beneficiary and treasury. Failure to withdraw cannot block settlement or take the other credit.                                                                                          |
 | Reusing a nonce after uncertain broadcast or restart                   | Duplicate gas expenditure, stuck jobs or wrong transaction replacement                                  | Signed payload persisted before broadcast; same-nonce recovery/replacement, restricted cancellation, budget ledger and block-hash checks. Tested locally with lost responses, competing claims and a reorg.            |
-| Unbounded bounty rereads and repeated enrollment attempts | Growth or spam could delay the mailbox/relay and exhaust GitHub API capacity | Indexing now checkpoints a durable funding queue, bounds per-poll bounty reads and rotates active work across restarts. Unenrolled discovery has a separate retry budget. |
-| Settled jobs excluded from active sweeps after a reorg | An orphaned refund/withdrawal could remain visible as completed | Detected scan reorgs also enqueue settled jobs; open bounties clear orphaned settlement even without repository enrollment. Local regression tests cover this case. |
+| Unbounded bounty rereads and repeated enrollment attempts              | Growth or spam could delay the mailbox/relay and exhaust GitHub API capacity                            | Indexing now checkpoints a durable funding queue, bounds per-poll bounty reads and rotates active work across restarts. Unenrolled discovery has a separate retry budget.                                              |
+| Settled jobs excluded from active sweeps after a reorg                 | An orphaned refund/withdrawal could remain visible as completed                                         | Detected scan reorgs also enqueue settled jobs; open bounties clear orphaned settlement even without repository enrollment. Local regression tests cover this case.                                                    |
 
 ## Contract properties checked
 
@@ -41,7 +41,14 @@ are exclusive, with a seven-day submission grace period and pull withdrawals.
 The test suite covers replay, invalid bindings/windows, unauthorized withdrawal,
 failed receiver transfers, reentrancy and conservation of escrowed value.
 
-V2 adds an immutable fee rate/recipient with a 500-basis-point hard maximum.
+V2 adds an immutable fee rate with a 500-basis-point hard maximum. The initial
+fee recipient is also the owner, using OpenZeppelin Ownable2Step. Only the owner
+can change future fee routing. Ownership transfer requires acceptance by the new
+owner; pending transfers can be cancelled. Zero/escrow fee recipients and escrow
+owners are rejected, and ownership cannot be renounced. Rotation never transfers
+previously earned credits, changes the fee rate, or grants access to contributor
+credits, the verifier or active bounty principal. Deployment checks pin the initial
+recipient and verify the initial owner; runtime checks allow authorized routing changes.
 `quoteClaim` uses overflow-safe multiplication, rounds the fee down, and leaves
 all remaining wei with the contributor. `Funded.amount` remains the gross reward;
 `Paid.amount` is the contributor's net credit; `ClaimFee` records the gross/fee.
@@ -56,8 +63,8 @@ not establish that every current GitHub email variant is supported.
 
 ## Evidence as of this checkpoint
 
-- 50 Solidity tests pass, including the existing RSA/policy/escrow cases and 15
-  V2 fee cases; fuzz cases run 128 inputs each.
+- 54 Solidity tests pass, including the existing RSA/policy/escrow cases and 19
+  V2 fee and ownership cases; fuzz cases run 128 inputs each.
 - 35 automation tests pass, including a real local EVM path using **locally
   generated RSA signatures**, encrypted receipt persistence, out-of-order/dedup
   handling, admission/readiness checks, disclosure gating before RPC, fee payout,
@@ -83,7 +90,10 @@ backup/restore test passes. DigitalOcean deployment and HTTPS are live, with rel
 disabled. Separate users, secret access, the private signer network and a live
 database restore have been checked.
 
-Verify external alert delivery and off-host backup scheduling; install the maintainer App; configure
+The maintainer App is installed only on the public acceptance repository; its
+permissions and the outside collector role were verified against GitHub.
+
+Verify external alert delivery and off-host backup scheduling; configure
 compatible watching and mailbox credentials; run the real reply-lock/replay
 matrix; deploy V2 to the agreed treasury; and complete a genuine GitHub-to-Gnosis
 fund/collect/claim/withdraw acceptance run. Review the final source and deployed

@@ -45,12 +45,14 @@ import {
   parseBountyLink,
   matchesBounty,
   deploymentFor,
+  deployments,
   claimQuote,
 } from "./deployments";
 import { Modal } from "./Modal";
 import { RepositoryHub } from "./RepositoryHub";
 import { MaintainerAutomation } from "./MaintainerAutomation";
 import { FundDialog, type FundingRequest } from "./FundDialog";
+import { FeeSettings } from "./FeeSettings";
 
 const date = (n: number) =>
   new Date(n * 1000).toLocaleDateString(undefined, {
@@ -389,7 +391,13 @@ export default function App() {
             ? `Withdrawal confirmed. The ${symbol} is in your wallet.`
             : name === "refund"
               ? "Refund credited. Withdraw it from your balance."
-              : "Bounty funded. Copy the PR title instructions to get started.",
+              : name === "setFeeRecipient"
+                ? "Fee recipient updated. Future fees will go to the new wallet."
+                : name === "transferOwnership"
+                  ? "Owner transfer updated. A new owner must accept to take control."
+                  : name === "acceptOwnership"
+                    ? "Ownership accepted. You can now manage fee routing."
+                    : "Bounty funded. Copy the PR title instructions to get started.",
       );
       return receipt;
     } catch (e) {
@@ -611,6 +619,19 @@ export default function App() {
             )}
           </>
         )}
+        {docPath === null &&
+          config &&
+          deployments(config)
+            .filter((d) => d.protocol === "rsa-dkim-v2")
+            .map((d) => (
+              <FeeSettings
+                key={d.contract}
+                config={d}
+                account={account}
+                disabled={!!pending || wrongNetwork || !!connectionError}
+                transact={transact}
+              />
+            ))}
         {docPath !== null ? (
           <Documentation path={docPath} />
         ) : repositoriesOpen ? (

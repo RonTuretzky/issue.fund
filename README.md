@@ -8,9 +8,17 @@ The app is hosted publicly on GitHub Pages, with the **issue.fund** domain manag
 
 ## Documentation
 
-The [documentation hub](https://issue.fund/#docs) lists all 14 pages for both audiences. Start with [maintainer onboarding](docs/maintainers/getting-started.md) or [contributor onboarding](docs/contributors/getting-started.md). The [complete documentation index](docs/README.md) includes funding, PR setup, merging, receipts, claims, withdrawals, refunds, privacy and troubleshooting.
+The [documentation hub](https://issue.fund/#docs) lists all 16 pages for both audiences. Start with [maintainer onboarding](docs/maintainers/getting-started.md) or [contributor onboarding](docs/contributors/getting-started.md). The [complete documentation index](docs/README.md) includes funding, PR setup, merging, receipts, claims, withdrawals, refunds, privacy and troubleshooting.
 
 Content lives in `shared/documentation.mjs`. Run `npm run docs:build` after edits to generate the matching Markdown guides; every build checks that they are in sync. [GitHub Pages and DNS deployment](CLOUDFLARE.md) covers static hosting.
+
+## Claim fees
+
+New V2 bounties deduct a fixed 1% success fee. The initial fee recipient and owner
+is `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844`. Connect that wallet and open
+**Fee settings** to change future fee routing or propose an ownership transfer.
+Existing credits remain with the wallet that earned them. V1 bounties retain their
+original no-fee terms. See the [fee management guide](docs/reference/contracts.md).
 
 ## Use the app
 

@@ -9,11 +9,11 @@ Find the live contracts and understand the boundaries of the current payment rul
 The public static app uses native xDAI on Gnosis, chain ID 100. The deployment manifest records the verifier, escrow, ABI and pinned public key. Contract source verification confirms published source correspondence; it is not a security audit.
 
 - Network: Gnosis (100), native xDAI
-- Escrow: [0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46](https://gnosisscan.io/address/0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46?tab=contract)
+- Escrow: [0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630](https://gnosisscan.io/address/0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630?tab=contract)
 - RSA/DKIM verifier: [0xc2404198b7519c915817826586ec3892332a27cf](https://gnosisscan.io/address/0xc2404198b7519c915817826586ec3892332a27cf?tab=contract)
 
 - [Download the current deployment manifest](https://issue.fund/deployment.gnosis.json)
-- [Source and deployment records](https://github.com/RonTuretzky/issue.fund/tree/main/deployments/gnosis)
+- [Source and deployment records](https://github.com/RonTuretzky/issue.fund/tree/codex/automation-production/deployments/gnosis)
 
 ## Claim fees and changing the fee recipient
 

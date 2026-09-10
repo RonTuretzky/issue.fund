@@ -83,7 +83,10 @@ The frontend now includes automatic/manual onboarding, status flows, exact fee/n
 quotes and separate V1/V2 bounty identities and withdrawal balances. Local browser
 checks cover readiness loss, manual fallback, old links and independent withdrawal.
 The static build passes; browser RPC coverage verifies both deployed local escrows and rejects changed
-immutable fees. The production frontend rollout remains.
+immutable fee rates while accepting authorized fee-recipient changes. The new
+fee owner controls also pass browser transfer, cancellation, acceptance and mobile
+accessibility checks. V2 is deployed on Gnosis; a genuine V2 mail/claim acceptance
+run is still outstanding.
 Retention uses a persistent settlement timestamp and prunes settled encrypted
 payloads after 30 days, while active transactions pin their evidence. An online
 backup/restore test passes. DigitalOcean deployment and HTTPS are live, with relay and automatic disclosure
@@ -95,7 +98,7 @@ permissions and the outside collector role were verified against GitHub.
 
 Verify external alert delivery and off-host backup scheduling; configure
 compatible watching and mailbox credentials; run the real reply-lock/replay
-matrix; deploy V2 to the agreed treasury; and complete a genuine GitHub-to-Gnosis
+matrix; and complete a genuine GitHub-to-Gnosis
 fund/collect/claim/withdraw acceptance run. Review the final source and deployed
 bytecode after these changes. Do not label the release production-ready before
 those requirements are evidenced.

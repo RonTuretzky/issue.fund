@@ -2,14 +2,19 @@
 
 The live static app is [issue.fund](https://issue.fund). It is public and needs only the browser, original email files and a Gnosis wallet with xDAI for gas.
 
-| Component                | Address                                      |
-| ------------------------ | -------------------------------------------- |
-| Direct RSA/DKIM verifier | `0xc2404198b7519c915817826586ec3892332a27cf` |
-| Direct escrow            | `0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46` |
-| Chain                    | Gnosis, 100                                  |
-| Currency                 | Native xDAI                                  |
+| Component                     | Address                                      |
+| ----------------------------- | -------------------------------------------- |
+| Direct RSA/DKIM verifier      | `0xc2404198b7519c915817826586ec3892332a27cf` |
+| V2 escrow (new bounties)      | `0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630` |
+| V1 escrow (preserved)         | `0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46` |
+| Initial fee recipient / owner | `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844` |
+| V2 success fee                | 1% (100 basis points), fixed                 |
+| Chain                         | Gnosis, 100                                  |
+| Currency                      | Native xDAI                                  |
 
-Deployment transactions: [verifier](https://gnosisscan.io/tx/0x2c8b9f6872626f92ceb0880445c25ef58eef5ea66631214a5424806550ed9e54), [escrow](https://gnosisscan.io/tx/0xacd7879b9e2c12626be43832fda88cc6d2a703c45c6c6998cab86588805a997f).
+V2 deployment: [confirmed transaction](https://gnosisscan.io/tx/0xb0dc07f9a2d723caa78e80c0968c652c0771f9d6890a17ded170ef5cdb5e0caf), September 10, 2026. The initial owner can change the fee recipient; ownership transfers require acceptance. The deployer has no fee administration rights.
+
+Original V1 deployment transactions: [verifier](https://gnosisscan.io/tx/0x2c8b9f6872626f92ceb0880445c25ef58eef5ea66631214a5424806550ed9e54), [escrow](https://gnosisscan.io/tx/0xacd7879b9e2c12626be43832fda88cc6d2a703c45c6c6998cab86588805a997f).
 
 The machine-readable manifest is `public/deployment.gnosis.json`, mirrored in `deployments/gnosis/deployment.json`. It records the genuine GitHub RSA modulus, key hash, deployed addresses, ABI and transaction hashes. Deployment validation checks runtime source correspondence, verifier linkage and the exact pinned modulus.
 
@@ -25,7 +30,7 @@ The local equivalent is `forge build` followed by `node scripts/deploy-gnosis.mj
 
 Every deployment is a new immutable escrow. The old ZK escrow `0xdf1f54c97c728f7101b797a6db2383bea2cdecc1` and its outstanding bounty #2 are preserved. They remain accessible through the archived implementation, not the new direct-RSA interface.
 
-## Real GitHub → Gnosis acceptance test
+## V1 real GitHub → Gnosis acceptance test
 
 On September 6, 2026, public repository `RonTuretzky/tmp-mergebounty-public-e2e-20260906`, issue #2 and merged PR #4 completed the direct flow through the static frontend. Bounty #1 funded 0.001 xDAI. Both genuine original GitHub notifications passed browser RSA checks; the Gnosis contract verified them, credited the designated wallet, and that wallet withdrew the exact reward less its withdrawal gas. No proving service was used.
 
@@ -37,7 +42,13 @@ Both contract sources are verified on Gnosisscan: [RSA/DKIM verifier](https://gn
 
 V2 is a separate escrow. Keep V1 and its credits accessible. The V2 deployment
 script reuses the existing verified RSA verifier and defaults to 100 basis points
-(1%). Set the fee recipient explicitly; it is immutable after deployment.
+(1%). Set the fee recipient explicitly; it is also the initial owner. The fee
+rate, verifier and key are immutable. The owner can change future fee routing
+with `setFeeRecipient(address)`. Previously earned credits stay with the old
+recipient. `transferOwnership(address)` followed by `acceptOwnership()` moves
+control; `transferOwnership(address(0))` cancels a pending handoff. The deployed
+frontend exposes these actions in Fee settings when the corresponding wallet is
+connected. Ownership cannot be renounced or assigned to the escrow itself.
 
 1. Build and test: `forge build`, `forge test`, `npm run test:deployment`,
    `npm run test:automation`, and `npm run build:gnosis`.
@@ -49,7 +60,7 @@ script reuses the existing verified RSA verifier and defaults to 100 basis point
    the deployer key through hidden terminal input or a secret-manager environment.
    The expected deployer must match. The command stores and flushes a private
    transaction checkpoint before broadcast, then waits for 12 confirmations and
-   verifies the new runtime and all immutable parameters. It writes a candidate
+   verifies the new runtime, immutable parameters and initial ownership. It writes a candidate
    `.local/v2-release.json`; it does not switch the public site.
 4. On an uncertain response, rerun the same command and terms. The checkpoint
    binds the signed creation bytes, signer, chain, nonce, verifier, fee and

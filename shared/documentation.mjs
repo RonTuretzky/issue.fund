@@ -901,7 +901,7 @@ export const pages = [
           },
           {
             label: "Source and deployment records",
-            url: "https://github.com/RonTuretzky/issue.fund/tree/main/deployments/gnosis",
+            url: "https://github.com/RonTuretzky/issue.fund/tree/codex/automation-production/deployments/gnosis",
           },
         ],
       },

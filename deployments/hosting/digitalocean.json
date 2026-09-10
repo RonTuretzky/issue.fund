@@ -1,5 +1,5 @@
 {
-  "verifiedAt": "2026-09-09",
+  "verifiedAt": "2026-09-10T14:41:16.014Z",
   "url": "https://api.issue.fund",
   "provider": "DigitalOcean",
   "dropletId": 599168492,
@@ -11,27 +11,32 @@
   "uptimeCheck": {
     "id": "aa4cd079-dd99-4edc-a4ea-d1497fbc2c83",
     "target": "https://api.issue.fund/v1/health/operational",
-    "regions": ["us_east", "us_west", "eu_west"],
+    "regions": [
+      "us_east",
+      "us_west",
+      "eu_west"
+    ],
     "observedStatus": "UP in all three regions",
     "verifiedAt": "2026-09-09T23:35:58Z",
     "notificationsConfigured": false,
     "notificationDeliveryVerified": false
   },
-  "sourceCommit": "5e347729a19c04ddb07c404f984df2418ebba069",
-  "ciUrl": "https://github.com/RonTuretzky/issue.fund/actions/runs/34417480650",
+  "sourceCommit": "ac49267d0ffaf3ec5457b9d04182efbda3f4b211",
   "runtime": "Node.js 24.21.0",
   "frontEndHosting": "GitHub Pages",
   "automaticDisclosure": false,
   "relayEnabled": false,
   "relayAddress": "0x3Dfcfff86f6D704A946CdADd910899D96A01aB34",
   "latestReleaseChecks": [
-    "public API healthy with disclosure disabled and missing mailbox reported",
+    "public API healthy; App install link configured",
+    "new V2 and legacy V1 manifests accepted",
+    "test repository admission confirms classic_watch_token_required",
+    "existing storage and signing keys preserved",
     "separate credential access and signer private network verified",
     "invalid signer request rejected with signer_policy_rejected",
     "both database snapshots restored successfully",
-    "root-owned backup status is readable but not writable by the collector",
-    "controlled partial backup failure returned public HTTP 503 and a fresh backup restored 200",
-    "durable index queue and sweep active with two bounties and zero transactions"
+    "root-owned backup status read-only to collector",
+    "automatic disclosure and relay disabled"
   ],
   "checks": [
     "HTTPS health endpoint and HTTP redirect",
@@ -45,10 +50,23 @@
   "remaining": [
     "classic watching PAT",
     "Gmail mailbox credentials",
-    "GitHub App registration and installation",
     "live reply-lock and forged/forwarded mail validation",
-    "fee treasury and V2 Gnosis deployment",
     "external alert delivery and recurring off-host database export",
-    "production frontend rollout and genuine GitHub-to-Gnosis acceptance"
-  ]
+    "genuine V2 GitHub-to-Gnosis acceptance"
+  ],
+  "githubApp": {
+    "id": 4898691,
+    "installationId": 160627786,
+    "installUrl": "https://github.com/apps/issue-fund-collector/installations/new",
+    "repositories": [
+      "RonTuretzky/tmp-mergebounty-public-e2e-20260906"
+    ],
+    "permissions": {
+      "metadata": "read",
+      "issues": "write",
+      "pull_requests": "write"
+    },
+    "outsideCollectorVerified": true
+  },
+  "ciUrl": "https://github.com/RonTuretzky/issue.fund/actions/runs/34490470026"
 }

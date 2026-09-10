@@ -1,0 +1,22 @@
+{
+  "testedAt": "2026-09-10T14:36:56.937Z",
+  "sourceCommit": "57e969d9933cd24b2d9fef2165fbfc4a62472396",
+  "chainId": 100,
+  "contract": "0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630",
+  "deploymentTransaction": "0xb0dc07f9a2d723caa78e80c0968c652c0771f9d6890a17ded170ef5cdb5e0caf",
+  "feeBps": 100,
+  "feeRecipient": "0x86213f1cf0a501857B70Df35c1cb3C2EcF112844",
+  "owner": "0x86213f1cf0a501857B70Df35c1cb3C2EcF112844",
+  "initialFeeRecipient": "0x86213f1cf0a501857B70Df35c1cb3C2EcF112844",
+  "pendingOwner": "0x0000000000000000000000000000000000000000",
+  "runtimeHash": "0xe0031f1a96058ba215537fcd51d7930062cd8261ac00056ac1d211190f03ba8a",
+  "authorizedRoutingSimulation": true,
+  "unauthorizedRejected": true,
+  "zeroRecipientRejected": true,
+  "simulationOnly": true,
+  "routingTransactionsSent": 0,
+  "genuineV2ClaimTested": false,
+  "legacyContracts": [
+    "0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46"
+  ]
+}

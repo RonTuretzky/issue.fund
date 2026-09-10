@@ -187,3 +187,36 @@ access re-authentication before collector App registration. That handoff is open
 no App credential or installation has yet been created. The compatible watching
 PAT, Gmail credentials, fee treasury, alert recipient and off-host storage access
 are still missing. Automatic disclosure and relay remain disabled.
+
+## September 10: GitHub App and owner-managed V2 deployment
+
+- Created the collector App (4898691), installed it only on the public acceptance
+  repository, and verified Metadata read / Issues write / Pull requests write
+  permissions. The `DecentralParkNY` collector has no repository privileges.
+- Fresh Gnosis escrow: `0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630`.
+  Initial owner and fee recipient: `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844`.
+  Fee: fixed 1%. Deployment reached 12 confirmations, runtime and immutable
+  values matched source, and explorer source verification succeeded.
+- Only the owner can change future fee routing. Existing credits remain with
+  their original recipients. Ownership transfers require acceptance; pending
+  transfers can be cancelled. Live read-only simulations accepted the owner and
+  rejected unauthorized and zero-recipient calls. No live routing change was sent.
+- Local validation: 54 Solidity, 35 automation, 16 GitHub/DKIM, two deployment,
+  three local-chain and 35 browser tests pass. The local-chain suite also verifies
+  original GitHub signatures privately; this is not a genuine V2 mainnet claim.
+- Source `ac49267d0ffaf3ec5457b9d04182efbda3f4b211` is deployed on both
+  GitHub Pages and DigitalOcean. The public site serves V2, preserves V1 bounty
+  links and balances, and exposes fee controls to the connected owner/pending
+  owner. Live browser checks used a read-only test wallet provider with signing
+  blocked; mobile layout, fee docs and legacy bounty #2 passed without page errors.
+- The backend accepts both manifests and the App credentials. Storage/signing
+  keys were preserved; service, signer isolation, backup report and both database
+  restores pass. Preparation for the public test issue now reaches
+  `classic_watch_token_required`, rather than missing App installation.
+- Automatic collection/relay remains disabled. A compatible classic bot PAT,
+  Gmail access, real reply-lock/replay validation and a genuine V2
+  fund/collect/claim/withdraw test are still needed. Alert delivery and recurring
+  off-host exports remain outstanding. The fee treasury and App registration are
+  now complete; earlier pending notes above describe previous checkpoints.
+
+CI [34490470026](https://github.com/RonTuretzky/issue.fund/actions/runs/34490470026) passed on the exact deployed source, including contract, deployment, automation, static build and full browser suites. The optional private original-email fixture remains skipped in CI.

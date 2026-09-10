@@ -1,12 +1,12 @@
 {
-  "verifiedAt": "2026-09-06",
+  "verifiedAt": "2026-09-10T14:41:16.013Z",
   "url": "https://issue.fund/",
   "repository": "RonTuretzky/issue.fund",
   "hosting": "GitHub Pages",
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "bd41ad0396697d2900f339d2d72168e08a19dfa0",
+  "sourceCommit": "ac49267d0ffaf3ec5457b9d04182efbda3f4b211",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -54,11 +54,15 @@
     "secure context and zero page errors"
   ],
   "transactionsSentByDeploymentChecks": 0,
-  "latestChange": "Premium email-automation contact for maintainers",
+  "latestChange": "Owner-managed V2 success-fee escrow and fee-routing controls",
   "latestChangeBrowserChecks": [
-    "premium service note on homepage and repository directory",
-    "same offer in maintainer onboarding and funding guide",
-    "mailto contact points to turetzkyron@gmail.com with inquiry subject",
-    "mobile layout and zero browser page errors"
+    "live V2 manifest and 1% fee",
+    "fee owner can open routing and ownership controls",
+    "zero fee recipient disabled",
+    "read-only browser test sends no transactions",
+    "legacy V1 bounty #2 loads",
+    "fee management documentation",
+    "mobile layout and zero browser page errors",
+    "HTTP and www redirect to HTTPS apex"
   ]
 }

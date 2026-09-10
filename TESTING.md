@@ -5,9 +5,9 @@ Run `npm ci --ignore-scripts` and `forge build`. Node 22 and Foundry are require
 | Command                    | Coverage                                                                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm test`                 | 16 tests: public GitHub preflight plus DKIM canonicalization, independent RSA signing, mutation rejection and pair bindings                                                           |
-| `npm run test:contracts`   | 50 Foundry tests, with 128 inputs per fuzz case: RSA verifier, signed-comment rejection, full-body and header policy, escrow settlement, V2 fees and withdrawal invariants             |
+| `npm run test:contracts`   | 54 Foundry tests, with 128 inputs per fuzz case: RSA verifier, signed-comment rejection, full-body and header policy, escrow settlement, V2 fees and withdrawal invariants             |
 | `npm run test:chain`       | Actual RSA verifier deployment, relayed claim, exact withdrawal, negative claims, RSA-2048 support; optional local checks against genuine original GitHub emails                      |
-| `npm run test:ui`          | 34 browser tests: issue-first funding, wallet failures, receipts, disclosure gating, automatic/manual setup, V1/V2 balances, local-chain claim/withdrawal, accessibility and mobile layout |
+| `npm run test:ui`          | 35 browser tests: issue-first funding, wallet failures, receipts, disclosure gating, automatic/manual setup, V1/V2 balances, local-chain claim/withdrawal, accessibility and mobile layout |
 | `npm run test:public-flow` | Opt-in real public GitHub lookup → funding → expiry refund → withdrawal on Anvil                                                                                                      |
 | `npm run build:gnosis`     | TypeScript check and static production build                                                                                                                                          |
 
@@ -19,7 +19,26 @@ Optional genuine-mail tests read `.local/gnosis-merge.eml` and `.local/gnosis-cl
 
 The browser integration verifies that email-bearing requests are absent during “Check receipts,” that disclosure consent gates claim simulation/submission, that changing a file clears consent and review, that relaying cannot redirect the reward, and that the beneficiary can withdraw the exact credit. It also checks the claim review at mobile width and with axe WCAG rules.
 
-For an explicitly authorized tiny Gnosis test, prepare a disposable **public** repository using `scripts/github-gnosis-fixture.mjs`, serve `npm run build:gnosis` on port 5175, and run `node scripts/run-gnosis-e2e.mjs fund`. That helper reads the signer through hidden terminal input or a secret environment variable. Merge only after funding, obtain fresh `.local/rsa-gnosis-merge.eml` and `.local/rsa-gnosis-closure.eml`, then run the helper with `claim`. Live tests are gated behind `RUN_GNOSIS_E2E=1`, limit transaction destinations and amounts, and disable traces. Direct claims intentionally publish the signed email data.
+For an explicitly authorized tiny Gnosis V2 test, use a disposable **public** repository and a fresh ignored fixture path. Confirm the receiving GitHub account watches the repository and email notifications are enabled before creating the issue. These opt-in tests spend real xDAI; ordinary CI never runs them.
+
+```sh
+export MERGEBOUNTY_TEST_REPO=OWNER/DISPOSABLE_PUBLIC_REPO
+export GNOSIS_FIXTURE_FILE=.local/my-v2-fixture.json
+export GNOSIS_EVIDENCE_PREFIX=.local/my-v2-e2e
+export GNOSIS_E2E_URL=https://issue.fund
+node scripts/github-gnosis-fixture.mjs prepare
+node scripts/run-gnosis-e2e.mjs fund
+node scripts/github-gnosis-fixture.mjs merge
+# Save the two new original native-event .eml files privately.
+# Set mergeEmail and closureEmail paths in the fixture JSON before claiming.
+node scripts/run-gnosis-e2e.mjs claim
+```
+
+The default reward is 0.0001 xDAI; the optional fixture `rewardXdai` is capped at 0.001 by the wallet harness. Funding is checked against the exact repository, issue, branch, expected escrow, signer, next bounty ID and seven-day deadline. Claim and withdrawal destinations are restricted, gas is estimated before signing, and the estimated gas budget is capped. Signing stays in Node memory through hidden terminal input or a secret environment variable. The browser receives no private key. Traces and automatic screenshots are disabled; explicit receipt-free result screenshots and transaction hashes go under the chosen evidence prefix.
+
+Merge only after funding. Preserve original bytes; do not forward or redact signed mail. For an outside collector, verify its lack of repository privileges and lock both closed conversations before publishing its receipts. This precheck alone is not proof that all replay/lock safety cases pass. The test verifies local receipt review, consent gating, real on-chain RSA settlement, exact V2 net and fee credits/events, replay rejection, and beneficiary withdrawal accounting. Treasury withdrawal is a separate owner-wallet action. A resumed funding test reads the existing bounty before sending anything; a paid claim test stops rather than silently starting another bounty. Preserve its transaction journal after any interrupted run.
+
+September 10's public-site V2 results are recorded in [GNOSIS.md](GNOSIS.md) and [v2-e2e.json](deployments/gnosis/v2-e2e.json).
 
 CI runs the full Foundry, Node and browser suites, including local RSA integration, without mailbox access, real money, or private artifacts. Original emails, private keys, traces and local transaction state are ignored by Git. The toolchain setup is described below.
 

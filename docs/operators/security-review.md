@@ -20,7 +20,7 @@ Existing V1 balances retain their original terms.
 | Recipient identity headers are unsigned in actual samples              | Trusting `X-GitHub-Recipient` alone would let modified/replayed mail misidentify the exposed account    | Added a direct Gmail delivery policy plus local DKIM verification. Its ingress assumptions still require live forgery/replay validation; other providers fail closed.                                                  |
 | GitHub can rotate its pinned DKIM key or change notification templates | New receipts can become unverifiable; users rely on the refund path after the grace period              | Inherent V1/V2 deployment constraint. Monitor key/template drift, pause automation, preserve old escrows, and deploy a reviewed verifier version rather than silently substituting a trust root.                       |
 | Current pinned GitHub key is RSA-1024                                  | Security strength is constrained by GitHub's signing key                                                | Verifier supports 1024/2048-bit moduli; an arbitrary larger key cannot verify GitHub's existing mail. This remains a provider constraint.                                                                              |
-| Receipt verification is gas-heavy                                      | A public relay can exhaust its gas balance even without a payout exploit                                | Local verification before RPC, enrollment/admission limits, strict claim-only signer, per-claim caps, daily reserved budget and dedicated relay wallet. Live gas measurement still required for the new deployment.    |
+| Receipt verification is gas-heavy                                      | A public relay can exhaust its gas balance even without a payout exploit                                | Local verification before RPC, enrollment/admission limits, strict claim-only signer, per-claim caps, daily reserved budget and dedicated relay wallet. Genuine V2 claim measured 10,251,619 gas; unattended relay acceptance remains required.    |
 | Mutable locks and account roles                                        | Public tokens may become useful again after unlocking or privilege changes                              | Operational dependency, not an on-chain guarantee. Persistent-lock obligations and residual risk are documented; live validation remains required.                                                                     |
 | A fee sent directly to a receiver during settlement could block payout | Rejecting/reentrant fee receiver could disrupt otherwise valid claims                                   | V2 uses pull credits for both beneficiary and treasury. Failure to withdraw cannot block settlement or take the other credit.                                                                                          |
 | Reusing a nonce after uncertain broadcast or restart                   | Duplicate gas expenditure, stuck jobs or wrong transaction replacement                                  | Signed payload persisted before broadcast; same-nonce recovery/replacement, restricted cancellation, budget ledger and block-hash checks. Tested locally with lost responses, competing claims and a reorg.            |
@@ -85,8 +85,8 @@ checks cover readiness loss, manual fallback, old links and independent withdraw
 The static build passes; browser RPC coverage verifies both deployed local escrows and rejects changed
 immutable fee rates while accepting authorized fee-recipient changes. The new
 fee owner controls also pass browser transfer, cancellation, acceptance and mobile
-accessibility checks. V2 is deployed on Gnosis; a genuine V2 mail/claim acceptance
-run is still outstanding.
+accessibility checks. V2 is deployed on Gnosis. A genuine public-site manual collection, claim, fee credit
+and contributor withdrawal run passed on September 10; see [the evidence](../../deployments/gnosis/v2-e2e.json).
 Retention uses a persistent settlement timestamp and prunes settled encrypted
 payloads after 30 days, while active transactions pin their evidence. An online
 backup/restore test passes. DigitalOcean deployment and HTTPS are live, with relay and automatic disclosure
@@ -98,7 +98,7 @@ permissions and the outside collector role were verified against GitHub.
 
 Verify external alert delivery and off-host backup scheduling; configure
 compatible watching and mailbox credentials; run the real reply-lock/replay
-matrix; and complete a genuine GitHub-to-Gnosis
+matrix; and complete a genuine unattended GitHub-to-Gnosis
 fund/collect/claim/withdraw acceptance run. Review the final source and deployed
 bytecode after these changes. Do not label the release production-ready before
 those requirements are evidenced.

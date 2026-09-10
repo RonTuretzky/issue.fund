@@ -1,11 +1,18 @@
 # Automation operator guide
 
-Implementation status: the collector, registry API, encrypted store, chain indexer,
-restricted signer and relay have local integration tests. The frontend has automatic/manual setup, fee quotes, per-escrow links and
-withdrawals, with local browser coverage. The DigitalOcean service is deployed at
-https://api.issue.fund with automatic disclosure disabled. The GitHub App installation, real-mail security tests,
-and the genuine GitHub-to-Gnosis acceptance run are still in progress. The live
-frontend continues to use the original deployment until that work is verified.
+Implementation status (September 10, 2026): the collector, registry API, encrypted
+store, indexer, restricted signer and relay are implemented and locally tested.
+V2 and its fixed 1% fee are deployed on Gnosis; the public Pages frontend uses V2
+and preserves V1 links/balances. The GitHub App is installed on the example public
+repository. The genuine public-site manual fund/claim/withdraw test passed with
+emails received by `DecentralParkNY`; see [V2 evidence](../../deployments/gnosis/v2-e2e.json).
+
+**Server auto-submit is not operational.** The live backend at https://api.issue.fund
+is in setup mode: mailbox credentials, compatible watching authentication and live
+disclosure validation remain missing; relay and automatic disclosure are disabled.
+Browser downloads and manual uploads do not validate unattended IMAP ingestion or
+server submission. External alert delivery and recurring off-host exports remain
+open operational requirements.
 
 ## Accounts and permissions
 
@@ -13,13 +20,22 @@ Use a dedicated, human-owned GitHub account that is **not** an owner, collaborat
 organization member with repository access, or otherwise exempt from conversation
 locks on enrolled repositories. Do not use a maintainer's mailbox as the collector.
 
-The supplied token authenticates as `DecentralParkNY`. It is a fine-grained PAT.
-GitHub rejects its per-repository subscription access; the watching endpoint does
-not support that token type. Create a **classic PAT** for that account, starting
-with `public_repo` for this public-only service. The service checks the exact
-subscription endpoint and fails with `classic_watch_token_required` rather than
-silently pretending it has subscribed. Private-repository scope is unnecessary.
-See [GitHub's watching API](https://docs.github.com/en/rest/activity/watching#set-a-repository-subscription).
+The supplied fine-grained token authenticates as `DecentralParkNY`. REST cannot
+use it to manage repository subscriptions. The collector can instead verify an
+**already enabled** public repository watch through GraphQL `viewerSubscription`.
+The account was manually subscribed to the example repository before its test
+emails arrived. This check still rejects ignored/unsubscribed states, private or
+changed identities and GraphQL permission/partial-result errors.
+
+To subscribe new repositories automatically, supply a compatible classic PAT for
+the same outside account. Start with the `notifications` scope, which includes
+watch/unwatch access; private-repository control is unnecessary. Otherwise an
+operator can enable All Activity on the intended repository through GitHub first.
+The service reports `classic_watch_token_required` when the existing token cannot
+establish a watch; it never reports a subscription write that it did not perform.
+See [GitHub's watching API](https://docs.github.com/en/rest/activity/watching),
+[GraphQL subscription state](https://docs.github.com/en/graphql/reference/activity)
+and [notification scope](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps).
 
 A separate maintainer-installed GitHub App needs Metadata read, Issues write and
 Pull requests write. It only checks repository identity and collaborator status,

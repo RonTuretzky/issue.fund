@@ -220,3 +220,50 @@ are still missing. Automatic disclosure and relay remain disabled.
   now complete; earlier pending notes above describe previous checkpoints.
 
 CI [34490470026](https://github.com/RonTuretzky/issue.fund/actions/runs/34490470026) passed on the exact deployed source, including contract, deployment, automation, static build and full browser suites. The optional private original-email fixture remains skipped in CI.
+
+
+## September 10: genuine V2 public-site acceptance
+
+The opt-in funding and claim/withdrawal browser tests both passed on
+`https://issue.fund`, using a fresh public issue #5 and merged PR #6. Original
+native merge and closure emails arrived at the outside `DecentralParkNY` Gmail
+account. The App verified that account's lack of repository privileges and locked
+both completed conversations before the manual claim disclosed the receipts.
+
+V2 bounty #1 funded 0.0001 xDAI. Local browser RSA checking preceded disclosure
+consent; the live verifier accepted both receipts. Paid and ClaimFee events matched
+0.000099 xDAI contributor credit plus 0.000001 xDAI treasury credit. Replaying the
+claim reverted with NotOpen. Contributor withdrawal succeeded, cleared its credit,
+and increased its balance by the exact net credit less withdrawal gas. The genuine
+claim used 10,251,619 gas. A treasury withdrawal simulation passed; the fee remains
+credited to the user's wallet and no treasury/ownership transaction was signed.
+
+See [transactions and scope](GNOSIS.md#v2-real-github--issuefund--gnosis-acceptance-test)
+and [sanitized evidence](deployments/gnosis/v2-e2e.json). Existing V1 records are
+preserved. Only tests and documentation changed; the tested deployed source is
+still `ac49267d0ffaf3ec5457b9d04182efbda3f4b211`.
+
+The supplied bot token authenticates and reveals the collector's verified Gmail
+address, but is fine-grained and cannot watch repositories through the API. Browser
+watching and original-message download worked. Server Gmail authentication and a
+compatible bot watching token remain absent. A newly generated token resolved to
+the wrong browser account; it was never deployed and revocation was verified.
+Automatic disclosure/relay stays disabled pending these credentials, the real
+reply-lock/replay matrix, relay acceptance, alert delivery and scheduled off-host
+exports. This manual acceptance run does not establish unattended operation.
+
+
+## Existing-token subscription verification
+
+The collector now verifies an already enabled public repository watch through
+GitHub GraphQL when using a fine-grained PAT. The actual supplied token confirmed
+`DecentralParkNY` and `SUBSCRIBED` for the example repository. A GraphQL write was
+also tested and rejected by GitHub, so the service does not claim to subscribe new
+repositories with this token. New watches need operator setup or compatible classic
+authentication. Ignored/unsubscribed state, private/mismatched repositories and
+HTTP-200 GraphQL errors cannot establish readiness. All 36 automation tests pass.
+
+Google's account settings show 2-Step Verification off for the collector Gmail
+account; app passwords are unavailable until the owner enables it. The setup page
+was opened for the user. No mailbox password or disclosure-validation record has
+been invented, and automatic submission remains off.

@@ -127,18 +127,37 @@ test("public sponsors cannot enable locks without installation and admission lim
   f.store.close();
 });
 
-test("fine-grained PAT is rejected for watch writes without leaking its value", async () => {
-  let calls = 0;
+test("fine-grained PAT verifies an existing public watch without claiming write support", async () => {
+  let state = "SUBSCRIBED",
+    calls = 0;
   const github = new GitHub({
     collectorToken: "github_pat_not-a-real-token",
-    fetcher: async () => {
+    fetcher: async (url, options) => {
       calls++;
+      assert.equal(url, "https://api.github.com/graphql");
+      const body = JSON.parse(options.body);
+      assert.match(body.query, /^query/);
+      assert.deepEqual(body.variables, { owner: "example", name: "parser" });
+      return Response.json({
+        data: {
+          repository: {
+            nameWithOwner: "example/parser",
+            isPrivate: false,
+            viewerSubscription: state,
+          },
+        },
+      });
     },
   });
-  await assert.rejects(github.watch("example/parser"), {
-    code: "classic_watch_token_required",
+  assert.deepEqual(await github.watch("example/parser"), {
+    subscribed: true,
+    ignored: false,
   });
-  assert.equal(calls, 0);
+  for (state of ["UNSUBSCRIBED", "IGNORED", null, "UNAVAILABLE"])
+    await assert.rejects(github.watch("example/parser"), {
+      code: "classic_watch_token_required",
+    });
+  assert.equal(calls, 5);
   for (const url of [
     "http://github.com/example/parser/issues/1",
     "https://user:pass@github.com/example/parser/issues/1",
@@ -146,6 +165,44 @@ test("fine-grained PAT is rejected for watch writes without leaking its value", 
     "https://github.com/example/parser/pull/1",
   ])
     assert.throws(() => parseIssueUrl(url));
+});
+
+test("GraphQL partial errors, private repos and mismatched identities never establish watching", async () => {
+  const valid = {
+    nameWithOwner: "example/parser",
+    isPrivate: false,
+    viewerSubscription: "SUBSCRIBED",
+  };
+  for (const [body, code] of [
+    [
+      {
+        data: { repository: valid },
+        errors: [{ type: "FORBIDDEN", message: "private provider details" }],
+      },
+      "github_permissions_missing",
+    ],
+    [{ errors: [{ type: "RATE_LIMITED" }] }, "github_rate_limited"],
+    [
+      { data: { repository: { ...valid, isPrivate: true } } },
+      "repository_identity_changed",
+    ],
+    [
+      { data: { repository: { ...valid, nameWithOwner: "someone/else" } } },
+      "repository_identity_changed",
+    ],
+    [{ data: { repository: null } }, "repository_identity_changed"],
+  ]) {
+    const github = new GitHub({
+      collectorToken: "github_pat_test",
+      fetcher: async () => Response.json(body),
+    });
+    await assert.rejects(
+      github.watch("example/parser"),
+      (error) =>
+        error.code === code &&
+        !error.message.includes("private provider details"),
+    );
+  }
 });
 
 test("no disclosure passes until both conversations are locked and the collector is outside", async () => {

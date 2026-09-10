@@ -20,7 +20,10 @@ export class GitHub {
     path,
     { token = this.collectorToken, method = "GET", body, ok = [200] } = {},
   ) {
-    if (!/^\/(?:repos|user|app|installation)(?:\/|$|\?)/.test(path))
+    if (
+      path !== "/graphql" &&
+      !/^\/(?:repos|user|app|installation)(?:\/|$|\?)/.test(path)
+    )
       fail("github_path_invalid", 500);
     let response;
     try {
@@ -117,9 +120,37 @@ export class GitHub {
   }
   async watch(repo) {
     if (!this.collectorToken) fail("collector_token_missing");
-    // Fine-grained tokens cannot use this endpoint, even with Watching read.
-    if (this.collectorToken.startsWith("github_pat_"))
-      fail("classic_watch_token_required");
+    // REST subscriptions reject fine-grained PATs, but GraphQL can authenticate
+    // an existing subscription. This supports operator-prepared repositories
+    // without pretending that the token can create a new watch.
+    if (this.collectorToken.startsWith("github_pat_")) {
+      if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) fail("github_path_invalid", 500);
+      const [owner, name] = repo.split("/");
+      const { data } = await this.request("/graphql", {
+        method: "POST",
+        body: {
+          query:
+            "query($owner:String!,$name:String!){repository(owner:$owner,name:$name){nameWithOwner isPrivate viewerSubscription}}",
+          variables: { owner, name },
+        },
+      });
+      // HTTP 200 can include GraphQL permission errors or partial data.
+      if (data?.errors?.length) {
+        if (data.errors.some((error) => error.type === "RATE_LIMITED"))
+          fail("github_rate_limited", 429);
+        fail("github_permissions_missing", 503);
+      }
+      const current = data?.data?.repository;
+      if (
+        !current ||
+        current.isPrivate !== false ||
+        current.nameWithOwner !== repo
+      )
+        fail("repository_identity_changed", 409);
+      if (current.viewerSubscription !== "SUBSCRIBED")
+        fail("classic_watch_token_required");
+      return { subscribed: true, ignored: false };
+    }
     const current = await this.request(`/repos/${repo}/subscription`, {
       ok: [200, 404],
     });

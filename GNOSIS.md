@@ -30,6 +30,18 @@ The local equivalent is `forge build` followed by `node scripts/deploy-gnosis.mj
 
 Every deployment is a new immutable escrow. The old ZK escrow `0xdf1f54c97c728f7101b797a6db2383bea2cdecc1` and its outstanding bounty #2 are preserved. They remain accessible through the archived implementation, not the new direct-RSA interface.
 
+## V2 real GitHub → issue.fund → Gnosis acceptance test
+
+On September 10, 2026, [issue #5](https://github.com/RonTuretzky/tmp-mergebounty-public-e2e-20260906/issues/5) and [PR #6](https://github.com/RonTuretzky/tmp-mergebounty-public-e2e-20260906/pull/6) completed the flow on the public HTTPS site. [V2 bounty #1](https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/1) was funded with 0.0001 xDAI. The outside collector account `DecentralParkNY` received both native event emails in Gmail; their original bytes were downloaded and uploaded through the site. The installed GitHub App confirmed the collector had no repository privileges and locked both closed conversations before disclosure.
+
+- [Funding](https://gnosisscan.io/tx/0x16253ee6053d65e18754181e55d1ce78b5aead7308d93c74eff255c78293d585): 0.0001 xDAI.
+- [Claim](https://gnosisscan.io/tx/0xc8407fd4014ef63241db0ab38c3f7de3812a0411f4708a414fe59e5dbd77d720): the actual RSA/DKIM verifier accepted both emails. The contributor earned 0.000099 xDAI and the configured treasury earned 0.000001 xDAI (1%). It consumed 10,251,619 gas.
+- [Contributor withdrawal](https://gnosisscan.io/tx/0x4b68ea4bcc4b2ff88e0fbbda62406a6d2c9d6832df82b50264e9b976245878b4): succeeded; the wallet balance increased by exactly its credit less withdrawal gas and its escrow credit became zero.
+
+Both browser tests passed against `https://issue.fund`. Checks covered local receipt validation before disclosure consent, canonical V2 links, paid/fee events, beneficiary and treasury balances, and replay rejection with `NotOpen`. A read-only treasury withdrawal simulation succeeded; no treasury withdrawal or owner action was signed. Public evidence is in [v2-e2e.json](deployments/gnosis/v2-e2e.json). Raw originals and signing secrets remain excluded from Git.
+
+This demonstrates manual collection and on-chain settlement using the collector's genuine emails. The unattended mailbox receiver, automatic disclosure safety matrix and production relay are still unvalidated and disabled. Completing this manual run does not enable them.
+
 ## V1 real GitHub → Gnosis acceptance test
 
 On September 6, 2026, public repository `RonTuretzky/tmp-mergebounty-public-e2e-20260906`, issue #2 and merged PR #4 completed the direct flow through the static frontend. Bounty #1 funded 0.001 xDAI. Both genuine original GitHub notifications passed browser RSA checks; the Gnosis contract verified them, credited the designated wallet, and that wallet withdrew the exact reward less its withdrawal gas. No proving service was used.

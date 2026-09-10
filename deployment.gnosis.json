@@ -1266,5 +1266,6 @@
       ]
     }
   ],
-  "legacyLinkContract": "0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46"
+  "legacyLinkContract": "0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46",
+  "automationUrl": "https://api.issue.fund"
 }

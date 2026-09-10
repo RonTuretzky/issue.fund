@@ -22,12 +22,12 @@ Choose an issue, fund the work, and review a contribution.
 
 ## Contributors & users
 
-Prepare your PR, collect receipts, and claim your reward.
+Prepare your PR, follow the claim, and withdraw your reward.
 
 - [Contributor onboarding](contributors/getting-started.md) — Choose a funded issue and set up your wallet and receipt delivery.
 - [Prepare your pull request](contributors/prepare-pr.md) — Bind the PR to the right bounty, wallet, issue, and target branch.
-- [Collect the email receipts](contributors/collect-emails.md) — Enable notifications and download the two original messages the contract accepts.
-- [Claim and withdraw](contributors/claim-and-withdraw.md) — Check the receipts locally, submit a claim, and collect the credited reward.
+- [Collect the email receipts](contributors/collect-emails.md) — Manual fallback: enable notifications and download the two original messages the contract accepts.
+- [Claim and withdraw](contributors/claim-and-withdraw.md) — Follow an automatic claim or submit receipts manually, then withdraw the credited reward.
 - [Follow an automatic claim](contributors/automatic-claims.md) — Check collection progress, confirm the payout wallet, and withdraw your reward.
 
 ## Reference
@@ -35,7 +35,7 @@ Prepare your PR, collect receipts, and claim your reward.
 Verification, privacy, troubleshooting, and developer setup.
 
 - [How verification works](reference/verification.md) — What RSA/DKIM authenticates, and what the escrow checks before paying.
-- [Email privacy](reference/privacy.md) — What stays in the page and what becomes public when you submit a claim.
+- [Email privacy](reference/privacy.md) — How automatic and manual claims handle email data, and what becomes public.
 - [Troubleshooting](reference/troubleshooting.md) — Recover from repository, receipt, wallet, and withdrawal problems.
 - [Contracts and supported limits](reference/contracts.md) — Find the live contracts and understand the boundaries of the current payment rule.
 - [Developer setup](reference/developers.md) — Run the app locally, test direct verification, and navigate the source.

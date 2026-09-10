@@ -4,6 +4,14 @@ Check collection progress, confirm the payout wallet, and withdraw your reward.
 
 [All documentation](../README.md) · [Read on the website](https://issue.fund/#docs/contributors/automatic-claims)
 
+## Live now: no email uploads
+
+Automatic collection and claim submission are running on Gnosis. Once the maintainer integration, collector watching and email delivery are ready, the service handles both GitHub receipts and pays claim gas. Your browser can be closed while the server processes the claim.
+
+You still prepare the PR title and issue link before merge, then authorize withdrawal from the payout wallet once the reward is credited. Automatic claiming does not automatically send the reward out of escrow.
+
+- [Completed automatic claim and withdrawal](https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2)
+
 ## Before you start
 
 1. Open the bounty and confirm with the maintainer whether automatic receipt collection is ready. If it is not ready, arrange manual notifications before the merge.

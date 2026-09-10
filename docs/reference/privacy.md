@@ -1,8 +1,15 @@
 # Email privacy
 
-What stays in the page and what becomes public when you submit a claim.
+How automatic and manual claims handle email data, and what becomes public.
 
 [All documentation](../README.md) · [Read on the website](https://issue.fund/#docs/reference/privacy)
+
+## Automatic collection
+
+The dedicated service mailbox receives the original GitHub notifications. The server stores receipts encrypted before submission, validates them and relays the claim. Contributors do not need to expose a personal notification mailbox to use this route.
+
+The service’s signed headers and complete canonical bodies still become public transaction data, including its mailbox address and notification links. The operator has accepted exposure of the dedicated collection account. The integration checks the account’s role and locks both completed conversations; those locks are reversible, and this acceptance is not a claim that reply-token impersonation has been eliminated.
+
 
 ## During Check receipts
 
@@ -13,7 +20,7 @@ For manual claims, selected files are read in your browser and checked with WebC
 
 Direct DKIM verification requires the signed headers and complete canonical email bodies. These are included in the claim transaction, together with the signatures. They can contain your email address, other signed recipient fields, notification links and reply-to addresses.
 
-After you accept the disclosure and choose Submit claim, simulation can send this data to the configured RPC provider before your wallet confirms. Cancelling in the wallet does not undo that earlier disclosure. Once included on-chain, the transaction data is public and cannot be deleted through this app.
+For a manual claim, after you accept the disclosure and choose Submit claim, simulation can send the data to the configured RPC provider before your wallet confirms. Cancelling does not undo that disclosure. Automatic claims publish the collector’s receipts under the operator’s acceptance policy. Once included on-chain, either transaction’s data is public and cannot be deleted through this app.
 
 > Submitting makes these emails public, including your email address and notification links.
 

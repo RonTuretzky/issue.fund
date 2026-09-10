@@ -8,11 +8,22 @@ Recover from repository, receipt, wallet, and withdrawal problems.
 
 | What you see | What to do |
 | --- | --- |
-| Repository cannot be added | Use a public, active repository with issues enabled and a supported default branch. Adding a repo never requires a GitHub connection here. |
+| Issue cannot be reviewed | Paste an open public issue URL from an active repository with issues enabled and a supported default branch. There is no separate Add repository step. |
 | GitHub rate limit or connection error | Wait and retry. Anonymous API checks may be limited. Do not fund until the fresh issue review succeeds. |
 | Issue is closed or URL is a PR | Choose an open issue URL ending in /issues/NUMBER. Check whether the issue moved or was already resolved. |
 | Repository or branch changed during review | Run a fresh review and inspect the new terms before confirming. |
 | Already has a bounty | Open the existing bounty. Additional bounties are separate escrows, not a top-up. |
+
+
+## Automatic collection
+
+| What you see | What to do |
+| --- | --- |
+| Preparing notifications / maintainer integration required | Ask a maintainer to install the collector App for the selected public repository. Contact the operator to enable collector watching and confirm real email delivery. Wait for Notifications ready before merging. |
+| App installed, but notifications are not ready | Installation and watching are separate. The current collector token checks an existing watch; the operator must enable watching on a new repository. Late setup cannot recreate original emails from past events. |
+| Waiting for GitHub emails after merge | Check that the PR merged into the funded branch and closed the funded issue via that PR. Both native event emails must arrive. Contact the operator if delivery is delayed. |
+| Automatic claim needs attention | Read the displayed reason and refresh the status after it is resolved. Installation, account-role, mailbox, receipt and relay-gas problems may need the maintainer or operator. Manual submission remains available if someone received the originals. |
+| Reward credited, but wallet balance unchanged | Connect the payout wallet and withdraw. The server pays claim gas; the payout wallet still authorizes and pays gas for withdrawal. |
 
 
 ## Receipt checking

@@ -16,7 +16,7 @@ Run your project’s tests and verify the issue’s acceptance criteria. The esc
 - The PR title contains exactly one complete bounty reference and one nonzero payout-wallet marker, copied from this bounty.
 - The contributor has confirmed the full wallet address, including when a maintainer has permission to edit the title.
 - The description links the same funded issue using Closes #ISSUE_NUMBER. Keep the issue open until the merge closes it.
-- A participant is subscribed to both the issue and PR, with email delivery enabled. If that person performs the merge, check their own-activity notification settings too.
+- For automatic claims, collector readiness is confirmed before merge. For manual claims, a participant is subscribed to both the issue and PR with email delivery enabled, including their own activity if they perform the merge.
 
 
 ## Link the issue in the description
@@ -33,8 +33,8 @@ Closes #42
 
 1. Confirm that GitHub reports the PR merged into the target branch.
 2. Confirm that the funded issue was closed as completed through that PR.
-3. Have the receipt holder download the specific native merge and linked closure messages, not a comment or the whole conversation.
-4. The contributor can now follow Claim and withdraw. No additional signature or release action is needed from you.
+3. For automatic claims, follow the bounty status while the server collects the native events and submits the claim. For manual claims, have the receipt holder download the specific merge and linked closure messages.
+4. Once Reward credited appears, the contributor withdraws. The automatic integration locks the completed issue and PR before submission; no separate maintainer payment release is needed.
 
 
 ## Avoid an unclaimable merge

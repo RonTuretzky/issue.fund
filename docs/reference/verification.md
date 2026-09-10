@@ -8,7 +8,7 @@ What RSA/DKIM authenticates, and what the escrow checks before paying.
 
 DKIM is an email-signing standard. GitHub signs a canonical set of headers containing a hash of the canonical email body. RSA-SHA256 verification checks that those authenticated bytes have not changed and match the pinned GitHub public key.
 
-This implementation verifies that signature directly on-chain. It does not use a zero-knowledge proof. The browser prepares the canonical bytes and performs an ordinary signature check as a preview. It has no authority to release escrow funds.
+This implementation verifies that signature directly on-chain. It does not use a zero-knowledge proof. The collector prepares and checks the signed bytes for automatic claims; the browser does the same for manual claims. The contract independently decides whether either submission can settle the bounty.
 
 
 ## Checks in the contract
@@ -27,9 +27,9 @@ The rule is to pay the address designated in the authenticated merge-time PR tit
 
 ## Where trust remains
 
-GitHub remains the authority for the events it signs, and maintainers remain responsible for accepting the code. Blockchain validators execute the verifier and escrow. The design removes an app-operated payout signer, but does not make GitHub itself decentralized.
+GitHub remains the authority for the events it signs, and maintainers remain responsible for accepting the code. Blockchain validators execute the verifier and escrow. The relay signs the transaction that submits the receipts; it cannot authorize a payout that fails the contract’s checks. GitHub itself remains centralized.
 
-The public key and verifier are fixed in this deployment. There is no administrator who can override the payout rule or replace a key. Read [Contracts and supported limits](https://issue.fund/#docs/reference/contracts) for the pinned-key, template and repository-identity limitations.
+The public key and verifier are fixed in this deployment. There is no administrator who can override the payout rule or replace a key. The automatic service can miss or delay a claim, but cannot change the wallet authenticated in the receipts. Read [Contracts and supported limits](https://issue.fund/#docs/reference/contracts) for the pinned-key, template and repository-identity limitations.
 
 - [DKIM standard: RFC 6376](https://www.rfc-editor.org/rfc/rfc6376)
 - [Protocol specification in the source repository](https://github.com/RonTuretzky/issue.fund/blob/main/PROTOCOL.md)

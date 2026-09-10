@@ -285,8 +285,8 @@ export function Documentation({ path }: { path: string }) {
                 </span>
                 <h2>Bring work to your project.</h2>
                 <p>
-                  Set up a repository, fund an issue, and review the PR that
-                  earns the reward.
+                  Fund an issue, prepare automatic collection, and review the PR
+                  that earns the reward.
                 </p>
                 <span className="docs-path-action">
                   Start the maintainer guide <ArrowRight size={17} />
@@ -299,8 +299,8 @@ export function Documentation({ path }: { path: string }) {
                 </span>
                 <h2>Make your next contribution.</h2>
                 <p>
-                  Prepare your PR, collect the right receipts, and withdraw your
-                  reward.
+                  Prepare your PR, follow the automatic claim, and withdraw your
+                  reward. Manual receipt guides are here too.
                 </p>
                 <span className="docs-path-action">
                   Start the contributor guide <ArrowRight size={17} />

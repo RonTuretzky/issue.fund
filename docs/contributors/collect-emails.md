@@ -1,8 +1,13 @@
 # Collect the email receipts
 
-Enable notifications and download the two original messages the contract accepts.
+Manual fallback: enable notifications and download the two original messages the contract accepts.
 
 [All documentation](../README.md) · [Read on the website](https://issue.fund/#docs/contributors/collect-emails)
+
+## Using automatic collection?
+
+If your bounty has automatic collection ready, the server receives and submits the emails for you. Skip these manual download steps and follow [Follow an automatic claim](https://issue.fund/#docs/contributors/automatic-claims). Use this guide when arranging the manual route or supplying originals as a fallback.
+
 
 ## Enable delivery before the merge
 

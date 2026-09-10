@@ -6,7 +6,7 @@ Bind the PR to the right bounty, wallet, issue, and target branch.
 
 ## Copy the title from the bounty page
 
-Open the bounty, connect your payout wallet, and use Copy beside YOUR PR TITLE. Keep exactly one of each marker. Replace only the human-readable description of the fix.
+Open the bounty and connect the wallet that should receive the reward. The app fills in both the bounty reference and that wallet’s full address. Use Copy beside YOUR PR TITLE and paste the complete title into GitHub. You do not need to write down or retype either value. Keep exactly one of each marker and replace only the description of the fix.
 
 The following shows the shape of the title. These placeholders are not valid values; copy the real reference and address from your bounty.
 
@@ -16,6 +16,10 @@ The following shows the shape of the title. These placeholders are not valid val
 
 
 ## What each marker does
+
+The long bounty reference is different from GitHub’s issue number. It selects this particular funded reward across chains and escrow versions. Closes #42 in the description tells GitHub which issue the PR resolves; the payout marker tells the contract which wallet to credit.
+
+Both title markers are still required by the deployed contracts, including for automatic claims. The collector automates receipt handling and submission; it does not currently create or edit your PR title. If Copy shows YOUR_WALLET_ADDRESS, connect the intended payout wallet before copying.
 
 | Marker | Purpose |
 | --- | --- |
@@ -44,4 +48,6 @@ Closes #42
 
 ## Arrange receipt delivery now
 
-Subscribe to the issue and PR and make sure GitHub delivers notifications by email. Someone who will keep the original files must receive both events. Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails) before the merge, not after.
+For automatic collection, confirm Notifications ready with the maintainer before merge, then follow [Follow an automatic claim](https://issue.fund/#docs/contributors/automatic-claims). The service receives the emails; you do not need to download them or submit a claim.
+
+For manual collection, subscribe to both the issue and PR and enable email delivery before merge. Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails).

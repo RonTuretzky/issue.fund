@@ -300,3 +300,24 @@ Additional repositories need the maintainer App and operator-enabled watching
 (or compatible subscription-writing authentication). External alert delivery and
 recurring off-host backup exports remain open operational work. This controlled
 live acceptance is not an independent security audit.
+# Documentation for live automatic claims — September 10, 2026
+
+Updated the canonical website documentation and generated Markdown guides to lead
+with the live server collector/relay flow. Maintainer onboarding now distinguishes
+App installation, collector watching and real email readiness. Contributor guides
+explain that the server pays claim gas and handles receipts, while the beneficiary
+still confirms and pays gas for withdrawal. Manual receipt guides remain available
+as a fallback. The overview links to the successful real automatic bounty and
+records its exact gross, net and fee amounts.
+
+The PR preparation guide explains the existing connected-wallet title template
+and the difference between an escrow-specific bounty reference and GitHub's
+issue number. A separate design note proposes prefilled GitHub PR creation and
+pre-merge checks without changing current contracts, and describes the tradeoffs
+of a future single commitment marker. Neither proposed feature is implemented
+by this documentation change.
+
+Validation: all 16 generated documentation pages are consistent; TypeScript and
+the Gnosis static build pass. All five existing documentation browser cases pass,
+covering every guide, deep links/history, branding, mobile navigation/overflow and
+automated accessibility. No emails or blockchain transactions were sent.

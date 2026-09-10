@@ -1,8 +1,16 @@
 # Claim and withdraw
 
-Check the receipts locally, submit a claim, and collect the credited reward.
+Follow an automatic claim or submit receipts manually, then withdraw the credited reward.
 
 [All documentation](../README.md) · [Read on the website](https://issue.fund/#docs/contributors/claim-and-withdraw)
+
+## Automatic claim: wait for credit, then withdraw
+
+For a bounty with automatic collection ready, the server receives the original emails, checks them, locks the completed conversations and submits the claim on Gnosis. It pays claim gas. You do not upload emails, generate a proof or confirm a claim transaction.
+
+Watch the bounty’s automatic-claim status. When Reward credited appears, connect the payout wallet and follow Withdraw the credit below. If the status needs attention, read the recovery message or contact the operator. The following receipt-checking and submission steps apply to manual claims.
+
+- [Automatic claim statuses and recovery](https://issue.fund/#docs/contributors/automatic-claims)
 
 ## Check the pair locally
 

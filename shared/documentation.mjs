@@ -2,7 +2,7 @@
 export const maintainerAutomation = {
   title: "Premium automation for maintainers",
   paragraphs: [
-    "Let contributors focus on the code. We can set up a premium service to collect and submit the required GitHub emails for your project, so contributors don’t have to upload them. Get in touch to discuss setup.",
+    "Automatic email collection and claim submission are live. We can configure the premium service for your public repository so contributors don’t have to upload emails. Get in touch to arrange the maintainer App and collector notifications before work is merged.",
   ],
   links: [
     {
@@ -26,7 +26,7 @@ export const groups = [
   {
     id: "contributors",
     title: "Contributors & users",
-    description: "Prepare your PR, collect receipts, and claim your reward.",
+    description: "Prepare your PR, follow the claim, and withdraw your reward.",
   },
   {
     id: "reference",
@@ -45,18 +45,39 @@ export const pages = [
       {
         title: "One issue. A funded reward. Two signed receipts.",
         paragraphs: [
-          "A bounty holds a reward for a public GitHub issue in a smart contract. A maintainer reviews the contribution and merges the pull request. The contributor uses GitHub’s original merge and linked issue-closure emails to claim the reward.",
+          "A bounty holds a reward for a public GitHub issue in a smart contract. A maintainer reviews the contribution and merges the pull request. For a bounty with automatic collection ready, the server receives GitHub’s original merge and linked issue-closure emails, submits the claim, and pays its gas. The contributor then withdraws the credited reward. Manual receipt submission is also available.",
           "The contract checks GitHub’s RSA/DKIM email signatures directly. There is no proof-generation step, proving service, GitHub login in this app, or approval from a payout operator. GitHub still supplies the evidence about what was merged.",
         ],
       },
       {
         title: "The complete flow",
         steps: [
-          "Fund: choose an open issue in a public repository and deposit a reward in xDAI on Gnosis.",
-          "Prepare: the contributor adds the bounty reference and payout wallet to the PR title, links the issue, and arranges email notifications.",
-          "Merge: the maintainer reviews the code and merges into the funded target branch before the deadline.",
-          "Claim: upload the two original event emails, check the payout wallet, acknowledge their public disclosure, and submit the claim.",
-          "Withdraw: the wallet in the authenticated PR title withdraws its credited reward.",
+          "Fund: paste an open public issue URL, wait for Notifications ready in automatic mode, and deposit the reward in xDAI on Gnosis. Choose manual collection explicitly if you will arrange your own receipts.",
+          "Prepare: the contributor connects their payout wallet, copies the complete PR title from the bounty page, and links the funded issue with Closes #ISSUE_NUMBER in the PR description.",
+          "Merge: the maintainer reviews the code and merges into the funded target branch before the deadline, closing the linked issue.",
+          "Claim: the server collects and checks both event emails, locks the completed issue and PR through the maintainer integration, and submits the claim. No contributor email upload or claim transaction is needed in the automatic flow.",
+          "Withdraw: when Reward credited appears, the wallet in the authenticated PR title withdraws its net reward. This still needs a wallet confirmation and withdrawal gas.",
+        ],
+      },
+      {
+        title: "Automatic claims are live",
+        paragraphs: [
+          "The live Gnosis test on September 10, 2026 completed funding, a real GitHub PR merge and linked issue closure, server email collection, automatic claim submission, and contributor withdrawal. No email files were uploaded and no claim was sent from the browser.",
+          "The test funded 0.0001 xDAI. The contributor withdrew 0.000099 xDAI and the fee recipient was credited 0.000001 xDAI. This confirms the configured example flow; each additional repository still needs notification setup.",
+        ],
+        links: [
+          {
+            label: "View the completed automatic bounty",
+            url: "#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2",
+          },
+          {
+            label: "Maintainer: set up automatic claims",
+            url: "#docs/maintainers/automatic-claims",
+          },
+          {
+            label: "Contributor: follow an automatic claim",
+            url: "#docs/contributors/automatic-claims",
+          },
         ],
       },
       {
@@ -70,9 +91,10 @@ export const pages = [
         title: "What you need",
         bullets: [
           "A public GitHub repository with issues enabled, and an open issue.",
-          "A Gnosis-compatible browser wallet. Rewards and transaction fees use native xDAI; sending ETH on another network does not fund this escrow.",
-          "A way to receive and download the original GitHub email notifications. Set this up before the merge.",
-          "Agreement to publish the signed email data when claiming. Read [Email privacy](#docs/reference/privacy) before choosing which mailbox will receive it.",
+          "A Gnosis-compatible browser wallet. Rewards and transaction fees use native xDAI.",
+          "For automatic collection: the maintainer App, collector watching, and confirmed email delivery before the merge. Additional repositories need setup; installing the App alone does not mean Notifications ready.",
+          "For manual collection: access to both original GitHub event emails. Set up notifications before the merge.",
+          "Claiming publishes signed email data. Automatic claims use the service mailbox; manual claims expose the receipt holder’s address. Read [Email privacy](#docs/reference/privacy).",
         ],
       },
       {
@@ -93,7 +115,7 @@ export const pages = [
       {
         title: "Your role",
         paragraphs: [
-          "You review code and decide what to merge using your normal GitHub process. Manual receipt claims need no signing-key registration, GitHub App, or separate maintainer payout approval. Automatic collection, where offered, uses a maintainer-installed collector App. The merged PR and linked issue event remain the payment evidence.",
+          "You review code and decide what to merge using your normal GitHub process. Automatic collection is live and uses a maintainer-installed GitHub App, a dedicated notification account and a server relay. Manual receipt claims need no App. Neither path needs signing-key registration or separate maintainer payout approval; the merged PR and linked issue event remain the payment evidence.",
           "A funder may be a maintainer, contributor, or sponsor. Start with an issue URL; no repository registration or GitHub connection is required.",
         ],
       },
@@ -103,8 +125,8 @@ export const pages = [
         bullets: [
           "Write clear acceptance criteria in an open GitHub issue: expected behavior, scope, and how you will review the fix.",
           "Keep the repository public, with issues enabled, and use its default branch as the merge target. Archived or disabled repositories are not accepted by onboarding.",
-          "Agree with the contributor on a completion deadline, payout wallet, and who will receive both original event emails.",
-          "Read [Email privacy](#docs/reference/privacy), then enable the required notifications before anyone merges.",
+          "Agree with the contributor on a completion deadline and payout wallet. Confirm whether the service will collect the emails or a participant will supply them manually.",
+          "Read [Email privacy](#docs/reference/privacy). For automatic claims, follow [Set up automatic claims](#docs/maintainers/automatic-claims) and wait for Notifications ready before anyone merges.",
         ],
       },
       {
@@ -112,15 +134,20 @@ export const pages = [
         steps: [
           "Choose an open issue on GitHub, or create one there using the repository’s issue templates.",
           "Open Fund an issue and paste the issue URL. The app checks the public repository, issue, and default branch automatically.",
-          "Review the reward and deadline, then confirm funding in your wallet.",
+          "Choose automatic collection and complete the readiness checks, or explicitly select manual collection. Review the reward, fee and deadline, then confirm funding in your wallet.",
           "The repository appears in Repositories once it has a bounty. This optional directory lets anyone browse and search its issues; there are no browser bookmarks to manage.",
         ],
-        links: [{ label: "Explore bounties", url: "#" }],
+        links: [
+          {
+            label: "Explore bounties",
+            url: "#",
+          },
+        ],
       },
       {
         title: "Publish the contribution instructions",
         paragraphs: [
-          "Share the bounty’s URL with contributors. Ask them to copy its PR-title markers exactly and link the funded issue in the PR description. Let them know that claiming publishes the signed email data and requires a separate withdrawal transaction.",
+          "Share the bounty’s URL and collection mode with contributors. They connect their payout wallet and copy the complete PR title; they do not need to type the address or bounty reference. They still add the issue-closing line to the PR description. With automatic collection ready, the server handles the emails and claim; contributors only authorize their withdrawal after credit.",
           "Continue with [Fund an issue](#docs/maintainers/fund-issue), then use [Review and merge](#docs/maintainers/review-and-merge) before completing a contribution.",
         ],
       },
@@ -145,7 +172,7 @@ export const pages = [
           "Open Fund an issue or select an issue from Repositories. Paste an issue URL such as https://github.com/owner/repo/issues/42.",
           "Choose Review issue. Check the canonical repository name, issue title and number, and target branch. A pull-request URL or closed issue cannot be funded through this flow.",
           "Enter the reward in xDAI and choose 7, 14, 30, or 90 days to complete the work.",
-          "Read the escrow terms and acknowledge that you will arrange the required email notifications.",
+          "The live site defaults to Automatically through the collector. Wait for Notifications ready, including the maintainer integration and email delivery. If you choose manual collection instead, arrange your own notifications. Read and acknowledge the escrow terms.",
           "Choose Fund bounty. The app checks GitHub again before asking your wallet to confirm. Wait for the transaction to succeed, then share the new bounty page.",
         ],
       },
@@ -214,7 +241,7 @@ export const pages = [
           "The PR title contains exactly one complete bounty reference and one nonzero payout-wallet marker, copied from this bounty.",
           "The contributor has confirmed the full wallet address, including when a maintainer has permission to edit the title.",
           "The description links the same funded issue using Closes #ISSUE_NUMBER. Keep the issue open until the merge closes it.",
-          "A participant is subscribed to both the issue and PR, with email delivery enabled. If that person performs the merge, check their own-activity notification settings too.",
+          "For automatic claims, collector readiness is confirmed before merge. For manual claims, a participant is subscribed to both the issue and PR with email delivery enabled, including their own activity if they perform the merge.",
         ],
       },
       {
@@ -235,8 +262,8 @@ export const pages = [
         steps: [
           "Confirm that GitHub reports the PR merged into the target branch.",
           "Confirm that the funded issue was closed as completed through that PR.",
-          "Have the receipt holder download the specific native merge and linked closure messages, not a comment or the whole conversation.",
-          "The contributor can now follow Claim and withdraw. No additional signature or release action is needed from you.",
+          "For automatic claims, follow the bounty status while the server collects the native events and submits the claim. For manual claims, have the receipt holder download the specific merge and linked closure messages.",
+          "Once Reward credited appears, the contributor withdraws. The automatic integration locks the completed issue and PR before submission; no separate maintainer payment release is needed.",
         ],
       },
       {
@@ -318,7 +345,7 @@ export const pages = [
       {
         title: "Choose automatic collection",
         paragraphs: [
-          "When automatic collection is offered in Fund an issue, paste an issue URL and choose Automatically through the collector. Funders and contributors do not connect a GitHub account to issue.fund. A maintainer separately enables the repository integration.",
+          "Automatic collection and server submission are live on Gnosis. Fund an issue defaults to Automatically through the collector. Funders and contributors do not connect a GitHub account to issue.fund. A maintainer separately enables the repository integration before automatic funding can proceed.",
           "The setup panel reports Preparing notifications, Notifications ready, or Attention needed. Fund with automatic collection only after Notifications ready. You can explicitly choose manual collection instead; prepare your own email delivery before the merge.",
         ],
       },
@@ -328,6 +355,7 @@ export const pages = [
           "A repository maintainer follows Maintainer: enable collector from the setup panel and installs the collector’s GitHub App on the selected public repository.",
           "The App needs metadata read, issues write and pull requests write permissions. It checks the collection account’s repository role and locks completed bounty conversations. It does not run contributor code or decide what should be merged.",
           "Keep the dedicated collection account outside the repository’s collaborators and privileged organization roles. A lock cannot protect a reply credential belonging to an account that is exempt from it.",
+          "Arrange repository watching with the service operator at turetzkyron@gmail.com. The current collector credentials verify an existing watch; they do not automatically subscribe the account to every newly added repository. The operator enables watching before the first merge.",
           "Wait for a real GitHub notification to reach the mailbox. If no normal activity is expected, coordinate a harmless setup notification with the service operator. A subscription API response alone does not establish email delivery.",
           "Review the displayed claim fee, contributor’s net reward and deadline, then fund. The service rechecks readiness before wallet confirmation.",
         ],
@@ -376,15 +404,15 @@ export const pages = [
         bullets: [
           "Read the issue and confirm the scope with its maintainer on GitHub.",
           "Open the bounty and check its reward, repository, target branch and completion deadline.",
-          "Choose a Gnosis wallet whose withdrawal transactions you can authorize. Copy the full address, not an ENS name.",
-          "Arrange access to both original GitHub event emails and read Email privacy before deciding which notification mailbox to use.",
+          "Choose a Gnosis wallet whose withdrawal transactions you can authorize. Connect it on the bounty page to fill the PR-title template with its full address.",
+          "Check whether automatic collection is ready. If ready, the service receives both emails for you; you do not need to subscribe a personal mailbox. If using manual collection, arrange the originals before merge and read Email privacy.",
         ],
       },
       {
         title: "Wallet and account setup",
         paragraphs: [
           "You can browse the app without connecting anything. You still use your normal GitHub account to contribute code on GitHub; you do not connect that account to this app. No separate proof of GitHub-account ownership is required.",
-          "Use a browser wallet that supports Gnosis, chain ID 100. Native xDAI pays gas for claiming and withdrawing. A different wallet may relay the claim for you, but the payout wallet still needs to authorize its withdrawal and cover that transaction’s gas.",
+          "Use a browser wallet that supports Gnosis, chain ID 100. The automatic relay pays claim gas. Your payout wallet still needs native xDAI and a confirmation for withdrawal. For manual claims, the wallet submitting the receipts also pays claim gas.",
         ],
       },
       {
@@ -392,8 +420,8 @@ export const pages = [
         steps: [
           "Choose an open bounty from Explore bounties or follow a maintainer’s bounty link.",
           "Connect your intended payout wallet so the PR-title template contains its address.",
-          "Follow Prepare your pull request and copy both title markers from the selected bounty.",
-          "Enable email notifications before the maintainer merges.",
+          "Follow Prepare your pull request and use Copy to copy the complete title from the selected bounty. Keep the two generated markers and replace the description of the fix.",
+          "Confirm automatic collection is ready before the maintainer merges. Only arrange personal email notifications if you are using the manual route.",
           "After the merge, follow the automatic claim status if the bounty uses the collector, or collect and submit both receipts manually. Then withdraw the credited reward.",
         ],
       },
@@ -403,7 +431,12 @@ export const pages = [
           "The wallet in the signed merge-time PR title receives the reward. It does not have to be the wallet submitting the claim, and it is not inferred from your GitHub username or branch name. Check the complete address before the merge; a later title edit cannot correct an already-issued receipt.",
           "Next: [Prepare your pull request](#docs/contributors/prepare-pr).",
         ],
-        links: [{ label: "Explore funded issues", url: "#" }],
+        links: [
+          {
+            label: "Explore funded issues",
+            url: "#",
+          },
+        ],
       },
     ],
   },
@@ -417,7 +450,7 @@ export const pages = [
       {
         title: "Copy the title from the bounty page",
         paragraphs: [
-          "Open the bounty, connect your payout wallet, and use Copy beside YOUR PR TITLE. Keep exactly one of each marker. Replace only the human-readable description of the fix.",
+          "Open the bounty and connect the wallet that should receive the reward. The app fills in both the bounty reference and that wallet’s full address. Use Copy beside YOUR PR TITLE and paste the complete title into GitHub. You do not need to write down or retype either value. Keep exactly one of each marker and replace only the description of the fix.",
           "The following shows the shape of the title. These placeholders are not valid values; copy the real reference and address from your bounty.",
         ],
         code: "[bounty 0xYOUR_64_HEX_DIGIT_REFERENCE] [wallet 0xYOUR_40_HEX_DIGIT_ADDRESS] Describe your fix",
@@ -437,6 +470,10 @@ export const pages = [
             ],
           ],
         },
+        paragraphs: [
+          "The long bounty reference is different from GitHub’s issue number. It selects this particular funded reward across chains and escrow versions. Closes #42 in the description tells GitHub which issue the PR resolves; the payout marker tells the contract which wallet to credit.",
+          "Both title markers are still required by the deployed contracts, including for automatic claims. The collector automates receipt handling and submission; it does not currently create or edit your PR title. If Copy shows YOUR_WALLET_ADDRESS, connect the intended payout wallet before copying.",
+        ],
       },
       {
         title: "Link the issue and target the branch",
@@ -464,7 +501,8 @@ export const pages = [
       {
         title: "Arrange receipt delivery now",
         paragraphs: [
-          "Subscribe to the issue and PR and make sure GitHub delivers notifications by email. Someone who will keep the original files must receive both events. Follow [Collect the email receipts](#docs/contributors/collect-emails) before the merge, not after.",
+          "For automatic collection, confirm Notifications ready with the maintainer before merge, then follow [Follow an automatic claim](#docs/contributors/automatic-claims). The service receives the emails; you do not need to download them or submit a claim.",
+          "For manual collection, subscribe to both the issue and PR and enable email delivery before merge. Follow [Collect the email receipts](#docs/contributors/collect-emails).",
         ],
       },
     ],
@@ -474,8 +512,14 @@ export const pages = [
     group: "contributors",
     title: "Collect the email receipts",
     summary:
-      "Enable notifications and download the two original messages the contract accepts.",
+      "Manual fallback: enable notifications and download the two original messages the contract accepts.",
     sections: [
+      {
+        title: "Using automatic collection?",
+        paragraphs: [
+          "If your bounty has automatic collection ready, the server receives and submits the emails for you. Skip these manual download steps and follow [Follow an automatic claim](#docs/contributors/automatic-claims). Use this guide when arranging the manual route or supplying originals as a fallback.",
+        ],
+      },
       {
         title: "Enable delivery before the merge",
         paragraphs: [
@@ -547,8 +591,21 @@ export const pages = [
     group: "contributors",
     title: "Claim and withdraw",
     summary:
-      "Check the receipts locally, submit a claim, and collect the credited reward.",
+      "Follow an automatic claim or submit receipts manually, then withdraw the credited reward.",
     sections: [
+      {
+        title: "Automatic claim: wait for credit, then withdraw",
+        paragraphs: [
+          "For a bounty with automatic collection ready, the server receives the original emails, checks them, locks the completed conversations and submits the claim on Gnosis. It pays claim gas. You do not upload emails, generate a proof or confirm a claim transaction.",
+          "Watch the bounty’s automatic-claim status. When Reward credited appears, connect the payout wallet and follow Withdraw the credit below. If the status needs attention, read the recovery message or contact the operator. The following receipt-checking and submission steps apply to manual claims.",
+        ],
+        links: [
+          {
+            label: "Automatic claim statuses and recovery",
+            url: "#docs/contributors/automatic-claims",
+          },
+        ],
+      },
       {
         title: "Check the pair locally",
         steps: [
@@ -592,6 +649,19 @@ export const pages = [
     summary:
       "Check collection progress, confirm the payout wallet, and withdraw your reward.",
     sections: [
+      {
+        title: "Live now: no email uploads",
+        paragraphs: [
+          "Automatic collection and claim submission are running on Gnosis. Once the maintainer integration, collector watching and email delivery are ready, the service handles both GitHub receipts and pays claim gas. Your browser can be closed while the server processes the claim.",
+          "You still prepare the PR title and issue link before merge, then authorize withdrawal from the payout wallet once the reward is credited. Automatic claiming does not automatically send the reward out of escrow.",
+        ],
+        links: [
+          {
+            label: "Completed automatic claim and withdrawal",
+            url: "#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2",
+          },
+        ],
+      },
       {
         title: "Before you start",
         steps: [
@@ -669,7 +739,7 @@ export const pages = [
         title: "A signed statement from GitHub",
         paragraphs: [
           "DKIM is an email-signing standard. GitHub signs a canonical set of headers containing a hash of the canonical email body. RSA-SHA256 verification checks that those authenticated bytes have not changed and match the pinned GitHub public key.",
-          "This implementation verifies that signature directly on-chain. It does not use a zero-knowledge proof. The browser prepares the canonical bytes and performs an ordinary signature check as a preview. It has no authority to release escrow funds.",
+          "This implementation verifies that signature directly on-chain. It does not use a zero-knowledge proof. The collector prepares and checks the signed bytes for automatic claims; the browser does the same for manual claims. The contract independently decides whether either submission can settle the bounty.",
         ],
       },
       {
@@ -691,8 +761,8 @@ export const pages = [
       {
         title: "Where trust remains",
         paragraphs: [
-          "GitHub remains the authority for the events it signs, and maintainers remain responsible for accepting the code. Blockchain validators execute the verifier and escrow. The design removes an app-operated payout signer, but does not make GitHub itself decentralized.",
-          "The public key and verifier are fixed in this deployment. There is no administrator who can override the payout rule or replace a key. Read [Contracts and supported limits](#docs/reference/contracts) for the pinned-key, template and repository-identity limitations.",
+          "GitHub remains the authority for the events it signs, and maintainers remain responsible for accepting the code. Blockchain validators execute the verifier and escrow. The relay signs the transaction that submits the receipts; it cannot authorize a payout that fails the contract’s checks. GitHub itself remains centralized.",
+          "The public key and verifier are fixed in this deployment. There is no administrator who can override the payout rule or replace a key. The automatic service can miss or delay a claim, but cannot change the wallet authenticated in the receipts. Read [Contracts and supported limits](#docs/reference/contracts) for the pinned-key, template and repository-identity limitations.",
         ],
         links: [
           {
@@ -712,8 +782,15 @@ export const pages = [
     group: "reference",
     title: "Email privacy",
     summary:
-      "What stays in the page and what becomes public when you submit a claim.",
+      "How automatic and manual claims handle email data, and what becomes public.",
     sections: [
+      {
+        title: "Automatic collection",
+        paragraphs: [
+          "The dedicated service mailbox receives the original GitHub notifications. The server stores receipts encrypted before submission, validates them and relays the claim. Contributors do not need to expose a personal notification mailbox to use this route.",
+          "The service’s signed headers and complete canonical bodies still become public transaction data, including its mailbox address and notification links. The operator has accepted exposure of the dedicated collection account. The integration checks the account’s role and locks both completed conversations; those locks are reversible, and this acceptance is not a claim that reply-token impersonation has been eliminated.",
+        ],
+      },
       {
         title: "During Check receipts",
         paragraphs: [
@@ -724,7 +801,7 @@ export const pages = [
         title: "During claim submission",
         paragraphs: [
           "Direct DKIM verification requires the signed headers and complete canonical email bodies. These are included in the claim transaction, together with the signatures. They can contain your email address, other signed recipient fields, notification links and reply-to addresses.",
-          "After you accept the disclosure and choose Submit claim, simulation can send this data to the configured RPC provider before your wallet confirms. Cancelling in the wallet does not undo that earlier disclosure. Once included on-chain, the transaction data is public and cannot be deleted through this app.",
+          "For a manual claim, after you accept the disclosure and choose Submit claim, simulation can send the data to the configured RPC provider before your wallet confirms. Cancelling does not undo that disclosure. Automatic claims publish the collector’s receipts under the operator’s acceptance policy. Once included on-chain, either transaction’s data is public and cannot be deleted through this app.",
         ],
         notice:
           "Submitting makes these emails public, including your email address and notification links.",
@@ -769,8 +846,8 @@ export const pages = [
           headers: ["What you see", "What to do"],
           rows: [
             [
-              "Repository cannot be added",
-              "Use a public, active repository with issues enabled and a supported default branch. Adding a repo never requires a GitHub connection here.",
+              "Issue cannot be reviewed",
+              "Paste an open public issue URL from an active repository with issues enabled and a supported default branch. There is no separate Add repository step.",
             ],
             [
               "GitHub rate limit or connection error",
@@ -787,6 +864,34 @@ export const pages = [
             [
               "Already has a bounty",
               "Open the existing bounty. Additional bounties are separate escrows, not a top-up.",
+            ],
+          ],
+        },
+      },
+      {
+        title: "Automatic collection",
+        table: {
+          headers: ["What you see", "What to do"],
+          rows: [
+            [
+              "Preparing notifications / maintainer integration required",
+              "Ask a maintainer to install the collector App for the selected public repository. Contact the operator to enable collector watching and confirm real email delivery. Wait for Notifications ready before merging.",
+            ],
+            [
+              "App installed, but notifications are not ready",
+              "Installation and watching are separate. The current collector token checks an existing watch; the operator must enable watching on a new repository. Late setup cannot recreate original emails from past events.",
+            ],
+            [
+              "Waiting for GitHub emails after merge",
+              "Check that the PR merged into the funded branch and closed the funded issue via that PR. Both native event emails must arrive. Contact the operator if delivery is delayed.",
+            ],
+            [
+              "Automatic claim needs attention",
+              "Read the displayed reason and refresh the status after it is resolved. Installation, account-role, mailbox, receipt and relay-gas problems may need the maintainer or operator. Manual submission remains available if someone received the originals.",
+            ],
+            [
+              "Reward credited, but wallet balance unchanged",
+              "Connect the payout wallet and withdraw. The server pays claim gas; the payout wallet still authorizes and pays gas for withdrawal.",
             ],
           ],
         },

@@ -1,6 +1,6 @@
 # issue.fund
 
-Fund a public GitHub issue with xDAI, then pay the wallet designated in the merged PR title using GitHub's original, DKIM-signed merge and linked issue-closure emails. The contracts verify RSA-SHA256 signatures directly. The static React app prepares the signed data and checks it with browser WebCrypto before submission.
+Fund a public GitHub issue with xDAI, then credit the wallet designated in the merged PR title using GitHub's original, DKIM-signed merge and linked issue-closure emails. Automatic collection and server claim submission are live on Gnosis: the service receives both emails and pays claim gas; the contributor withdraws the credited reward. The contracts verify RSA-SHA256 signatures directly, with no ZK proving. Manual receipt submission remains available in the static React app.
 
 **[Open issue.fund](https://issue.fund)** · [Protocol](PROTOCOL.md) · [Testing](TESTING.md) · [Gnosis deployment](GNOSIS.md)
 
@@ -23,15 +23,26 @@ original no-fee terms. See the [fee management guide](docs/reference/contracts.m
 ## Use the app
 
 1. **Start with an issue URL.** Choose Fund an issue and paste an open public GitHub issue URL. The app checks its repository automatically, without registration, bookmarks, or a GitHub connection. The optional Repositories directory is populated from existing bounties and supports browsing, searching, and paginating issues.
-2. **Fund an open issue.** Review the canonical repository, issue, default branch, amount and completion deadline. A fresh public-API check runs before the wallet request. Additional funding for an already listed issue requires an explicit duplicate-bounty acknowledgement.
-3. **Prepare the PR.** Copy the exact title markers `[wallet 0x…] [bounty 0x…]` from the bounty. Add `Closes #ISSUE` to the PR body and merge into the funded default branch. Subscribe to both the issue and PR, and enable email notifications before merging.
-4. **Download two originals.** Use your mail provider's “Show original” / “Download original” for the native merged-PR email and the native issue-closed-via-PR email. A forwarded email, screenshot, comment, or manually closed issue is insufficient.
-5. **Check and claim.** Upload both `.eml` files. Signature checking happens in the browser. Review the payout wallet, acknowledge the single disclosure notice, and submit. The contract independently checks both signatures, full body hashes, native event footers and bounty terms.
-6. **Withdraw.** Anyone may submit a valid claim, but only the wallet in the signed title receives credit and can withdraw it. The credited wallet can choose another withdrawal destination. If there is no claim, the funder can reclaim after the completion deadline plus seven days.
+2. **Prepare collection and fund.** The live site defaults to automatic collection. Wait for **Notifications ready**: a maintainer installs the App, the operator enables collector watching, and genuine email delivery is confirmed. Review the repository, issue, default branch, gross/net reward and deadline before confirming funding. Additional bounties for the same issue remain separate rewards.
+3. **Prepare the PR.** Connect the intended payout wallet, then copy the complete title from the bounty page. Both `[bounty 0x…]` and `[wallet 0x…]` are filled in automatically; keep them and change the description of the fix. Add `Closes #ISSUE` to the PR body and merge into the funded default branch. The collector does not currently create or edit the PR for you.
+4. **Let the server claim.** Once the PR merge closes the linked issue, the server receives the two native event emails over Gmail IMAP, checks and pairs them, locks both completed conversations through the integration, and submits the claim. No email upload, browser claim or proof generation is needed. Follow progress on the bounty page.
+5. **Withdraw.** When **Reward credited** appears, connect the wallet in the signed title and authorize withdrawal. That wallet still needs native xDAI for withdrawal gas and can choose another destination. Claiming alone does not transfer funds out of escrow. If there is no claim, the funder can reclaim after the deadline plus seven days.
 
-The notice reads: “Submitting makes these emails public, including your email address and notification links.” Signed headers and complete canonical bodies are transaction data; they may reach a public RPC during simulation even if you later cancel in your wallet. Files remain in page memory until submission and are not uploaded to an app server.
+New repositories still need the [maintainer setup](docs/maintainers/automatic-claims.md) and collector watching before merge. The current account token verifies an existing watch; it does not automatically subscribe to every newly encountered repository. Contact [turetzkyron@gmail.com](mailto:turetzkyron@gmail.com) for premium setup. The collector, mailbox, encrypted storage and relay run separately from the static GitHub Pages frontend; see the [operator guide](docs/operators/automation.md).
+
+**Manual fallback:** explicitly choose manual collection before funding if you will arrange your own notifications. Receive and download the original native merge and linked closure emails, upload both unchanged `.eml` files, check their signatures in the browser, review the payout wallet and submit. A comment, screenshot or manually closed issue is insufficient. See [Collect the email receipts](docs/contributors/collect-emails.md) and [Claim and withdraw](docs/contributors/claim-and-withdraw.md).
+
+Signed headers and complete canonical bodies become public transaction data, including the receipt holder's email address and notification links. Automatic claims use the dedicated collector mailbox, whose exposure the operator accepted; the server encrypts stored receipts before submission. Manual files stay in page memory and are not uploaded to an app server, but simulation can disclose them to the RPC before wallet confirmation. See [Email privacy](docs/reference/privacy.md).
 
 The wallet must be in the **PR title at merge time**. The observed native GitHub emails do not authenticate the source branch name, so an address only in the source branch is insufficient. GitHub-account ownership enrollment is unnecessary for this payout rule.
+
+The [claim-preparation design note](docs/design/claim-preparation.md) describes a proposed prefilled PR workflow and a possible future single-marker format. Those improvements are not implemented by this documentation update.
+
+## Live automatic acceptance
+
+On September 10, 2026, [V2 bounty #2](https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2) completed public-site funding, real GitHub issue #7 / PR #8 events, server collection and claim, and contributor withdrawal. The gross reward was 0.0001 xDAI, the contributor withdrew 0.000099 xDAI, and the fee recipient was credited 0.000001 xDAI. No email uploads or browser claim were used. Replay rejection and settlement after a collector/signer restart were verified. [Recorded evidence](deployments/gnosis/automatic-e2e.json) · [Passing full CI](https://github.com/RonTuretzky/issue.fund/actions/runs/34497029568).
+
+The live reply-token security matrix remains separate from the operator's accepted exposure policy. External alert delivery and recurring off-host exports remain operational backlog items. This successful example does not enroll other repositories automatically.
 
 ## Run locally
 

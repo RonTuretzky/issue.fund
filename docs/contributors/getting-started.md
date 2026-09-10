@@ -22,8 +22,8 @@ Use a browser wallet that supports Gnosis, chain ID 100. The automatic relay pay
 ## Your first bounty
 
 1. Choose an open bounty from Explore bounties or follow a maintainer’s bounty link.
-2. Connect your intended payout wallet so the PR-title template contains its address.
-3. Follow Prepare your pull request and use Copy to copy the complete title from the selected bounty. Keep the two generated markers and replace the description of the fix.
+2. Choose Prepare PR and connect your intended payout wallet. Review the full address and net reward.
+3. Enter the source branch or public fork and a description. Include the repository checklist, prepare the link and create the prefilled PR on GitHub. Return to Check existing PR before merge.
 4. Confirm automatic collection is ready before the maintainer merges. Only arrange personal email notifications if you are using the manual route.
 5. After the merge, follow the automatic claim status if the bounty uses the collector, or collect and submit both receipts manually. Then withdraw the credited reward.
 

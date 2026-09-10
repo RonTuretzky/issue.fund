@@ -53,7 +53,7 @@ export const pages = [
         title: "The complete flow",
         steps: [
           "Fund: paste an open public issue URL, wait for Notifications ready in automatic mode, and deposit the reward in xDAI on Gnosis. Choose manual collection explicitly if you will arrange your own receipts.",
-          "Prepare: the contributor connects their payout wallet, copies the complete PR title from the bounty page, and links the funded issue with Closes #ISSUE_NUMBER in the PR description.",
+          "Prepare: the contributor opens Prepare PR, connects the payout wallet and selects the work branch. The app fills the title markers and issue-closing line, then opens GitHub for review and PR creation.",
           "Merge: the maintainer reviews the code and merges into the funded target branch before the deadline, closing the linked issue.",
           "Claim: the server collects and checks both event emails, locks the completed issue and PR through the maintainer integration, and submits the claim. No contributor email upload or claim transaction is needed in the automatic flow.",
           "Withdraw: when Reward credited appears, the wallet in the authenticated PR title withdraws its net reward. This still needs a wallet confirmation and withdrawal gas.",
@@ -147,7 +147,7 @@ export const pages = [
       {
         title: "Publish the contribution instructions",
         paragraphs: [
-          "Share the bounty’s URL and collection mode with contributors. They connect their payout wallet and copy the complete PR title; they do not need to type the address or bounty reference. They still add the issue-closing line to the PR description. With automatic collection ready, the server handles the emails and claim; contributors only authorize their withdrawal after credit.",
+          "Share the bounty’s URL and collection mode with contributors. Ask them to use Prepare PR to fill the payout wallet, bounty reference and issue-closing line, then check the PR before review. You still review the code, wallet and linked issue on GitHub. With automatic collection ready, the server handles the receipts and claim; contributors authorize withdrawal after credit.",
           "Continue with [Fund an issue](#docs/maintainers/fund-issue), then use [Review and merge](#docs/maintainers/review-and-merge) before completing a contribution.",
         ],
       },
@@ -236,6 +236,7 @@ export const pages = [
       {
         title: "Before pressing Merge",
         bullets: [
+          "Ask the contributor to run Check existing PR from the bounty’s Prepare PR flow. Treat its results as a preparation preview, then review the live title, wallet and linked issue on GitHub.",
           "The bounty is still open and there is time for GitHub to issue both notifications before the completion deadline.",
           "The PR targets the exact branch on the bounty page, and that branch is still the repository’s default branch.",
           "The PR title contains exactly one complete bounty reference and one nonzero payout-wallet marker, copied from this bounty.",
@@ -419,8 +420,8 @@ export const pages = [
         title: "Your first bounty",
         steps: [
           "Choose an open bounty from Explore bounties or follow a maintainer’s bounty link.",
-          "Connect your intended payout wallet so the PR-title template contains its address.",
-          "Follow Prepare your pull request and use Copy to copy the complete title from the selected bounty. Keep the two generated markers and replace the description of the fix.",
+          "Choose Prepare PR and connect your intended payout wallet. Review the full address and net reward.",
+          "Enter the source branch or public fork and a description. Include the repository checklist, prepare the link and create the prefilled PR on GitHub. Return to Check existing PR before merge.",
           "Confirm automatic collection is ready before the maintainer merges. Only arrange personal email notifications if you are using the manual route.",
           "After the merge, follow the automatic claim status if the bounty uses the collector, or collect and submit both receipts manually. Then withdraw the credited reward.",
         ],
@@ -445,13 +446,37 @@ export const pages = [
     group: "contributors",
     title: "Prepare your pull request",
     summary:
-      "Bind the PR to the right bounty, wallet, issue, and target branch.",
+      "Open a prefilled GitHub PR, check its bounty details, and prepare for the merge.",
     sections: [
       {
-        title: "Copy the title from the bounty page",
+        title: "Create a prefilled PR",
+        steps: [
+          "Push your work branch to the public repository or your public fork. Open the funded bounty and choose Prepare PR.",
+          "Connect the wallet that should receive the reward. Review its complete address and the net reward after the claim fee; the funding wallet is not necessarily the contributor’s wallet.",
+          "Choose New PR, describe your fix in plain ASCII text, and enter the source repository. Use Load branches to choose a branch or type its exact name. The funded repository and target branch are already fixed.",
+          "Add your description and project checklist. If a repository PR template is listed, select it and choose Insert template. It is added to your text. Prefilling replaces GitHub’s default description, so keep the project’s required checklist.",
+          "Choose Prepare GitHub PR. The app checks the current issue, repository, source branch and fork relationship. It fills the bounty reference, payout address and issue-closing line for you.",
+          "Review the result and collection status, then choose Open prefilled PR on GitHub. GitHub opens in another tab with the title and description filled in. Review the target, linked issue and checklist, then create the PR in your normal GitHub session.",
+          "Return to Prepare PR, choose Check existing PR, and paste the new PR URL before asking the maintainer to merge.",
+        ],
         paragraphs: [
-          "Open the bounty and connect the wallet that should receive the reward. The app fills in both the bounty reference and that wallet’s full address. Use Copy beside YOUR PR TITLE and paste the complete title into GitHub. You do not need to write down or retype either value. Keep exactly one of each marker and replace only the description of the fix.",
-          "The following shows the shape of the title. These placeholders are not valid values; copy the real reference and address from your bounty.",
+          "This flow does not need GitHub OAuth in issue.fund and does not create or edit a PR on your behalf. You confirm the PR on GitHub. Creating a PR does not claim a reward or send a blockchain transaction.",
+        ],
+      },
+      {
+        title: "Check an existing PR",
+        paragraphs: [
+          "Choose Check existing PR and paste its GitHub URL. Connect the intended payout wallet and choose Check PR. The app checks the funded repository, target/default branch, open PR and issue, supported title, bounty reference, payout wallet, closing line and completion window.",
+          "Corrections appear beside the mismatched details. Use the copy controls to update the title or description on GitHub. Your existing description is preserved and a missing closing line is inserted above it. The app does not write to GitHub.",
+          "Collector status is shown separately: PR details match does not mean email delivery is ready. Resolve collector warnings or arrange manual notifications before merging. The GitHub API check is a preparation preview; only signed native event receipts can settle the bounty.",
+          "Changing the wallet or form clears the previous result. Reviews expire after five minutes. Recheck after edits and before merge; a later title edit cannot repair an already-issued merge email.",
+        ],
+      },
+      {
+        title: "Manual title copy",
+        paragraphs: [
+          "If you prefer to prepare the PR manually, connect the payout wallet and expand Copy the PR title manually on the bounty page. Copy the complete title and replace only the description of the fix. Copy the required text manually inside Prepare PR also provides the issue-closing line.",
+          "The placeholders below show the format only. Use the actual generated reference and address from your selected bounty.",
         ],
         code: "[bounty 0xYOUR_64_HEX_DIGIT_REFERENCE] [wallet 0xYOUR_40_HEX_DIGIT_ADDRESS] Describe your fix",
       },
@@ -472,7 +497,7 @@ export const pages = [
         },
         paragraphs: [
           "The long bounty reference is different from GitHub’s issue number. It selects this particular funded reward across chains and escrow versions. Closes #42 in the description tells GitHub which issue the PR resolves; the payout marker tells the contract which wallet to credit.",
-          "Both title markers are still required by the deployed contracts, including for automatic claims. The collector automates receipt handling and submission; it does not currently create or edit your PR title. If Copy shows YOUR_WALLET_ADDRESS, connect the intended payout wallet before copying.",
+          "Prepare PR fills both markers and the closing line automatically. Both title markers remain required by the deployed contracts. You review and create or edit the PR on GitHub; the collector later handles receipts and the claim.",
         ],
       },
       {
@@ -503,6 +528,16 @@ export const pages = [
         paragraphs: [
           "For automatic collection, confirm Notifications ready with the maintainer before merge, then follow [Follow an automatic claim](#docs/contributors/automatic-claims). The service receives the emails; you do not need to download them or submit a claim.",
           "For manual collection, subscribe to both the issue and PR and enable email delivery before merge. Follow [Collect the email receipts](#docs/contributors/collect-emails).",
+        ],
+      },
+      {
+        title: "Templates, forks and recovery",
+        bullets: [
+          "Branch suggestions show up to 100 names. Type any other pushed branch name; preparation checks that exact branch before creating the link.",
+          "Public forks in the same repository network are supported. For a fork owned by the same account as the funded repository, use GitHub’s comparison controls to select the exact fork and copy the title/closing line manually.",
+          "The template picker looks in the repository root, .github and docs, including their PULL_REQUEST_TEMPLATE folders. If a template cannot be loaded, browse repository files and paste its checklist. Organization-wide default templates are not loaded automatically.",
+          "Long descriptions use Open comparison on GitHub plus Copy PR title and Copy PR description instead of an oversized link. The complete text is preserved. If clipboard access is blocked, select and copy the displayed text manually.",
+          "If GitHub is unavailable or rate-limited, retry or use Copy the required text manually. Missing or unpushed source branches must be pushed first. Closed issues, changed repository terms and passed completion deadlines need attention before proceeding.",
         ],
       },
     ],
@@ -667,7 +702,7 @@ export const pages = [
         steps: [
           "Open the bounty and confirm with the maintainer whether automatic receipt collection is ready. If it is not ready, arrange manual notifications before the merge.",
           "Review the gross reward, success fee and contributor amount in Bounty details. The fee is deducted only after a valid claim; the amount credited to you is the displayed net reward.",
-          "Copy this bounty’s exact title markers into your PR, including the Gnosis payout wallet you control. Link the funded issue in the PR description and merge into the funded target branch.",
+          "Use Prepare PR with the payout wallet you control. It fills the title markers and closing line. Create the PR on GitHub, then use Check existing PR before the maintainer merges into the funded target branch.",
         ],
       },
       {
@@ -864,6 +899,38 @@ export const pages = [
             [
               "Already has a bounty",
               "Open the existing bounty. Additional bounties are separate escrows, not a top-up.",
+            ],
+          ],
+        },
+      },
+      {
+        title: "PR preparation",
+        table: {
+          headers: ["What you see", "What to do"],
+          rows: [
+            [
+              "Connect payout wallet / preparation disabled",
+              "Connect the wallet that should receive the reward. Check its full address; it may differ from the funding wallet.",
+            ],
+            [
+              "Source branch not found",
+              "Push the branch to the chosen public repository or fork, then retry. Branch suggestions show only the first 100; you can type another exact branch name.",
+            ],
+            [
+              "PR details need attention",
+              "Correct the listed repository, target, title, wallet or closing line on GitHub, then run Check PR again. A merge-time title cannot be repaired afterward.",
+            ],
+            [
+              "PR details match, collector needs attention",
+              "The PR metadata and email readiness are separate checks. Resolve delivery/setup with the maintainer or operator, or arrange manual notifications before merge.",
+            ],
+            [
+              "Template too long / clipboard unavailable",
+              "Use the comparison link and copy the complete displayed title and description. If clipboard access is blocked, select the text and copy it manually.",
+            ],
+            [
+              "Previous result disappeared",
+              "Wallet/form changes and a five-minute timeout invalidate the result. Prepare or check again.",
             ],
           ],
         },

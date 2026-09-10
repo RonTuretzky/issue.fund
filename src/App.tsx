@@ -53,6 +53,7 @@ import { RepositoryHub } from "./RepositoryHub";
 import { MaintainerAutomation } from "./MaintainerAutomation";
 import { FundDialog, type FundingRequest } from "./FundDialog";
 import { FeeSettings } from "./FeeSettings";
+import { PreparePr } from "./PreparePr";
 
 const date = (n: number) =>
   new Date(n * 1000).toLocaleDateString(undefined, {
@@ -1013,9 +1014,8 @@ export default function App() {
                   {bounty.status === 0 ? (
                     <p>
                       Submit a pull request that closes this issue and targets{" "}
-                      <code>{bounty.branch}</code>. Before the maintainer merges
-                      it, put this bounty reference and your wallet in the PR
-                      title.
+                      <code>{bounty.branch}</code>. Prepare PR fills in the
+                      bounty reference, payout wallet and issue-closing line.
                     </p>
                   ) : (
                     <p>
@@ -1024,16 +1024,31 @@ export default function App() {
                         : "This bounty is closed. Its reward was returned to the funder."}
                     </p>
                   )}
-                  <a
-                    className="button"
-                    href={`https://github.com/${bounty.repo}/issues/${bounty.issue}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open issue on GitHub <ExternalLink size={15} />
-                  </a>
+                  <div className="inline-actions">
+                    {bounty.status === 0 && bountyConfig && (
+                      <PreparePr
+                        key={bounty.bountyRef}
+                        bounty={{ ...bounty, contract: bountyConfig.contract }}
+                        account={account}
+                        config={{
+                          ...bountyConfig,
+                          automationUrl: config?.automationUrl,
+                        }}
+                        connect={() => setWalletOpen(true)}
+                      />
+                    )}
+                    <a
+                      className="button"
+                      href={`https://github.com/${bounty.repo}/issues/${bounty.issue}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open issue on GitHub <ExternalLink size={15} />
+                    </a>
+                  </div>
                   {bounty.status === 0 && (
-                    <>
+                    <details className="pr-manual">
+                      <summary>Copy the PR title manually</summary>
                       <div className="title-template">
                         <div>
                           <span>YOUR PR TITLE</span>
@@ -1053,7 +1068,7 @@ export default function App() {
                         {!account &&
                           " Connect a wallet to fill in your address."}
                       </div>
-                    </>
+                    </details>
                   )}
                 </section>
                 <section className="panel claim-panel">

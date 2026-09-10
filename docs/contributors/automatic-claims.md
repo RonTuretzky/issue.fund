@@ -16,7 +16,7 @@ You still prepare the PR title and issue link before merge, then authorize withd
 
 1. Open the bounty and confirm with the maintainer whether automatic receipt collection is ready. If it is not ready, arrange manual notifications before the merge.
 2. Review the gross reward, success fee and contributor amount in Bounty details. The fee is deducted only after a valid claim; the amount credited to you is the displayed net reward.
-3. Copy this bounty’s exact title markers into your PR, including the Gnosis payout wallet you control. Link the funded issue in the PR description and merge into the funded target branch.
+3. Use Prepare PR with the payout wallet you control. It fills the title markers and closing line. Create the PR on GitHub, then use Check existing PR before the maintainer merges into the funded target branch.
 
 
 ## Understand the status

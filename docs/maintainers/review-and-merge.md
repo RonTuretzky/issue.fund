@@ -11,6 +11,7 @@ Run your project’s tests and verify the issue’s acceptance criteria. The esc
 
 ## Before pressing Merge
 
+- Ask the contributor to run Check existing PR from the bounty’s Prepare PR flow. Treat its results as a preparation preview, then review the live title, wallet and linked issue on GitHub.
 - The bounty is still open and there is time for GitHub to issue both notifications before the completion deadline.
 - The PR targets the exact branch on the bounty page, and that branch is still the repository’s default branch.
 - The PR title contains exactly one complete bounty reference and one nonzero payout-wallet marker, copied from this bounty.

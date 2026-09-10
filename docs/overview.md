@@ -14,7 +14,7 @@ The contract checks GitHub’s RSA/DKIM email signatures directly. There is no p
 ## The complete flow
 
 1. Fund: paste an open public issue URL, wait for Notifications ready in automatic mode, and deposit the reward in xDAI on Gnosis. Choose manual collection explicitly if you will arrange your own receipts.
-2. Prepare: the contributor connects their payout wallet, copies the complete PR title from the bounty page, and links the funded issue with Closes #ISSUE_NUMBER in the PR description.
+2. Prepare: the contributor opens Prepare PR, connects the payout wallet and selects the work branch. The app fills the title markers and issue-closing line, then opens GitHub for review and PR creation.
 3. Merge: the maintainer reviews the code and merges into the funded target branch before the deadline, closing the linked issue.
 4. Claim: the server collects and checks both event emails, locks the completed issue and PR through the maintainer integration, and submits the claim. No contributor email upload or claim transaction is needed in the automatic flow.
 5. Withdraw: when Reward credited appears, the wallet in the authenticated PR title withdraws its net reward. This still needs a wallet confirmation and withdrawal gas.

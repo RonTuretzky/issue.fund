@@ -15,6 +15,18 @@ Recover from repository, receipt, wallet, and withdrawal problems.
 | Already has a bounty | Open the existing bounty. Additional bounties are separate escrows, not a top-up. |
 
 
+## PR preparation
+
+| What you see | What to do |
+| --- | --- |
+| Connect payout wallet / preparation disabled | Connect the wallet that should receive the reward. Check its full address; it may differ from the funding wallet. |
+| Source branch not found | Push the branch to the chosen public repository or fork, then retry. Branch suggestions show only the first 100; you can type another exact branch name. |
+| PR details need attention | Correct the listed repository, target, title, wallet or closing line on GitHub, then run Check PR again. A merge-time title cannot be repaired afterward. |
+| PR details match, collector needs attention | The PR metadata and email readiness are separate checks. Resolve delivery/setup with the maintainer or operator, or arrange manual notifications before merge. |
+| Template too long / clipboard unavailable | Use the comparison link and copy the complete displayed title and description. If clipboard access is blocked, select the text and copy it manually. |
+| Previous result disappeared | Wallet/form changes and a five-minute timeout invalidate the result. Prepare or check again. |
+
+
 ## Automatic collection
 
 | What you see | What to do |

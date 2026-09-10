@@ -24,7 +24,7 @@ original no-fee terms. See the [fee management guide](docs/reference/contracts.m
 
 1. **Start with an issue URL.** Choose Fund an issue and paste an open public GitHub issue URL. The app checks its repository automatically, without registration, bookmarks, or a GitHub connection. The optional Repositories directory is populated from existing bounties and supports browsing, searching, and paginating issues.
 2. **Prepare collection and fund.** The live site defaults to automatic collection. Wait for **Notifications ready**: a maintainer installs the App, the operator enables collector watching, and genuine email delivery is confirmed. Review the repository, issue, default branch, gross/net reward and deadline before confirming funding. Additional bounties for the same issue remain separate rewards.
-3. **Prepare the PR.** Connect the intended payout wallet, then copy the complete title from the bounty page. Both `[bounty 0x…]` and `[wallet 0x…]` are filled in automatically; keep them and change the description of the fix. Add `Closes #ISSUE` to the PR body and merge into the funded default branch. The collector does not currently create or edit the PR for you.
+3. **Prepare the PR.** Choose **Prepare PR**, connect the intended payout wallet, and enter your work branch or public fork. Add a description and insert the project’s PR template or checklist. **Prepare GitHub PR** checks the issue and branch and fills the title markers, wallet and `Closes #ISSUE` line. Open the prefilled link, review it and create the PR on GitHub. Return to **Check existing PR** before merge; it reports mismatched terms and collector readiness. No GitHub OAuth in issue.fund is needed.
 4. **Let the server claim.** Once the PR merge closes the linked issue, the server receives the two native event emails over Gmail IMAP, checks and pairs them, locks both completed conversations through the integration, and submits the claim. No email upload, browser claim or proof generation is needed. Follow progress on the bounty page.
 5. **Withdraw.** When **Reward credited** appears, connect the wallet in the signed title and authorize withdrawal. That wallet still needs native xDAI for withdrawal gas and can choose another destination. Claiming alone does not transfer funds out of escrow. If there is no claim, the funder can reclaim after the deadline plus seven days.
 
@@ -36,7 +36,7 @@ Signed headers and complete canonical bodies become public transaction data, inc
 
 The wallet must be in the **PR title at merge time**. The observed native GitHub emails do not authenticate the source branch name, so an address only in the source branch is insufficient. GitHub-account ownership enrollment is unnecessary for this payout rule.
 
-The [claim-preparation design note](docs/design/claim-preparation.md) describes a proposed prefilled PR workflow and a possible future single-marker format. Those improvements are not implemented by this documentation update.
+The [PR preparation guide](docs/contributors/prepare-pr.md) covers templates, forks, checks and copy fallbacks. The [implementation and design note](docs/design/claim-preparation.md) distinguishes the deployed prefilled flow from a possible future single-marker format. Existing escrows and their payout rules remain unchanged.
 
 ## Live automatic acceptance
 

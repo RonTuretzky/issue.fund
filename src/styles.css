@@ -2590,3 +2590,154 @@ footer .brand.small {
     width: 100%;
   }
 }
+
+/* PR preparation follows the existing issue.fund form and ticket styles. */
+.pr-preparation {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.pr-context {
+  overflow-wrap: anywhere;
+  margin: 0 0 1rem;
+}
+.pr-wallet {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: var(--color-paper-1);
+  border: 1px solid var(--color-green-0);
+}
+.pr-wallet code {
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+}
+.pr-wallet > span {
+  font-size: 0.875rem;
+}
+.pr-wallet p {
+  margin: 0;
+}
+.pr-wallet .text-button {
+  justify-self: start;
+}
+.pr-mode {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+}
+.pr-mode button {
+  flex: 1;
+  padding: 0.7rem;
+  border: 1px solid var(--color-green-0);
+  font-size: 0.875rem;
+}
+.pr-mode button[aria-pressed="true"] {
+  background: var(--color-green-1);
+  color: white;
+}
+.pr-preparation form > label,
+.pr-preparation label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.pr-preparation input,
+.pr-preparation select,
+.pr-preparation textarea {
+  font: inherit;
+  font-size: 1rem;
+  width: 100%;
+  padding: 0.7rem;
+  min-width: 0;
+  color: var(--color-surface-ink);
+  background: white;
+  border: 1px solid var(--color-green-0);
+  border-radius: 0;
+}
+.pr-preparation textarea {
+  resize: vertical;
+}
+.pr-preparation .pr-hint {
+  font-size: 0.875rem;
+  color: var(--color-surface-grey-2);
+  line-height: 1.5;
+  margin: 0.5rem 0 1rem;
+}
+.pr-preparation .text-button {
+  font-size: 0.875rem;
+}
+.pr-preparation .button {
+  white-space: normal;
+  text-align: center;
+  font-size: 0.875rem;
+}
+.pr-result {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--color-green-1);
+}
+.pr-result h3 {
+  font-size: 1.2rem;
+  margin: 0 0 0.75rem;
+}
+.pr-checks {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.pr-checks li {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+}
+.pr-checks svg {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+.pr-checks p {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+.pr-collection {
+  padding: 1rem;
+  background: var(--color-paper-1);
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+.pr-collection p {
+  margin: 0.4rem 0 0;
+}
+.pr-copy-field {
+  margin: 1rem 0;
+}
+.pr-copy-field textarea {
+  font-family: monospace;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+.pr-copy-field > span {
+  display: block;
+  min-height: 1.3em;
+  font-size: 0.875rem;
+}
+.pr-manual {
+  margin: 1.5rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-green-0);
+}
+.pr-manual summary {
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.pr-manual > p {
+  font-size: 0.875rem;
+}
+.pr-templates select {
+  text-overflow: ellipsis;
+}

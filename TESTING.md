@@ -4,10 +4,10 @@ Run `npm ci --ignore-scripts` and `forge build`. Node 22 and Foundry are require
 
 | Command                    | Coverage                                                                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm test`                 | 16 tests: public GitHub preflight plus DKIM canonicalization, independent RSA signing, mutation rejection and pair bindings                                                           |
+| `npm test`                 | 24 tests: PR prefill/validation and public GitHub preflight plus DKIM canonicalization, independent RSA signing, mutation rejection and pair bindings                                                           |
 | `npm run test:contracts`   | 54 Foundry tests, with 128 inputs per fuzz case: RSA verifier, signed-comment rejection, full-body and header policy, escrow settlement, V2 fees and withdrawal invariants             |
 | `npm run test:chain`       | Actual RSA verifier deployment, relayed claim, exact withdrawal, negative claims, RSA-2048 support; optional local checks against genuine original GitHub emails                      |
-| `npm run test:ui`          | 36 browser tests: issue-first funding, wallet failures, receipts, disclosure gating, automatic/manual setup, V1/V2 balances, local-chain claim/withdrawal, accessibility and mobile layout |
+| `npm run test:ui`          | 43 browser tests: PR prefill/checking, issue-first funding, wallet failures, receipts, disclosure gating, automatic/manual setup, V1/V2 balances, local-chain claim/withdrawal, accessibility and mobile layout |
 | `npm run test:public-flow` | Opt-in real public GitHub lookup → funding → expiry refund → withdrawal on Anvil                                                                                                      |
 | `npm run test:automation` | 40 tests: collector intake/readiness, explicit exposure policy, encrypted storage, signer limits, relay recovery, indexing and backups |
 | `npm run build:gnosis`     | TypeScript check and static production build                                                                                                                                          |
@@ -84,3 +84,7 @@ fee credits/events and replay rejection, and withdraws through the public site.
 It never submits a browser claim or uploads emails. The private transaction journal
 must contain only funding and withdrawal. The live record is
 [automatic-e2e.json](deployments/gnosis/automatic-e2e.json).
+
+## PR preparation
+
+`tests/pr.test.mjs` covers generated title/body bindings, URL encoding, fork/source checks, quoted closing lines, malformed markers, template preservation and public API failures. `tests/browser/prepare-pr.spec.ts` covers wallet connection and changes, template insertion, prefilled popup handoff, existing PR corrections, late response rejection, copy fallback, keyboard focus and mobile accessibility. These tests make no GitHub writes or blockchain transactions.

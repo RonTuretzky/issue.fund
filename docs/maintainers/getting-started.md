@@ -36,6 +36,6 @@ Automatic email collection and claim submission are live. We can configure the p
 
 ## Publish the contribution instructions
 
-Share the bounty’s URL and collection mode with contributors. They connect their payout wallet and copy the complete PR title; they do not need to type the address or bounty reference. They still add the issue-closing line to the PR description. With automatic collection ready, the server handles the emails and claim; contributors only authorize their withdrawal after credit.
+Share the bounty’s URL and collection mode with contributors. Ask them to use Prepare PR to fill the payout wallet, bounty reference and issue-closing line, then check the PR before review. You still review the code, wallet and linked issue on GitHub. With automatic collection ready, the server handles the receipts and claim; contributors authorize withdrawal after credit.
 
 Continue with [Fund an issue](https://issue.fund/#docs/maintainers/fund-issue), then use [Review and merge](https://issue.fund/#docs/maintainers/review-and-merge) before completing a contribution.

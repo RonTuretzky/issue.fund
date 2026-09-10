@@ -323,3 +323,31 @@ covering every guide, deep links/history, branding, mobile navigation/overflow a
 automated accessibility. No emails or blockchain transactions were sent.
 
 The documentation update is live on GitHub Pages from source `524b1005ca18e61a804f1580cbcc469f3dda5ce5`. Sixteen read-only checks across desktop and mobile confirmed the updated guides, correct source links, all 16 catalogue entries, no horizontal overflow and no browser errors. HTTP, www and the default Pages URL each redirected to https://issue.fund/. No emails or blockchain transactions were sent.
+
+## Prefilled PR preparation — September 10, 2026
+
+Added Prepare PR to open bounties. The static frontend binds the selected payout
+wallet and bounty reference, checks the current issue/default branch and public
+source branch or fork, preserves inserted repository templates, and opens GitHub
+with the complete title and issue-closing description. A separate existing-PR
+checker reports wrong terms, markers, wallet, closing line and closed/merged
+state. Collector readiness is shown separately from metadata matching. Copy
+fallbacks cover long URLs, GitHub outages and blocked clipboard access. Wallet or
+form changes invalidate pending/completed reviews, and reviews expire after five
+minutes. The shared dialog restores keyboard focus on dismissal.
+
+The existing contract format and backend relay are unchanged. This feature makes
+public GitHub reads and prepares a link; the contributor reviews and creates or
+edits the PR on GitHub. Same-owner forks require manual selection on GitHub;
+organization-wide default templates are not automatically loaded. These limits
+and both preparation paths are documented in the onboarding and PR guides.
+
+Validation: 24 JavaScript tests passed, including eight new PR preparation cases.
+All 26 relevant browser cases passed (seven preparation, fourteen interface and
+five handbook cases), including exact popup URL/body, nested wallet connection,
+public forks, stale wallet/response rejection, corrections, copy recovery, mobile
+layout and automated accessibility. A follow-up closed-PR correction passed its
+focused browser check. TypeScript, the static Gnosis build and all 16 generated
+docs pass. Read-only calls also verified the real example issue #1, its branch
+list, the pushed codex/gnosis-e2e-7 branch and merged PR #8. No GitHub writes,
+emails or blockchain transactions were made by these checks.

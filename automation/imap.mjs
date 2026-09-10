@@ -57,11 +57,19 @@ export class MailboxWorker {
       // ranges and can fetch the last message repeatedly when no mail is new.
       if (highest > last) {
         const upper = Math.min(highest, last + 100);
-        const messages = await client.fetchAll(
-          `${last + 1}:${upper}`,
-          { uid: true, size: true },
+        // Filter at Gmail before downloading any message bodies. This is only
+        // an intake filter; the collector still verifies transport and DKIM.
+        const candidates = await client.search(
+          { uid: `${last + 1}:${upper}`, from: "notifications@github.com" },
           { uid: true },
         );
+        const messages = candidates.length
+          ? await client.fetchAll(
+              candidates,
+              { uid: true, size: true },
+              { uid: true },
+            )
+          : [];
         for (const message of messages.sort((a, b) => a.uid - b.uid)) {
           if (message.size <= 100_000) {
             const fetched = await client.fetchOne(

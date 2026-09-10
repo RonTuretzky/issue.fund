@@ -365,7 +365,7 @@ test("mailbox restart respects UIDVALIDITY and never marks messages read", async
     assert.equal(options.logger, false);
     assert.equal(options.tls.rejectUnauthorized, true);
     return {
-      mailbox: { uidValidity: validity, uidNext: 4 },
+      mailbox: { uidValidity: validity, uidNext: 5 },
       on() {},
       async connect() {},
       async logout() {},
@@ -373,12 +373,18 @@ test("mailbox restart respects UIDVALIDITY and never marks messages read", async
         assert.equal(opts.readOnly, true);
         return { release() {} };
       },
-      async fetchAll(range) {
+      async search(query, options) {
+        assert.equal(query.from, "notifications@github.com");
+        assert.equal(options.uid, true);
         reads++;
-        const [a, b] = range.split(":").map(Number);
+        const [a, b] = query.uid.split(":").map(Number);
+        // UID 4 is unrelated mail: never fetch its body, but advance past it.
         return [1, 2, 3]
-          .filter((uid) => uid >= a && uid <= b)
-          .map((uid) => ({ uid, size: 30 }));
+          .filter((uid) => uid >= a && uid <= b);
+      },
+      async fetchAll(uids) {
+        assert.ok(!uids.includes(4));
+        return uids.map((uid) => ({ uid, size: 30 }));
       },
       async fetchOne(uid, query) {
         assert.equal(query.source.maxLength, 100001);

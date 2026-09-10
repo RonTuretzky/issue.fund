@@ -87,3 +87,22 @@ export function readValidation(path, mailbox) {
     fail("disclosure_validation_incomplete");
   return keccak256(Buffer.from(JSON.stringify(data)));
 }
+
+// An explicit operator decision is distinct from a successful test matrix.
+// Scope it to this exact collector/mailbox so changing accounts fails closed.
+export function readRiskAcceptance(path, mailbox) {
+  if (!path) return null;
+  const data = JSON.parse(readSecret(path));
+  if (
+    data.version !== 1 ||
+    data.mode !== "operator-risk-accepted" ||
+    data.collectorId !== mailbox.githubId ||
+    data.mailHost !== mailbox.host ||
+    data.mailAddress !== mailbox.address ||
+    data.acceptCollectorReplyTokenExposure !== true ||
+    data.acceptReversibleLocks !== true ||
+    !Number.isFinite(Date.parse(data.acceptedAt))
+  )
+    fail("disclosure_acceptance_invalid");
+  return keccak256(Buffer.from(JSON.stringify(data)));
+}

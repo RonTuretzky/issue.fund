@@ -264,7 +264,8 @@ test("repository readiness needs an observed delivery, live mailbox, checks and 
   assert.equal(registry.status(10).state, "ready");
   registry.validationId = null;
   assert.equal(registry.status(10).code, "disclosure_validation_pending");
-  registry.validationId = "local-test-only";
+  registry.riskAcceptanceId = "explicit-local-test-acceptance";
+  assert.equal(registry.status(10).state, "ready");
   registry.now = () => start + 301000;
   assert.equal(registry.status(10).code, "subscription_check_stale");
   f.store.close();

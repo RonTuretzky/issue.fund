@@ -6,6 +6,7 @@ import {
   loadDeployments,
   readSecret,
   readValidation,
+  readRiskAcceptance,
   verifyDeployments,
 } from "./config.mjs";
 import { GitHub } from "./github.mjs";
@@ -57,7 +58,16 @@ try {
     process.env.DISCLOSURE_VALIDATION_FILE,
     mailbox,
   );
-  const registry = new Registry({ store, github, validationId });
+  const riskAcceptanceId = readRiskAcceptance(
+    process.env.DISCLOSURE_RISK_ACCEPTANCE_FILE,
+    mailbox,
+  );
+  const registry = new Registry({
+    store,
+    github,
+    validationId,
+    riskAcceptanceId,
+  });
   const collector = new Collector({
     store,
     keys: deployments.map((d) => d.dkimKey),
@@ -71,7 +81,13 @@ try {
     collector,
     registry,
   });
-  const gate = new DisclosureGate({ store, github, mailbox, validationId });
+  const gate = new DisclosureGate({
+    store,
+    github,
+    mailbox,
+    validationId,
+    riskAcceptanceId,
+  });
   const account = process.env.RELAY_ADDRESS;
   if (account && !isAddress(account)) fail("relay_address_invalid");
   const relay = account
@@ -136,7 +152,12 @@ try {
     JSON.stringify({
       event: "collector_started",
       chainId: chain.id,
-      automaticDisclosure: Boolean(validationId),
+      automaticDisclosure: Boolean(validationId || riskAcceptanceId),
+      disclosurePolicy: validationId
+        ? "validated"
+        : riskAcceptanceId
+          ? "operator-risk-accepted"
+          : "disabled",
     }),
   );
   schedule();

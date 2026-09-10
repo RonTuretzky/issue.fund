@@ -9,6 +9,7 @@ export class Registry {
     maxRepos = 500,
     maxIssues = 5000,
     validationId = null,
+    riskAcceptanceId = null,
   }) {
     Object.assign(this, {
       store,
@@ -17,6 +18,7 @@ export class Registry {
       maxRepos,
       maxIssues,
       validationId,
+      riskAcceptanceId,
     });
   }
   async prepare(url, { allowClosed = false } = {}) {
@@ -145,7 +147,7 @@ export class Registry {
       [state, code] = ["attention", "subscription_check_stale"];
     else if (!this.store.healthy("mailbox", 120_000, at))
       [state, code] = ["attention", "mailbox_unavailable"];
-    else if (!this.validationId)
+    else if (!this.validationId && !this.riskAcceptanceId)
       [state, code] = ["attention", "disclosure_validation_pending"];
     else if (repo.delivered_at >= repo.watched_at && repo.watched_at)
       [state, code] = ["ready", null];

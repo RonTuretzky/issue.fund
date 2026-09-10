@@ -2,7 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, chmodSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { readSecret, readValidation } from "../../automation/config.mjs";
+import {
+  readSecret,
+  readValidation,
+  readRiskAcceptance,
+} from "../../automation/config.mjs";
 import { SignerClient, serveSigner } from "../../automation/signer-ipc.mjs";
 import { ServiceError } from "../../automation/errors.mjs";
 
@@ -61,6 +65,56 @@ test("group/world-readable secret files and incomplete live-validation records f
     assert.equal(readValidation(null, mailbox), null);
     assert.throws(() => readValidation(path, mailbox), {
       code: "disclosure_validation_incomplete",
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("operator risk acceptance is explicit and scoped to the exact collector mailbox", () => {
+  const dir = mkdtempSync("/tmp/issue-fund-acceptance-");
+  const path = join(dir, "acceptance.json");
+  const mailbox = {
+    githubId: 78,
+    host: "imap.gmail.com",
+    address: "collector@example.invalid",
+  };
+  const record = {
+    version: 1,
+    mode: "operator-risk-accepted",
+    collectorId: 78,
+    mailHost: mailbox.host,
+    mailAddress: mailbox.address,
+    acceptCollectorReplyTokenExposure: true,
+    acceptReversibleLocks: true,
+    acceptedAt: "2026-09-10T15:00:00Z",
+  };
+  try {
+    assert.equal(readRiskAcceptance(null, mailbox), null);
+    for (const change of [
+      { collectorId: 79 },
+      { mailAddress: "other@example.invalid" },
+      { mailHost: "other.example" },
+      { acceptCollectorReplyTokenExposure: false },
+      { acceptReversibleLocks: false },
+      { mode: "validated" },
+      { acceptedAt: "invalid" },
+    ]) {
+      writeFileSync(path, JSON.stringify({ ...record, ...change }), {
+        mode: 0o600,
+      });
+      assert.throws(() => readRiskAcceptance(path, mailbox), {
+        code: "disclosure_acceptance_invalid",
+      });
+    }
+    writeFileSync(path, JSON.stringify(record), { mode: 0o600 });
+    assert.match(readRiskAcceptance(path, mailbox), /^0x[0-9a-f]{64}$/);
+    assert.throws(() => readValidation(path, mailbox), {
+      code: "disclosure_validation_incomplete",
+    });
+    chmodSync(path, 0o644);
+    assert.throws(() => readRiskAcceptance(path, mailbox), {
+      code: "secret_file_permissions",
     });
   } finally {
     rmSync(dir, { recursive: true, force: true });

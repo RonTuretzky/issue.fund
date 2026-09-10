@@ -2,11 +2,26 @@ import { assertPublicRepo } from "./github.mjs";
 import { fail } from "./errors.mjs";
 
 export class DisclosureGate {
-  constructor({ github, store, mailbox, validationId, now = Date.now }) {
-    Object.assign(this, { github, store, mailbox, validationId, now });
+  constructor({
+    github,
+    store,
+    mailbox,
+    validationId = null,
+    riskAcceptanceId = null,
+    now = Date.now,
+  }) {
+    Object.assign(this, {
+      github,
+      store,
+      mailbox,
+      validationId,
+      riskAcceptanceId,
+      now,
+    });
   }
   async check(bounty, pair) {
-    if (!this.validationId) fail("disclosure_validation_pending", 409);
+    if (!this.validationId && !this.riskAcceptanceId)
+      fail("disclosure_validation_pending", 409);
     const registered = this.store.get(
       "SELECT * FROM repositories WHERE full_name=? AND enabled=1",
       bounty.repo,
@@ -80,6 +95,7 @@ export class DisclosureGate {
       repoId: repo.id,
       collectorId: collector.id,
       validationId: this.validationId,
+      riskAcceptanceId: this.riskAcceptanceId,
     };
   }
 }

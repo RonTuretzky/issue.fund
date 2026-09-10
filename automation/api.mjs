@@ -62,6 +62,14 @@ export function createApi({
     res.json({
       components: health,
       disclosureValidated: Boolean(registry.validationId),
+      disclosureAuthorized: Boolean(
+        registry.validationId || registry.riskAcceptanceId,
+      ),
+      disclosurePolicy: registry.validationId
+        ? "validated"
+        : registry.riskAcceptanceId
+          ? "operator-risk-accepted"
+          : "disabled",
       installUrl,
     });
   });
@@ -70,7 +78,9 @@ export function createApi({
       ...monitoring,
       store,
       now: now(),
-      disclosureValidated: Boolean(registry.validationId),
+      disclosureAuthorized: Boolean(
+        registry.validationId || registry.riskAcceptanceId,
+      ),
     });
     res.status(report.status === "ok" ? 200 : 503).json(report);
   });

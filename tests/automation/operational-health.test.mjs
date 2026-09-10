@@ -51,14 +51,14 @@ test("configured mail and automatic mode expose operational failures without pri
     "INSERT INTO repositories(id,full_name,owner_id,branch,prepared_at,error_code) VALUES (1,'example/private-detail',2,'main',?,'private error')",
     now,
   );
-  const report = f.check({ relayExpected: true, disclosureValidated: true });
+  const report = f.check({ relayExpected: true, disclosureAuthorized: true });
   assert.deepEqual(report.problems, ["relay", "repositories"]);
   assert.equal(report.mode, "automatic");
   assert.ok(!JSON.stringify(report).includes("private"));
   f.store.health("relay", true, null, now);
   f.store.run("UPDATE repositories SET error_code=NULL");
   assert.equal(
-    f.check({ relayExpected: true, disclosureValidated: true }).status,
+    f.check({ relayExpected: true, disclosureAuthorized: true }).status,
     "ok",
   );
 });
@@ -113,6 +113,36 @@ test("operational endpoint returns 503 for a stalled worker while process health
     assert.equal(stale.status, 503);
     assert.deepEqual((await stale.json()).problems, ["worker", "chain"]);
     assert.equal((await fetch(url + "/healthz")).status, 200);
+  } finally {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test("health distinguishes accepted exposure from completed disclosure validation", async (t) => {
+  const f = fixture(t);
+  f.ready();
+  f.store.health("mailbox", true, null, now);
+  const registry = {
+    validationId: null,
+    riskAcceptanceId: "operator-accepted",
+  };
+  const server = createApi({
+    store: f.store,
+    registry,
+    now: () => now,
+    monitoring: { relayExpected: true },
+  }).listen(0, "127.0.0.1");
+  await new Promise((resolve) => server.once("listening", resolve));
+  const url = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const health = await (await fetch(url + "/v1/health")).json();
+    assert.equal(health.disclosureValidated, false);
+    assert.equal(health.disclosureAuthorized, true);
+    assert.equal(health.disclosurePolicy, "operator-risk-accepted");
+    assert.equal((await fetch(url + "/v1/health/operational")).status, 200);
+    registry.riskAcceptanceId = null;
+    assert.equal((await fetch(url + "/v1/health/operational")).status, 503);
   } finally {
     server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));

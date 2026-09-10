@@ -7,12 +7,12 @@ and preserves V1 links/balances. The GitHub App is installed on the example publ
 repository. The genuine public-site manual fund/claim/withdraw test passed with
 emails received by `DecentralParkNY`; see [V2 evidence](../../deployments/gnosis/v2-e2e.json).
 
-**Server auto-submit is not operational.** The live backend at https://api.issue.fund
-is in setup mode: mailbox credentials, compatible watching authentication and live
-disclosure validation remain missing; relay and automatic disclosure are disabled.
-Browser downloads and manual uploads do not validate unattended IMAP ingestion or
-server submission. External alert delivery and recurring off-host exports remain
-open operational requirements.
+The operator has explicitly accepted exposure of the dedicated collector account's
+reply tokens and authorized auto-submit. The service supports this through a
+separate **operator-risk-accepted** policy; it does not mark the unrun live
+reply-lock/forged-recipient/forwarded-replay matrix as passed. Gmail IMAP delivery
+and the example repository's existing watch are working. External alert delivery
+and recurring off-host exports remain open operational requirements.
 
 ## Accounts and permissions
 
@@ -46,7 +46,11 @@ maintainer consent; a public sponsor pasting an issue URL is not consent.
 ## Provide Gmail access
 
 The implemented adapter reads original mail over TLS IMAP; it does not send mail,
-mark messages as read, follow links, or download attachments separately.
+mark messages as read, follow links, or download attachments separately. It filters
+for GitHub notification senders at the IMAP server before fetching message bodies;
+this filter does not replace transport and signature verification. New issue/PR
+notifications without `Re:` can establish delivery readiness, but cannot serve as
+merge/closure settlement receipts.
 
 1. Create a dedicated Gmail mailbox and add/verify it on the collector's GitHub account.
 2. In GitHub notification settings, enable email for watched repositories, including
@@ -56,7 +60,8 @@ mark messages as read, follow links, or download attachments separately.
    `issue.fund collector`. See [Google's instructions](https://support.google.com/accounts/answer/185833).
 4. On the operator machine, edit the private, ignored file
    `.local/secrets/collector.env`. Set `MAIL_ADDRESS`, `MAIL_PASSWORD`, and the
-   replacement `COLLECTOR_GITHUB_TOKEN`. `MAIL_HOST=imap.gmail.com` is already set.
+   `COLLECTOR_GITHUB_TOKEN` when replacing the existing account token.
+   `MAIL_HOST=imap.gmail.com` is already set.
    Do not put these values in Git, an issue, a frontend environment variable,
    a public deployment manifest, or a screenshot. Keep this file mode `0600`.
 5. The deployment script must transfer that file directly to the collector's
@@ -96,7 +101,7 @@ Owners and collaborators can remain exempt from locks. Locks can later be
 removed and roles can change; permanently public credentials can become useful
 again. See [GitHub's lock rules](https://docs.github.com/en/communities/moderating-comments-and-conversations/locking-conversations).
 
-`DISCLOSURE_VALIDATION_FILE` is deliberately absent until the live acceptance
+`DISCLOSURE_VALIDATION_FILE` remains absent until the live acceptance
 matrix has passed. Its JSON must identify the collector, provider, mailbox and
 public **non-secret** evidence for each required result:
 
@@ -110,6 +115,34 @@ public **non-secret** evidence for each required result:
 Do not fill this file with fixture-test results. Local tests prove the code's
 behavior on their inputs, not Gmail's or GitHub's real delivery/lock behavior.
 Validation permits an operational mitigation, not a permanent privacy guarantee.
+
+An operator who explicitly accepts the dedicated collector account's exposure may
+instead set `DISCLOSURE_RISK_ACCEPTANCE_FILE` to a private mode-0600 JSON file:
+
+```json
+{
+  "version": 1,
+  "mode": "operator-risk-accepted",
+  "collectorId": 123,
+  "mailHost": "imap.gmail.com",
+  "mailAddress": "collector@example.com",
+  "acceptCollectorReplyTokenExposure": true,
+  "acceptReversibleLocks": true,
+  "acceptedAt": "2026-09-10T15:00:00Z"
+}
+```
+
+Use the real collector ID/address and decision timestamp. This choice is scoped
+to that exact account and mailbox; changing either requires a new decision. It
+preserves direct Gmail transport checks, local/on-chain DKIM verification, current
+repository identity and App consent, the outside-account check, both conversation
+locks, signed payout routing and signer limits. It permits disclosure despite the
+uncompleted live security matrix. It does not assert that impersonation is
+prevented. `/v1/health` reports `disclosureValidated: false`,
+`disclosureAuthorized: true`, and `disclosurePolicy: operator-risk-accepted`.
+Removing both policy file settings disables disclosure. Set `RELAY_ADDRESS` to the
+configured funded signer wallet to run the relay; a policy alone does not start it.
+
 
 ## Service layout
 
@@ -153,12 +186,12 @@ clients while users have open bounties or credits there.
   health. Process availability alone does not mean automatic claims are ready.
 - `GET /v1/health/operational` returns HTTP 503 for stale/failed worker or chain
   health, expected mailbox failures, reported relay or repository failures, missing
-  disclosure validation in automatic mode, or stale/failed local backups. It returns
+  disclosure authorization in automatic mode, or stale/failed local backups. It returns
   only check names and booleans, never private errors or receipt data.
 
 Ready requires a recent subscription check, healthy mailbox polling, an actual
-verified notification received after watching began, and completed disclosure
-validation. Delivery can still fail afterward. For a new repository, normal
+verified notification received after watching began, and an explicitly enabled disclosure
+policy (validated or operator-accepted). Delivery can still fail afterward. For a new repository, normal
 notification activity can establish the first delivery; if there is none, the
 UI must keep Preparing and offer explicit manual collection rather than promise
 automation. A controlled setup notification can be created with maintainer consent.
@@ -286,7 +319,7 @@ three regions UP and confirmed a rerun did not create another check.
 
 The operational probe requires worker and chain heartbeats no older than two
 minutes. A configured mailbox is checked too; automatic mode additionally checks
-disclosure validation, reported relay errors and repository errors. An idle relay
+disclosure authorization, reported relay errors and repository errors. An idle relay
 without a result is reported as unobserved. The probe does not independently
 simulate a claim or check the current gas balance; a detected relay error is
 reported after the relay attempts its work.
@@ -330,9 +363,10 @@ and the verified one-time off-host copy remain available.
 
 ### Service verification
 
-The service at https://api.issue.fund currently indexes V1 with automatic disclosure
-and the relay worker disabled. The public frontend remains on its previous Pages
-release. The 2026-09-09 deployment checks covered separate secret access, the
+The service at https://api.issue.fund indexes V1 and V2. Automatic disclosure
+and the relay use the operator-accepted policy described above. The public frontend serves V2 with preserved V1
+links. On September 10, Gmail authentication and the live mailbox health check
+passed using the collector's dedicated app credential. The 2026-09-09 deployment checks covered separate secret access, the
 signer's private network namespace, IPC policy rejection, recovery of both
 processes after a forced stop, database restore and a matching protected off-host
 backup copy. A full live notification/claim run is still required.

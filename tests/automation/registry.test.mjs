@@ -226,7 +226,51 @@ test("no disclosure passes until both conversations are locked and the collector
     gate.check({ repo: repo.full_name, issue: 42, branch: "main" }, { pr: 43 }),
     { code: "disclosure_validation_pending" },
   );
+  gate.riskAcceptanceId = "explicit-local-test-acceptance";
+  await assert.rejects(
+    gate.check({ repo: repo.full_name, issue: 42, branch: "main" }, { pr: 43 }),
+    { code: "conversation_lock_required" },
+  );
   f.store.close();
+});
+
+test("risk acceptance permits disclosure while preserving identity and role checks", async () => {
+  const f = fixture();
+  try {
+    await f.registry.prepare("https://github.com/example/parser/issues/42");
+    f.github.closed = true;
+    const gate = new DisclosureGate({
+      github: f.github,
+      store: f.store,
+      mailbox: { login: "collector", githubId: 78 },
+      riskAcceptanceId: "explicit-local-test-acceptance",
+      now: () => now,
+    });
+    const result = await gate.check(
+      { repo: repo.full_name, issue: 42, branch: "main" },
+      { pr: 43 },
+    );
+    assert.equal(result.validationId, null);
+    assert.equal(result.riskAcceptanceId, "explicit-local-test-acceptance");
+    f.setCollaborator(true);
+    await assert.rejects(
+      gate.check(
+        { repo: repo.full_name, issue: 42, branch: "main" },
+        { pr: 43 },
+      ),
+    );
+    f.setCollaborator(false);
+    gate.mailbox.githubId = 79;
+    await assert.rejects(
+      gate.check(
+        { repo: repo.full_name, issue: 42, branch: "main" },
+        { pr: 43 },
+      ),
+      { code: "collector_identity_changed" },
+    );
+  } finally {
+    f.store.close();
+  }
 });
 
 test("public API limits preparation, rejects foreign origins, and never returns provider errors", async () => {

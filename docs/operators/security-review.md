@@ -16,7 +16,7 @@ Existing V1 balances retain their original terms.
 
 | Finding                                                                | Consequence                                                                                             | Disposition                                                                                                                                                                                                            |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Signed notification headers expose working reply credentials           | Comment impersonation as the notification recipient; not proof of payout theft or full account takeover | Previously confirmed in issue #2. Automatic disclosure is gated on a dedicated outside account, both conversation locks, transport validation and a live acceptance record. Live lock/replay tests remain outstanding. |
+| Signed notification headers expose working reply credentials           | Comment impersonation as the notification recipient; not proof of payout theft or full account takeover | Previously confirmed in issue #2. Automatic disclosure is gated on a dedicated outside account, both conversation locks, transport validation and a live acceptance record. Live lock/replay tests remain outstanding. The operator explicitly accepts collector impersonation exposure; a separate scoped acceptance mode enables the relay without claiming validation. |
 | Recipient identity headers are unsigned in actual samples              | Trusting `X-GitHub-Recipient` alone would let modified/replayed mail misidentify the exposed account    | Added a direct Gmail delivery policy plus local DKIM verification. Its ingress assumptions still require live forgery/replay validation; other providers fail closed.                                                  |
 | GitHub can rotate its pinned DKIM key or change notification templates | New receipts can become unverifiable; users rely on the refund path after the grace period              | Inherent V1/V2 deployment constraint. Monitor key/template drift, pause automation, preserve old escrows, and deploy a reviewed verifier version rather than silently substituting a trust root.                       |
 | Current pinned GitHub key is RSA-1024                                  | Security strength is constrained by GitHub's signing key                                                | Verifier supports 1024/2048-bit moduli; an arbitrary larger key cannot verify GitHub's existing mail. This remains a provider constraint.                                                                              |
@@ -65,7 +65,7 @@ not establish that every current GitHub email variant is supported.
 
 - 54 Solidity tests pass, including the existing RSA/policy/escrow cases and 19
   V2 fee and ownership cases; fuzz cases run 128 inputs each.
-- 35 automation tests pass, including a real local EVM path using **locally
+- 40 automation tests pass, including a real local EVM path using **locally
   generated RSA signatures**, encrypted receipt persistence, out-of-order/dedup
   handling, admission/readiness checks, disclosure gating before RPC, fee payout,
   withdrawal, gas depletion, restart after a lost broadcast response, replacement,
@@ -74,8 +74,12 @@ not establish that every current GitHub email variant is supported.
   mailbox/disclosure checks, private-error redaction, incomplete/stale backup
   reports, and HTTP 503 while the process liveness endpoint still returns 200.
 - 16 existing JavaScript GitHub/DKIM tests pass; the static Gnosis build passes.
-- DigitalOcean and supplied GitHub token authentication succeed. The supplied
-  fine-grained PAT cannot perform per-repository watching.
+- DigitalOcean, GitHub and the collector's Gmail IMAP authentication succeed.
+  The supplied fine-grained PAT verifies an existing public repository watch
+  through GraphQL; it cannot create new subscriptions.
+- Initial issue/PR notifications establish delivery readiness without becoming
+  settlement receipts. The IMAP adapter filters senders before downloading bodies
+  and preserves read-only polling, UID recovery and deduplication.
 
 ## Release work still required
 
@@ -89,16 +93,27 @@ accessibility checks. V2 is deployed on Gnosis. A genuine public-site manual col
 and contributor withdrawal run passed on September 10; see [the evidence](../../deployments/gnosis/v2-e2e.json).
 Retention uses a persistent settlement timestamp and prunes settled encrypted
 payloads after 30 days, while active transactions pin their evidence. An online
-backup/restore test passes. DigitalOcean deployment and HTTPS are live, with relay and automatic disclosure
-disabled. Separate users, secret access, the private signer network and a live
+backup/restore test passes. DigitalOcean deployment and HTTPS are live. The operator has authorized relay and
+automatic disclosure under explicit collector-risk acceptance. Separate users, secret access, the private signer network and a live
 database restore have been checked.
 
 The maintainer App is installed only on the public acceptance repository; its
 permissions and the outside collector role were verified against GitHub.
 
-Verify external alert delivery and off-host backup scheduling; configure
-compatible watching and mailbox credentials; run the real reply-lock/replay
-matrix; and complete a genuine unattended GitHub-to-Gnosis
+Verify external alert delivery and off-host backup scheduling; arrange watching
+for additional repositories; and complete a genuine unattended GitHub-to-Gnosis
 fund/collect/claim/withdraw acceptance run. Review the final source and deployed
 bytecode after these changes. Do not label the release production-ready before
 those requirements are evidenced.
+
+## Operator-accepted collector exposure
+
+On September 10 the operator explicitly requested auto-submit despite possible
+impersonation of the dedicated collector account. `readRiskAcceptance` records
+this decision separately from test validation and binds it to the exact GitHub
+numeric account ID and Gmail mailbox. Default configuration remains disabled.
+The API distinguishes authorization from validation. Regression tests cover
+missing/incorrect acknowledgment, changed account/mailbox, file permissions,
+readiness, and retained role/identity/lock checks. The live reply-lock and SMTP
+forgery/replay matrix has not been run and is not represented as passed. Direct
+Gmail ingress assumptions and reversible lock/account-role risks remain.

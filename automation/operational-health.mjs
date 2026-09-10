@@ -5,7 +5,7 @@ export function operationalHealth({
   now = Date.now(),
   mailboxExpected = false,
   relayExpected = false,
-  disclosureValidated = false,
+  disclosureAuthorized = false,
   backupStatusFile = null,
 }) {
   let backup = null;
@@ -36,7 +36,7 @@ export function operationalHealth({
       mailboxExpected || relayExpected
         ? store.healthy("mailbox", 120_000, now)
         : null,
-    disclosure: relayExpected ? disclosureValidated : null,
+    disclosure: relayExpected ? disclosureAuthorized : null,
     relay: relayExpected && relay ? relay.ok === 1 : null,
     repositories: relayExpected
       ? store.get(

@@ -38,8 +38,10 @@ export class Collector {
       }
     }
     if (!auth) fail("email_signature_invalid", 422);
+    // New issue/PR notifications omit "Re:". They can establish delivery
+    // readiness, but only parseNativeEvent below admits settlement receipts.
     const matched =
-      /^\r\nsubject:Re: \[([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\] /.exec(
+      /^\r\nsubject:(?:Re: )?\[([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)\] /.exec(
         auth.subject,
       );
     if (!matched || auth.issuedAt * 1000 > this.now() + 60_000)

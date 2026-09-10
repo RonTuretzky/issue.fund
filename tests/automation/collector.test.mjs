@@ -88,6 +88,29 @@ function fixture(path = ":memory:", key = randomBytes(32)) {
 const email = (options = {}) =>
   delivered(s.email({ timestamp: start / 1000, ...options }).raw);
 
+test("new issue and PR notifications establish delivery without becoming claim receipts", async () => {
+  for (const kind of ["merge", "closure"]) {
+    const f = fixture();
+    try {
+      const result = await f.collector.ingest(
+        email({
+          kind,
+          transformSubject: (subject) => subject.replace(/^Re: /, ""),
+        }),
+      );
+      assert.equal(result.outcome, "notification_only");
+      assert.equal(
+        f.store.get("SELECT delivered_at FROM repositories").delivered_at,
+        start + 2000,
+      );
+      assert.equal(f.store.get("SELECT count(*) AS n FROM receipts").n, 0);
+      assert.equal(f.store.get("SELECT count(*) AS n FROM jobs").n, 0);
+    } finally {
+      f.store.close();
+    }
+  }
+});
+
 test("collects out-of-order authentic pairs once and encrypts original bytes across restart", async () => {
   const directory = mkdtempSync(join(tmpdir(), "issue-fund-"));
   const path = join(directory, "collector.sqlite");
@@ -379,8 +402,7 @@ test("mailbox restart respects UIDVALIDITY and never marks messages read", async
         reads++;
         const [a, b] = query.uid.split(":").map(Number);
         // UID 4 is unrelated mail: never fetch its body, but advance past it.
-        return [1, 2, 3]
-          .filter((uid) => uid >= a && uid <= b);
+        return [1, 2, 3].filter((uid) => uid >= a && uid <= b);
       },
       async fetchAll(uids) {
         assert.ok(!uids.includes(4));

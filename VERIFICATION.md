@@ -351,3 +351,19 @@ focused browser check. TypeScript, the static Gnosis build and all 16 generated
 docs pass. Read-only calls also verified the real example issue #1, its branch
 list, the pushed codex/gnosis-e2e-7 branch and merged PR #8. No GitHub writes,
 emails or blockchain transactions were made by these checks.
+
+The feature and updated guides are live on GitHub Pages from source
+`02204413e4adaa73d69e236cae0920f6b04656df`. A read-only browser smoke
+used an existing open bounty for BreadchainCoop/crowdstake.fun issue #193 and its
+real source branch. It verified the exact wallet/reference title, closing line,
+separate collector status, updated guides, keyboard focus and desktop/mobile
+layouts at 1440, 390 and 320 pixels, with no page errors or overflow. HTTP, www
+and the default Pages URL each redirected to https://issue.fund/. No PR was
+created and no transaction was sent; this checks preparation, not a new payment
+cycle. See [the live preparation evidence](deployments/hosting/prefilled-pr-e2e.json).
+
+The full [CI run passed](https://github.com/RonTuretzky/issue.fund/actions/runs/34501044963)
+for the deployed source: 54 Solidity, 40 automation, 24 JavaScript, 2 deployment
+and 43 browser tests, plus local-chain checks, generated documentation and the
+static build. The subsequent release-record commit only updates this evidence
+and hosting metadata; it does not change the deployed frontend.

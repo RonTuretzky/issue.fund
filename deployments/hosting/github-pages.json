@@ -1,12 +1,12 @@
 {
-  "verifiedAt": "2026-09-10T15:54:31.114Z",
+  "verifiedAt": "2026-09-10T16:17:08.194Z",
   "url": "https://issue.fund/",
   "repository": "RonTuretzky/issue.fund",
   "hosting": "GitHub Pages",
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "524b1005ca18e61a804f1580cbcc469f3dda5ce5",
+  "sourceCommit": "02204413e4adaa73d69e236cae0920f6b04656df",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -54,17 +54,19 @@
     "secure context and zero page errors"
   ],
   "transactionsSentByDeploymentChecks": 0,
-  "latestChange": "Document live automatic claims, maintainer setup and contributor withdrawal",
+  "latestChange": "Prefilled GitHub PR preparation and existing PR checks",
   "latestChangeBrowserChecks": [
-    "16 live documentation checks across desktop and mobile",
-    "automatic claim and manual fallback instructions",
-    "App installation and separate collector watch setup",
-    "connected-wallet title copy and bounty reference explanation",
-    "links to current source documentation",
-    "all 16 guides in the catalogue",
-    "zero browser errors and no horizontal overflow",
+    "live open bounty preparation using its real public GitHub issue and source branch",
+    "exact payout wallet and bounty reference in the prefilled title",
+    "native issue-closing line in the prefilled body",
+    "collector readiness presented separately from PR metadata checks",
+    "updated new-PR and existing-PR documentation",
+    "desktop and mobile layouts at 1440, 390 and 320 pixels",
+    "keyboard focus restored after dismissing the dialog",
+    "zero page errors and no horizontal overflow",
     "HTTP, www and GitHub Pages redirects to HTTPS apex"
   ],
   "liveAcceptanceEvidence": "../gnosis/automatic-e2e.json",
-  "relayFundingTransactions": 1
+  "relayFundingTransactions": 1,
+  "prefilledPrEvidence": "./prefilled-pr-e2e.json"
 }

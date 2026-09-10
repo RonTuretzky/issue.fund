@@ -1,0 +1,27 @@
+{
+  "verifiedAt": "2026-09-10T16:17:08.194Z",
+  "sourceCommit": "02204413e4adaa73d69e236cae0920f6b04656df",
+  "bountyUrl": "https://issue.fund/?release=02204413e4adaa73d69e236cae0920f6b04656df#bounty/100/0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46/2",
+  "repo": "BreadchainCoop/crowdstake.fun",
+  "issue": 193,
+  "sourceBranch": "RonTuretzky/add-frontend",
+  "widths": [
+    1440,
+    390,
+    320
+  ],
+  "prepared": true,
+  "titleWalletAndReference": true,
+  "closingLine": true,
+  "docs": true,
+  "redirects": 3,
+  "githubWrites": 0,
+  "transactionsSent": 0,
+  "pageErrors": [],
+  "ci": {
+    "url": "https://github.com/RonTuretzky/issue.fund/actions/runs/34501044963",
+    "conclusion": "success",
+    "sourceCommit": "02204413e4adaa73d69e236cae0920f6b04656df",
+    "browserTestsPassed": 43
+  }
+}

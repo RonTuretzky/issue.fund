@@ -54,9 +54,10 @@ export function FundDialog({
   onFund: (request: FundingRequest) => Promise<void>;
 }) {
   const [url, setUrl] = useState(initialUrl);
-  const [collectionMode, setCollectionMode] = useState<CollectionMode>(
-    config?.automationUrl ? "automatic" : "manual",
-  );
+  const [selectedCollectionMode, setCollectionMode] =
+    useState<CollectionMode>();
+  const collectionMode =
+    selectedCollectionMode ?? (config?.automationUrl ? "automatic" : "manual");
   const [automation, setAutomation] = useState<AutomationReadiness>();
   const [reward, setReward] = useState("");
   const feeBps = config?.protocol === "rsa-dkim-v2" ? (config.feeBps ?? 0) : 0;

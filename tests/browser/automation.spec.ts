@@ -2,8 +2,78 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { fixture, rpc, restore } from "../helpers/chain.mjs";
 import { parseEther } from "viem";
+import fs from "node:fs";
 
 test.use({ actionTimeout: 10000 });
+
+test("funding opened before configuration arrives defaults to automatic collection", async ({
+  page,
+}) => {
+  let releaseConfig!: () => void;
+  const ready = new Promise<void>((resolve) => {
+    releaseConfig = resolve;
+  });
+  const config = JSON.parse(
+    fs.readFileSync("public/deployment.gnosis.json", "utf8"),
+  );
+  await page.route("**/api/**", async (route) => {
+    if (new URL(route.request().url()).pathname === "/api/config") {
+      await ready;
+      await route.fulfill({
+        json: { ...config, automationUrl: "https://collector.example.invalid" },
+      });
+    } else await route.fulfill({ json: [] });
+  });
+  await page.route("https://api.github.com/**", (route) =>
+    route.fulfill({
+      json: new URL(route.request().url()).pathname.endsWith("/issues/7")
+        ? issue
+        : new URL(route.request().url()).pathname.includes("/branches/")
+          ? { name: "main" }
+          : publicRepo,
+    }),
+  );
+  await page.route("https://collector.example.invalid/**", (route) =>
+    route.fulfill({
+      json: {
+        state: "ready",
+        repoId: 901,
+        issueId: 902,
+        branch: "main",
+        lastDeliveryAt: Date.now(),
+      },
+    }),
+  );
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Fund an issue", exact: true })
+    .first()
+    .click();
+  await page.getByLabel("GitHub issue URL").fill(issue.html_url);
+  await page.getByRole("button", { name: "Review issue", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Reward in ETH" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("radio", { name: "Automatically through the collector" }),
+  ).toHaveCount(0);
+  releaseConfig();
+  await expect(
+    page.getByRole("radio", { name: "Automatically through the collector" }),
+  ).toBeChecked();
+  await expect(
+    page.getByText("Notifications ready", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("radio", { name: "I’ll arrange the emails and submit manually" })
+    .check();
+  await page.getByRole("textbox", { name: "Reward in xDAI" }).fill("0.001");
+  await expect(
+    page.getByRole("radio", {
+      name: "I’ll arrange the emails and submit manually",
+    }),
+  ).toBeChecked();
+});
 
 async function connect(page: Page, n = 1) {
   await page.locator(".wallet-button").click();

@@ -390,3 +390,10 @@ gate and GitHub's notification, conversation-locking and REST API documentation.
 All 16 generated guides are consistent. TypeScript and the Gnosis static build pass;
 all five existing handbook browser tests pass, covering navigation, mobile layout,
 branding and automated accessibility. No emails or blockchain transactions were sent.
+
+The documentation release is live at https://issue.fund/ from source
+`555d036a0008e411feb8e9afceded9a3a2be5844`. Twenty-two read-only checks across
+eleven updated guides at desktop and 320px mobile widths passed. All 16 catalogue
+entries remain available; no horizontal overflow or page errors occurred. HTTP,
+www and the default Pages URL redirect to the HTTPS apex. No emails or blockchain
+transactions were sent. [Live documentation evidence](deployments/hosting/independent-docs-live.json).

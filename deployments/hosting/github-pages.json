@@ -1,12 +1,12 @@
 {
-  "verifiedAt": "2026-09-10T16:17:08.194Z",
+  "verifiedAt": "2026-09-10T16:39:40.395Z",
   "url": "https://issue.fund/",
   "repository": "RonTuretzky/issue.fund",
   "hosting": "GitHub Pages",
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "02204413e4adaa73d69e236cae0920f6b04656df",
+  "sourceCommit": "555d036a0008e411feb8e9afceded9a3a2be5844",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -54,19 +54,20 @@
     "secure context and zero page errors"
   ],
   "transactionsSentByDeploymentChecks": 0,
-  "latestChange": "Prefilled GitHub PR preparation and existing PR checks",
+  "latestChange": "Document independent receipt submission, censorship limits and post-merge locking precautions",
   "latestChangeBrowserChecks": [
-    "live open bounty preparation using its real public GitHub issue and source branch",
-    "exact payout wallet and bounty reference in the prefilled title",
-    "native issue-closing line in the prefilled body",
-    "collector readiness presented separately from PR metadata checks",
-    "updated new-PR and existing-PR documentation",
-    "desktop and mobile layouts at 1440, 390 and 320 pixels",
-    "keyboard focus restored after dismissing the dialog",
-    "zero page errors and no horizontal overflow",
+    "22 live guide checks across desktop and mobile",
+    "independent subscription, receipt collection and permissionless claim path",
+    "service censorship resistance and remaining GitHub/key/deadline/chain dependencies",
+    "maintainer policy to lock both completed conversations before disclosure",
+    "manual contributor confirmation before merge and actual lock/account-role checks before submission",
+    "reply-token impersonation, privileged-account exceptions and reversible locks",
+    "all 16 guides in the catalogue",
+    "zero browser errors and no horizontal overflow",
     "HTTP, www and GitHub Pages redirects to HTTPS apex"
   ],
   "liveAcceptanceEvidence": "../gnosis/automatic-e2e.json",
   "relayFundingTransactions": 1,
-  "prefilledPrEvidence": "./prefilled-pr-e2e.json"
+  "prefilledPrEvidence": "./prefilled-pr-e2e.json",
+  "documentationEvidence": "./independent-docs-live.json"
 }

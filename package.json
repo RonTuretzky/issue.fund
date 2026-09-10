@@ -10,7 +10,7 @@
     "build": "npm run docs:check && tsc -b && vite build",
     "test": "node --test tests/github.test.mjs tests/dkim.test.mjs",
     "test:contracts": "forge test -vv",
-    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts tests/browser/documentation.spec.ts",
+    "test:ui": "playwright test tests/browser/interface.spec.ts tests/browser/repositories.spec.ts tests/browser/direct-claim.spec.ts tests/browser/documentation.spec.ts tests/browser/automation.spec.ts",
     "test:public-flow": "RUN_PUBLIC_FLOW=1 playwright test tests/browser/public-flow.spec.ts",
     "test:chain": "node --test tests/chain.test.mjs",
     "test:e2e": "playwright test",
@@ -20,11 +20,17 @@
     "test:vectors": "node scripts/make-test-receipts.mjs",
     "docs:build": "node scripts/export-docs.mjs",
     "docs:check": "node scripts/export-docs.mjs --check",
-    "deploy:pages": "npm run build:gnosis && node scripts/deploy-pages.mjs"
+    "deploy:pages": "npm run build:gnosis && node scripts/deploy-pages.mjs",
+    "test:automation": "node --test tests/automation/*.test.mjs",
+    "start:automation": "node automation/run.mjs",
+    "start:signer": "node automation/run-signer.mjs",
+    "test:deployment": "node --test tests/deployment.test.mjs",
+    "deploy:v2:plan": "node scripts/deploy-v2-gnosis.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.6.1",
     "express": "5.1.0",
+    "imapflow": "2.0.0",
     "lucide-react": "0.468.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",

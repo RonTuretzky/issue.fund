@@ -25,7 +25,7 @@ Use a browser wallet that supports Gnosis, chain ID 100. Native xDAI pays gas fo
 2. Connect your intended payout wallet so the PR-title template contains its address.
 3. Follow Prepare your pull request and copy both title markers from the selected bounty.
 4. Enable email notifications before the maintainer merges.
-5. After the merge, collect the two receipts, check them in the app, claim, and withdraw.
+5. After the merge, follow the automatic claim status if the bounty uses the collector, or collect and submit both receipts manually. Then withdraw the credited reward.
 
 
 ## Know who gets paid

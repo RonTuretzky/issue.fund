@@ -743,8 +743,8 @@ footer button {
 }
 .tx-hash {
   display: block;
-  font-size: 9px;
-  opacity: 0.75;
+  font-size: 12px;
+  opacity: 1;
 }
 .credit-bar {
   display: flex;
@@ -2456,5 +2456,137 @@ footer .brand.small {
   .app-header .wallet-button {
     padding-right: 8px;
     padding-left: 8px;
+  }
+}
+
+.collection-choice {
+  min-width: 0;
+  padding: 18px;
+  margin: 22px 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.collection-choice legend {
+  padding: 0 6px;
+  font-size: 1rem;
+  font-weight: 650;
+}
+.collection-choice .checkbox-label {
+  margin: 10px 0;
+}
+.automation-state {
+  padding: 16px;
+  margin-top: 14px;
+  border-left: 3px solid var(--muted);
+  background: var(--light);
+  border-radius: 0 8px 8px 0;
+}
+.automation-state.ready {
+  border-left-color: var(--green);
+}
+.automation-state > strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+}
+.automation-state p {
+  font-size: 0.94rem;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.automation-state small {
+  display: block;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  margin-top: 10px;
+}
+.automation-state .fine-print {
+  font-size: 0.875rem;
+}
+.automation-state a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.claim-automation {
+  margin: 0 0 20px;
+}
+.fee-summary {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  margin: 14px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.fee-summary > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.94rem;
+}
+.fee-summary strong {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.fee-summary small {
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+@media (max-width: 480px) {
+  .collection-choice {
+    padding: 12px;
+  }
+  .fee-summary > span {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+.fee-settings {
+  margin: 20px 0;
+  font-size: 14px;
+}
+.fee-settings summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.fee-settings p,
+.fee-settings form,
+.fee-routing {
+  margin-top: 16px;
+}
+.fee-settings code {
+  overflow-wrap: anywhere;
+}
+.fee-routing dd {
+  margin: 4px 0 12px;
+}
+.fee-settings label {
+  display: block;
+  margin-bottom: 8px;
+}
+.fee-setting-action {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fee-setting-action input {
+  flex: 1 1 280px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--white);
+}
+.fee-settings small {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  .fee-setting-action .button {
+    width: 100%;
   }
 }

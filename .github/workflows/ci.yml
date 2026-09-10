@@ -1,29 +1,25 @@
 name: Contract and interface checks
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
-  contracts:
-    uses: BreadchainCoop/etherform/.github/workflows/_ci.yml@180aa91926a02ce2045f9a7e3ed08be9395ecfab
-    with:
-      package-manager: npm
-      foundry-version: v1.5.1
-      check-formatting: false
   checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24.21.0
           cache: npm
-      - uses: foundry-rs/foundry-toolchain@v1
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
         with:
           version: v1.5.1
       - run: npm ci --ignore-scripts
       - run: npm test
-      - run: forge build
-      - run: npm run build
+      - run: forge test -vv
+      - run: npm run test:automation
+      - run: npm run test:deployment
+      - run: npm run build:gnosis
       - run: npx playwright install --with-deps chromium
       - name: Local chain, browser claim and interface tests
         run: |

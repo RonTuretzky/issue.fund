@@ -32,7 +32,7 @@ Let contributors focus on the code. We can set up a premium service to collect a
 | Target branch | The checked default branch is fixed at funding. Coordinate before changing it on GitHub. |
 | Reward and deadline | They cannot be edited or withdrawn early after funding. |
 | Claim grace period | Seven days after the completion deadline, for submitting receipts signed within the completion window. |
-| Platform fee | The escrow takes no platform fee. Wallet transactions still use gas. |
+| Platform fee | The funding form shows the immutable claim fee and the contributor’s net reward. The original V1 escrow has no fee; fee-bearing V2 escrows deduct only on successful claims. Refunds return the full reward. Wallet transactions still use gas. |
 
 
 ## Existing bounties and additional funding

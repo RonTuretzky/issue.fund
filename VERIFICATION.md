@@ -267,3 +267,36 @@ Google's account settings show 2-Step Verification off for the collector Gmail
 account; app passwords are unavailable until the owner enables it. The setup page
 was opened for the user. No mailbox password or disclosure-validation record has
 been invented, and automatic submission remains off.
+
+## Live automatic collection, claim and withdrawal — September 10
+
+The server's Gmail IMAP connection is configured. It filters notifications before
+fetching message bodies and preserves read-only polling. The real new-issue email
+revealed that initial notifications omit `Re:`; the collector now recognizes them
+for delivery readiness while retaining strict native settlement parsing.
+
+The operator explicitly accepted exposure of the dedicated collector account's
+reply credentials and requested enabling auto-submit. A private account/mailbox-
+scoped acceptance record enables that policy separately from validation; the API
+reports `disclosureValidated: false` and `disclosureAuthorized: true`. No unrun
+SMTP forgery/replay or reply-lock test is recorded as passed.
+
+The genuine public-site automatic run passed: issue #7 → V2 bounty #2 funding →
+PR #8 merge/closure → server IMAP collection and verification → both locks →
+relay transaction → exact 1% fee and contributor credit → browser withdrawal.
+The browser sent no claim and uploaded no receipt. Replay was rejected. Both
+server processes restarted with one confirmed transaction and preserved withdrawn
+state, and operational health remained healthy in automatic mode. See
+[the public evidence](deployments/gnosis/automatic-e2e.json).
+
+All 40 automation tests pass on both Node 22 and Node 24.21.0. An additional 26
+non-chain automation cases passed on the deployed Linux runtime. The browser
+regression for configuration arriving after funding opens passed, and the live
+funding test verified automatic selection and Notifications ready. The static
+build and documentation checks pass. Backend source is `eff861c9c46d231629e9129da46736a56954c4c3`;
+frontend source is `01651ae0e8cbf599ca573351ba01ee8e3910faaa`.
+
+Additional repositories need the maintainer App and operator-enabled watching
+(or compatible subscription-writing authentication). External alert delivery and
+recurring off-host backup exports remain open operational work. This controlled
+live acceptance is not an independent security audit.

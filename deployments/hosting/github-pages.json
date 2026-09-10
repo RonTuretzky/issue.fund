@@ -1,12 +1,12 @@
 {
-  "verifiedAt": "2026-09-10T14:41:16.013Z",
+  "verifiedAt": "2026-09-10T15:36:30.670Z",
   "url": "https://issue.fund/",
   "repository": "RonTuretzky/issue.fund",
   "hosting": "GitHub Pages",
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "ac49267d0ffaf3ec5457b9d04182efbda3f4b211",
+  "sourceCommit": "01651ae0e8cbf599ca573351ba01ee8e3910faaa",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -53,16 +53,16 @@
     "desktop and mobile directory layout",
     "secure context and zero page errors"
   ],
-  "transactionsSentByDeploymentChecks": 0,
-  "latestChange": "Owner-managed V2 success-fee escrow and fee-routing controls",
+  "transactionsSentByDeploymentChecks": 3,
+  "latestChange": "Enabled automatic GitHub email collection and Gnosis claim relay",
   "latestChangeBrowserChecks": [
-    "live V2 manifest and 1% fee",
-    "fee owner can open routing and ownership controls",
-    "zero fee recipient disabled",
-    "read-only browser test sends no transactions",
-    "legacy V1 bounty #2 loads",
-    "fee management documentation",
-    "mobile layout and zero browser page errors",
-    "HTTP and www redirect to HTTPS apex"
-  ]
+    "automatic funding defaults correctly after delayed configuration",
+    "live Notifications ready check before funding",
+    "real issue #7 funding from public HTTPS site",
+    "server-submitted claim from independently collected emails",
+    "exact 1% fee, contributor credit and browser withdrawal",
+    "replay rejected, confirmed settlement preserved across server restart"
+  ],
+  "liveAcceptanceEvidence": "../gnosis/automatic-e2e.json",
+  "relayFundingTransactions": 1
 }

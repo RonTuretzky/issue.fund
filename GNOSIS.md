@@ -40,7 +40,21 @@ On September 10, 2026, [issue #5](https://github.com/RonTuretzky/tmp-mergebounty
 
 Both browser tests passed against `https://issue.fund`. Checks covered local receipt validation before disclosure consent, canonical V2 links, paid/fee events, beneficiary and treasury balances, and replay rejection with `NotOpen`. A read-only treasury withdrawal simulation succeeded; no treasury withdrawal or owner action was signed. Public evidence is in [v2-e2e.json](deployments/gnosis/v2-e2e.json). Raw originals and signing secrets remain excluded from Git.
 
-This demonstrates manual collection and on-chain settlement using the collector's genuine emails. The unattended mailbox receiver, automatic disclosure safety matrix and production relay are still unvalidated and disabled. Completing this manual run does not enable them.
+This demonstrates manual collection and on-chain settlement using the collector's genuine emails. This manual run did not validate server automation. The separate unattended acceptance run below establishes that path; the live reply-lock/SMTP security matrix remains unrun under the operator’s explicit exposure acceptance.
+
+## Automatic GitHub → collector → Gnosis acceptance test
+
+On September 10, 2026, [issue #7](https://github.com/RonTuretzky/tmp-mergebounty-public-e2e-20260906/issues/7) and [PR #8](https://github.com/RonTuretzky/tmp-mergebounty-public-e2e-20260906/pull/8) completed the **server-submitted** flow on [V2 bounty #2](https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2).
+
+- The live site confirmed Notifications ready and [funded 0.0001 xDAI](https://gnosisscan.io/tx/0xa7be9b18ebb8044fec0a72a543d5e2e416dafa9af25c424190f8628c440474cb).
+- After the merge, the DigitalOcean collector fetched both original GitHub events through Gmail IMAP, verified and encrypted them, and paired them with the confirmed bounty. No email downloads, uploads, or browser claim were used.
+- The integration locked the closed issue and merged PR. The dedicated relay [submitted the successful claim](https://gnosisscan.io/tx/0x605ed9a642a9350ca54cf9903cbe9b5ae19733be2d502674f2f76b9f5a647f00), consuming 10,232,103 gas. The contributor earned 0.000099 xDAI and the configured treasury earned 0.000001 xDAI.
+- The contributor [withdrew through the public site](https://gnosisscan.io/tx/0x9359cc91b8367e4f10d00409ccf109982a8c69af1bcb6e0fa5666335f2433961). Its credit became zero and the exact wallet increase matched the credit less withdrawal gas. Replay was rejected with `NotOpen`.
+- Restarting both collector and signer preserved the single confirmed relay transaction and withdrawn state. The operational endpoint returned healthy automatic mode afterward.
+
+The service is enabled under the operator’s explicit `operator-risk-accepted` policy for the dedicated collector. This accepts possible collector-account impersonation from disclosed reply tokens; it does **not** mark the unrun live reply-lock/forged-recipient/forwarded-replay matrix as passed. Transport, RSA, payout binding, repository identity, outside-account, App consent, conversation lock and signer checks remain enabled. The fee wallet’s existing credits were preserved.
+
+Public evidence: [automatic-e2e.json](deployments/gnosis/automatic-e2e.json). New repositories still need the maintainer App and a collector subscription; the existing fine-grained token verifies operator-enabled watching but cannot create new watches. The public frontend now offers automatic collection with readiness checks and manual fallback.
 
 ## V1 real GitHub → Gnosis acceptance test
 

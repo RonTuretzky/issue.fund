@@ -1,0 +1,105 @@
+{
+  "testedAt": "2026-09-10T15:33:47.429Z",
+  "publicUrl": "https://issue.fund",
+  "repo": "RonTuretzky/tmp-mergebounty-public-e2e-20260906",
+  "issue": 7,
+  "pr": 8,
+  "bountyId": 2,
+  "escrow": "0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630",
+  "recipient": "0x6636A1CCBdf54485067304C1a590DE016DeaD9F0",
+  "relayer": "0x3Dfcfff86f6D704A946CdADd910899D96A01aB34",
+  "automaticCollection": true,
+  "serverClaim": true,
+  "browserClaim": false,
+  "browserWithdrawal": true,
+  "realGitHubDkim": true,
+  "directRsaOnChain": true,
+  "claimHash": "0x605ed9a642a9350ca54cf9903cbe9b5ae19733be2d502674f2f76b9f5a647f00",
+  "claimGasUsed": "10232103",
+  "grossWei": "100000000000000",
+  "netWei": "99000000000000",
+  "feeWei": "1000000000000",
+  "feeRecipient": "0x86213f1cf0a501857B70Df35c1cb3C2EcF112844",
+  "replayRejected": true,
+  "transactions": [
+    {
+      "functionName": "create",
+      "hash": "0xa7be9b18ebb8044fec0a72a543d5e2e416dafa9af25c424190f8628c440474cb",
+      "sentAt": "2026-09-10T15:30:43.754Z"
+    },
+    {
+      "functionName": "withdraw",
+      "hash": "0x9359cc91b8367e4f10d00409ccf109982a8c69af1bcb6e0fa5666335f2433961",
+      "sentAt": "2026-09-10T15:33:37.427Z"
+    }
+  ],
+  "chainId": 100,
+  "issueUrl": "https://github.com/RonTuretzky/tmp-mergebounty-public-e2e-20260906/issues/7",
+  "prUrl": "https://github.com/RonTuretzky/tmp-mergebounty-public-e2e-20260906/pull/8",
+  "bountyUrl": "https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2",
+  "frontendSource": "01651ae0e8cbf599ca573351ba01ee8e3910faaa",
+  "backendSource": "eff861c9c46d231629e9129da46736a56954c4c3",
+  "disclosurePolicy": "operator-risk-accepted",
+  "liveReplyLockAndSmtpReplayMatrixPassed": false,
+  "collectorLogin": "DecentralParkNY",
+  "collectorId": 261291353,
+  "conversationsLocked": {
+    "issue": 7,
+    "pr": 8,
+    "verified": true
+  },
+  "serverRestart": {
+    "collector": true,
+    "signer": true,
+    "settlementPreserved": true,
+    "confirmedRelayTransactions": 1,
+    "nonce": 0
+  },
+  "postRestartHealth": {
+    "status": "ok",
+    "mode": "automatic",
+    "checks": {
+      "worker": true,
+      "chain": true,
+      "mailbox": true,
+      "disclosure": true,
+      "relay": true,
+      "repositories": true,
+      "backup": true
+    },
+    "problems": [],
+    "checkedAt": 1789054590318
+  },
+  "postRestartJob": {
+    "state": "withdrawn",
+    "code": null,
+    "transactionHash": "0x605ed9a642a9350ca54cf9903cbe9b5ae19733be2d502674f2f76b9f5a647f00",
+    "updatedAt": 1789054495390,
+    "recipient": "0x6636A1CCBdf54485067304C1a590DE016DeaD9F0"
+  },
+  "funding": {
+    "hash": "0xa7be9b18ebb8044fec0a72a543d5e2e416dafa9af25c424190f8628c440474cb",
+    "status": "success",
+    "blockNumber": 48180679,
+    "gasUsed": "217352",
+    "gasPriceWei": "25",
+    "costWei": "5433800"
+  },
+  "claim": {
+    "hash": "0x605ed9a642a9350ca54cf9903cbe9b5ae19733be2d502674f2f76b9f5a647f00",
+    "status": "success",
+    "blockNumber": 48180697,
+    "gasUsed": "10232103",
+    "gasPriceWei": "12",
+    "costWei": "122785236"
+  },
+  "withdrawal": {
+    "hash": "0x9359cc91b8367e4f10d00409ccf109982a8c69af1bcb6e0fa5666335f2433961",
+    "status": "success",
+    "blockNumber": 48180714,
+    "gasUsed": "33190",
+    "gasPriceWei": "23",
+    "costWei": "763370"
+  },
+  "relayFundingHash": "0x7053000f4ea2c16daf9e8c3679597013fc9e0f680bbd98071bbfa6b015fe3aed"
+}

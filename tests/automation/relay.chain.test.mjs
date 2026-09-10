@@ -31,7 +31,7 @@ const mailbox = {
   githubId: 78,
 };
 
-async function setup() {
+async function setup(t) {
   const server = net.createServer();
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
@@ -52,6 +52,31 @@ async function setup() {
     ],
     { stdio: "ignore" },
   );
+  let store,
+    signingStore,
+    closed = false;
+  const close = async () => {
+    if (closed) return;
+    closed = true;
+    try {
+      store?.close();
+      signingStore?.close();
+    } finally {
+      if (anvil.exitCode === null && anvil.signalCode === null) {
+        const exited = once(anvil, "exit");
+        anvil.kill("SIGTERM");
+        const force = setTimeout(() => anvil.kill("SIGKILL"), 2000);
+        force.unref();
+        try {
+          await exited;
+        } finally {
+          clearTimeout(force);
+        }
+      }
+    }
+  };
+  // Also clean up when fixture setup throws before returning to the test.
+  t.after(close);
   const transport = http(`http://127.0.0.1:${port}`, {
     timeout: 15000,
     retryCount: 0,
@@ -100,18 +125,19 @@ async function setup() {
   const read = (functionName, args = []) =>
     real.readContract({ address: d.contract, abi: d.abi, functionName, args });
   const now = Number((await real.getBlock()).timestamp);
-  await wallet.writeContract({
+  const fundingHash = await wallet.writeContract({
     address: d.contract,
     abi: d.abi,
     functionName: "create",
     args: ["example/parser", 42n, "main", BigInt(now + 3600)],
     value: parseEther("1"),
   });
+  await real.waitForTransactionReceipt({ hash: fundingHash });
   const bounty = await read("getBounty", [1n]);
   const bountyRef = await read("referenceFor", [1n]);
   let clock = Number(bounty.createdAt) * 1000 + 1000;
-  const store = new Store(":memory:", randomBytes(32)),
-    signingStore = new Store(":memory:", randomBytes(32));
+  store = new Store(":memory:", randomBytes(32));
+  signingStore = new Store(":memory:", randomBytes(32));
   store.run(
     "INSERT INTO repositories(id,full_name,owner_id,branch,installation_id,prepared_at,watched_at,checked_at) VALUES (1,?,2,?,3,?,?,?)",
     "example/parser",
@@ -219,21 +245,15 @@ async function setup() {
     advance: (ms) => {
       clock += ms;
     },
-    close: async () => {
-      store.close();
-      signingStore.close();
-      const exited = once(anvil, "exit");
-      anvil.kill("SIGTERM");
-      await exited;
-    },
+    close,
   };
 }
 
 test(
   "locally signed RSA receipts pass collector → durable relay → V2 fee credits → withdrawal; restart recovers lost broadcast response",
   { timeout: 120000 },
-  async () => {
-    const f = await setup();
+  async (t) => {
+    const f = await setup(t);
     try {
       f.deny(true);
       await f.makeRelay().tick();
@@ -274,13 +294,14 @@ test(
         f.store.get("SELECT count(*) AS n FROM transactions").n,
         txCount,
       );
-      await f.wallet.writeContract({
+      const withdrawalHash = await f.wallet.writeContract({
         account: accounts[3],
         address: f.d.contract,
         abi: f.d.abi,
         functionName: "withdraw",
         args: [accounts[3].address],
       });
+      await f.client.waitForTransactionReceipt({ hash: withdrawalHash });
       await f.indexer.poll();
       assert.equal(f.store.get("SELECT state FROM jobs").state, "withdrawn");
       assert.equal(await f.read("credits", [accounts[3].address]), 0n);
@@ -297,8 +318,8 @@ test(
 test(
   "depleted relay gas stops before signing and nonce reservation",
   { timeout: 120000 },
-  async () => {
-    const f = await setup();
+  async (t) => {
+    const f = await setup(t);
     try {
       await f.client.request({
         method: "anvil_setBalance",
@@ -320,8 +341,8 @@ test(
 test(
   "a pending claim is replaced at the same nonce and settles exactly once",
   { timeout: 120000 },
-  async () => {
-    const f = await setup();
+  async (t) => {
+    const f = await setup(t);
     try {
       await f.client.request({ method: "evm_setAutomine", params: [false] });
       await f.makeRelay().tick();
@@ -355,8 +376,8 @@ test(
 test(
   "a competing claim causes safe zero-value cancellation of our unused nonce",
   { timeout: 120000 },
-  async () => {
-    const f = await setup();
+  async (t) => {
+    const f = await setup(t);
     try {
       await f.client.request({ method: "evm_setAutomine", params: [false] });
       await f.makeRelay().tick();
@@ -369,12 +390,13 @@ test(
       const job = f.store.get("SELECT * FROM jobs");
       const merged = f.store.receipt(job.merge_id).prepared.receipt;
       const closed = f.store.receipt(job.closure_id).prepared.receipt;
-      await f.wallet.writeContract({
+      const competingHash = await f.wallet.writeContract({
         address: f.d.contract,
         abi: f.d.abi,
         functionName: "claim",
         args: [1n, merged, closed],
       });
+      await f.client.waitForTransactionReceipt({ hash: competingHash });
       await f.makeRelay().tick();
       assert.equal(f.store.get("SELECT count(*) AS n FROM transactions").n, 2);
       await f.makeRelay().tick();
@@ -397,8 +419,8 @@ test(
 test(
   "an orphaned claim is re-observed and relayed again without a second final payout",
   { timeout: 120000 },
-  async () => {
-    const f = await setup();
+  async (t) => {
+    const f = await setup(t);
     try {
       const snapshot = await f.client.request({
         method: "evm_snapshot",

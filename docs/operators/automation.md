@@ -4,8 +4,10 @@ Implementation status (September 10, 2026): the collector, registry API, encrypt
 store, indexer, restricted signer and relay are implemented and locally tested.
 V2 and its fixed 1% fee are deployed on Gnosis; the public Pages frontend uses V2
 and preserves V1 links/balances. The GitHub App is installed on the example public
-repository. The genuine public-site manual fund/claim/withdraw test passed with
-emails received by `DecentralParkNY`; see [V2 evidence](../../deployments/gnosis/v2-e2e.json).
+repository. Both the genuine public-site manual run and a separate unattended server claim
+passed with emails received by `DecentralParkNY`. The automatic test used issue #7,
+PR #8 and V2 bounty #2; its exact fee, withdrawal and restart checks are in
+[the automatic evidence](../../deployments/gnosis/automatic-e2e.json).
 
 The operator has explicitly accepted exposure of the dedicated collector account's
 reply tokens and authorized auto-submit. The service supports this through a
@@ -369,7 +371,9 @@ links. On September 10, Gmail authentication and the live mailbox health check
 passed using the collector's dedicated app credential. The 2026-09-09 deployment checks covered separate secret access, the
 signer's private network namespace, IPC policy rejection, recovery of both
 processes after a forced stop, database restore and a matching protected off-host
-backup copy. A full live notification/claim run is still required.
+backup copy. The separate live automatic notification/claim/withdraw run passed on September 10;
+both processes restarted with one confirmed relay transaction and the withdrawn
+state preserved.
 
 The signer unit holds an exclusive file lock before removing a stale socket, and
 its runtime directory persists across restarts so the collector's mount does not

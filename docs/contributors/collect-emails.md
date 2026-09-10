@@ -1,12 +1,21 @@
 # Collect the email receipts
 
-Manual fallback: enable notifications and download the two original messages the contract accepts.
+Submit independently: subscribe before merge and preserve the two signed event messages.
 
 [All documentation](../README.md) · [Read on the website](https://issue.fund/#docs/contributors/collect-emails)
 
+## Anyone can collect and submit
+
+You can choose this route from the start or keep it as an independent fallback alongside automatic collection. A contributor, sponsor or other subscriber can receive the required originals and relay them for the designated payout wallet. The email recipient, transaction sender and beneficiary do not need to be the same person.
+
+You need no issue.fund registration, premium service or collector App installation. Subscribe on GitHub before the merge, preserve both native event emails, then [submit the claim](https://issue.fund/#docs/contributors/claim-and-withdraw) with a gas-funded wallet. The service cannot veto a valid direct claim, and another submitter cannot replace the wallet in the signed title.
+
+The proof is the signed email evidence, not a newly generated ZK proof. Only valid, supported receipts within the bounty’s time limits can settle it. GitHub still controls whether it delivers the originals. See [Censorship-resistant claim submission](https://issue.fund/#docs/overview) for the limits.
+
+
 ## Using automatic collection?
 
-If your bounty has automatic collection ready, the server receives and submits the emails for you. Skip these manual download steps and follow [Follow an automatic claim](https://issue.fund/#docs/contributors/automatic-claims). Use this guide when arranging the manual route or supplying originals as a fallback.
+If your bounty has automatic collection ready, the server receives and submits the emails for you. You may skip these download steps and [follow the automatic claim](https://issue.fund/#docs/contributors/automatic-claims), or subscribe independently before merge to retain your own originals. Automatic collection does not reserve the contract’s claim function for the service.
 
 
 ## Enable delivery before the merge
@@ -17,6 +26,17 @@ You need the email originals, not only an entry in GitHub’s web notification i
 
 - [Open GitHub notification settings](https://github.com/settings/notifications)
 - [GitHub: configuring notifications](https://docs.github.com/en/subscriptions-and-notifications/get-started/configuring-notifications)
+
+## Confirm the locking policy before using your own receipts
+
+1. Before merge, ask the maintainer to confirm the repository policy and automation that will lock both the completed issue and merged PR. Review [Review and merge](https://issue.fund/#docs/maintainers/review-and-merge) together. A closed or merged badge is not a lock.
+2. Choose an outside notification account without repository privileges and an email address whose disclosure you accept. A maintainer, collaborator or otherwise lock-exempt account should not rely on conversation locks to protect its reply credentials.
+3. After completion and before any simulation or submission, open both GitHub conversations and confirm their lock events/current locked state. Confirm with the maintainer that the receipt account cannot bypass those locks and that the conversations will stay locked. An automation configuration or green PR check alone is insufficient.
+4. If these precautions cannot be confirmed, do not treat personal receipt publication as safe. Arrange a dedicated outside collector and locking first, or use the automatic service when ready. Neither the manual form nor the contract enforces this check; it is a precaution for the person exposing the receipt.
+
+> Publishing originals can expose reply credentials that may let someone comment as the receipt holder. Locking reduces this risk but does not erase public data or establish that impersonation is impossible. Read Email privacy before publishing.
+
+- [Email privacy and impersonation risk](https://issue.fund/#docs/reference/privacy)
 
 ## Find these two events
 

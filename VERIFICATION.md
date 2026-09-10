@@ -367,3 +367,26 @@ for the deployed source: 54 Solidity, 40 automation, 24 JavaScript, 2 deployment
 and 43 browser tests, plus local-chain checks, generated documentation and the
 static build. The subsequent release-record commit only updates this evidence
 and hosting metadata; it does not change the deployed frontend.
+
+## Independent submission and receipt disclosure guidance — September 10, 2026
+
+The handbook and README now explain censorship-resistant submission against the
+collector service: anyone with the valid original GitHub receipts can call either
+escrow's claim function, including for an automatically funded bounty. They cover
+subscribing before merge, collecting both originals, manual submission, independent
+clients, payout binding and the remaining GitHub, key, timing and chain dependencies.
+
+Maintainer onboarding and merge guidance call for a repository policy that locks
+both completed conversations before publication. Contributor onboarding, preparation,
+collection and claim guides require confirming that policy before merge and checking
+actual locks and account roles before manual simulation/submission. Privacy guidance
+describes comment-identity impersonation, privileged-account exemptions, reversible
+locks and immutable disclosure. It distinguishes these operator precautions from
+on-chain eligibility and states that the live impersonation matrix remains unrun.
+This documentation change does not install repository automation or change contracts.
+
+Checked the guidance against the deployed escrow/verifier source, collector disclosure
+gate and GitHub's notification, conversation-locking and REST API documentation.
+All 16 generated guides are consistent. TypeScript and the Gnosis static build pass;
+all five existing handbook browser tests pass, covering navigation, mobile layout,
+branding and automated accessibility. No emails or blockchain transactions were sent.

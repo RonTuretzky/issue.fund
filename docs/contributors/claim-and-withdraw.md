@@ -12,6 +12,15 @@ Watch the bounty’s automatic-claim status. When Reward credited appears, conne
 
 - [Automatic claim statuses and recovery](https://issue.fund/#docs/contributors/automatic-claims)
 
+## Submit independently, even if the service is unavailable
+
+Anyone holding the valid originals can submit a claim for an open bounty, including one funded with automatic collection selected. No operator approval or maintainer payout authorization is required. The original signed payout wallet receives credit; the transaction sender only pays claim gas.
+
+The receipt upload controls remain on the bounty page. If issue.fund itself is unavailable, the public source can be hosted independently or another client can call claim(id, merged, closed) on the correct escrow with the canonical receipts. Use the exact chain, contract and bounty ID from the funded reward; review [Contracts and supported limits](https://issue.fund/#docs/reference/contracts) and the [developer guide](https://issue.fund/#docs/reference/developers).
+
+Before submitting your own receipts, follow the [collection and lock-confirmation steps](https://issue.fund/#docs/contributors/collect-emails). Confirm both locks after merge and before simulation, check the receipt holder’s account role and understand the reply-token risk. The manual UI and contract do not verify GitHub locks; these precautions do not create a permission requirement for the on-chain claim.
+
+
 ## Check the pair locally
 
 1. Open the correct bounty and select the original Merged PR email and Issue closure email.
@@ -26,7 +35,7 @@ Connect a Gnosis wallet with xDAI for gas. It may be a different wallet from the
 
 The full signed headers and canonical bodies are sent for transaction simulation and submission. The on-chain verifier checks them independently. The UI’s successful local check is a preview; the contract decides whether the claim is valid.
 
-> Submitting makes these emails public, including your email address and notification links.
+> Submission exposes email addresses and reply credentials, potentially allowing comments as the receipt holder. Confirm both conversation locks and account-role precautions before simulation. Public receipt data cannot be withdrawn.
 
 
 ## Withdraw the credit

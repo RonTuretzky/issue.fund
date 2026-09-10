@@ -27,9 +27,21 @@ For a manual claim, after you accept the disclosure and choose Submit claim, sim
 
 ## Notification links and reply addresses
 
-Treat values embedded in notification emails as sensitive. GitHub documents reply-to addresses that identify an account and thread, and notes that unsubscribe links require the relevant signed-in account. Do not assume every token has the same permissions, or that publishing it is harmless.
+GitHub’s reply-to address identifies both a conversation and the account whose name appears on an emailed comment. Publishing it may let someone use that credential to post as the notification recipient in that conversation. Treat this as an impersonation risk, not merely disclosure of an email address. We have not completed the live reply-token/forged-sender test matrix and do not claim every attempted reply succeeds or is blocked.
+
+This concerns comments attributed to the receipt holder; the contract still binds payout to the signed wallet. GitHub says notification unsubscribe links require the relevant signed-in account, so they do not have the same documented behavior as reply credentials. GitHub also says reply addresses remain valid until a password reset; closing an issue does not itself revoke them.
 
 - [GitHub: replying to email notifications](https://docs.github.com/en/subscriptions-and-notifications/get-started/configuring-notifications#replying-to-email-notifications)
+
+## What locking can and cannot protect
+
+Maintainers should adopt the [post-merge locking policy](https://issue.fund/#docs/maintainers/review-and-merge) for both the completed issue and merged PR, before receipts are simulated or published. Manual contributors must confirm that policy before merge, then confirm actual locks and the receipt holder’s account role before submission. Prepare PR, Check receipts and the contract do not check those locks.
+
+GitHub lets repository owners, collaborators and people with write access comment in locked conversations. Use a dedicated outside notification account and confirm it is not exempt. Publishing a privileged maintainer’s receipts can expose their comment identity even while the conversations are locked.
+
+Keep the conversations locked. A later unlock or role change can make exposed credentials usable again. Locks are reversible GitHub controls; they do not remove immutable receipt data or establish complete protection against email impersonation. The automatic service checks locks and account roles for its collector before submission, under its operator’s accepted exposure policy. Independent submissions remain possible without that service.
+
+- [GitHub: who can comment in locked conversations](https://docs.github.com/en/communities/moderating-comments-and-conversations/locking-conversations)
 
 ## Choose the receipt holder deliberately
 

@@ -74,7 +74,7 @@ Closes #42
 
 For automatic collection, confirm Notifications ready with the maintainer before merge, then follow [Follow an automatic claim](https://issue.fund/#docs/contributors/automatic-claims). The service receives the emails; you do not need to download them or submit a claim.
 
-For manual collection, subscribe to both the issue and PR and enable email delivery before merge. Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails).
+For manual or independent collection, subscribe to both the issue and PR before merge and confirm the maintainer’s policy to automatically lock both completed conversations. Check those locks and the receipt holder’s role before publishing. The PR preparation check does not verify locks or remove impersonation risk. Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails).
 
 
 ## Templates, forks and recovery

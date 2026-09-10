@@ -27,6 +27,8 @@ Review and merge normally, preserving the exact bounty reference and payout wall
 
 Before submitting the collected receipts, the integration locks both the completed issue and PR and checks the collector’s role. Keep these conversations locked: unlocking them or later granting the collector privileges can make already-public reply credentials usable again.
 
+Apply the same [repository locking policy](https://issue.fund/#docs/maintainers/review-and-merge) to manual and independent claims. The integration protects its own submission sequence; it cannot stop another receipt holder publishing earlier. Make contributors aware of the risk and have them confirm the locks before using personal receipts.
+
 A successful claim credits the wallet in the signed PR title. The contributor still authorizes a separate withdrawal transaction.
 
 
@@ -34,7 +36,7 @@ A successful claim credits the wallet in the signed PR title. The contributor st
 
 - Do not merge until email delivery is prepared if you expect an automatic claim. Late subscription cannot recover historical original emails.
 - Mailbox outages, missing installation permissions, gas limits and missing receipts appear in the bounty’s automatic-claim status. The reward remains governed by its on-chain completion deadline and seven-day claim window.
-- Manual and independent receipt submissions remain possible. Read Email privacy before publishing receipts from a personal account.
+- Manual and independent receipt submissions remain possible without operator permission, including for an automatically funded bounty. Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails) and confirm the locking precautions before publishing personal receipts.
 
 - [Email privacy](https://issue.fund/#docs/reference/privacy)
 - [Contributor: follow an automatic claim](https://issue.fund/#docs/contributors/automatic-claims)

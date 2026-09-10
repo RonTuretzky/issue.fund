@@ -22,7 +22,17 @@ Automatic email collection and claim submission are live. We can configure the p
 - Write clear acceptance criteria in an open GitHub issue: expected behavior, scope, and how you will review the fix.
 - Keep the repository public, with issues enabled, and use its default branch as the merge target. Archived or disabled repositories are not accepted by onboarding.
 - Agree with the contributor on a completion deadline and payout wallet. Confirm whether the service will collect the emails or a participant will supply them manually.
+- Set a repository policy to automatically lock both the completed issue and merged PR before receipts are published. Use the collector integration or maintainer-controlled automation; closing an issue is not a conversation lock. Publish the policy for manual contributors to confirm before merge.
 - Read [Email privacy](https://issue.fund/#docs/reference/privacy). For automatic claims, follow [Set up automatic claims](https://issue.fund/#docs/maintainers/automatic-claims) and wait for Notifications ready before anyone merges.
+
+
+## Protect notification holders and the repository
+
+Publishing receipts exposes reply credentials as well as email addresses. Someone may use an exposed reply address to post comments attributed to its notification recipient. If completed bounty conversations stay unlocked, the repository and receipt holders remain exposed to this impersonation risk, including a maintainer whose own receipt is used.
+
+Follow the [post-merge locking policy](https://issue.fund/#docs/maintainers/review-and-merge). Use a dedicated notification account without repository privileges; maintainer or collaborator receipts are a poor choice because privileged accounts can bypass conversation locks. The contract does not enforce locks or account roles, and the manual claim form does not confirm them for you.
+
+> Before inviting manual claims, arrange automatic locking and explain the remaining reply-token exposure. A merged PR or closed issue is not enough.
 
 
 ## Start with an issue

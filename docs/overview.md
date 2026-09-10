@@ -11,6 +11,17 @@ A bounty holds a reward for a public GitHub issue in a smart contract. A maintai
 The contract checks GitHub’s RSA/DKIM email signatures directly. There is no proof-generation step, proving service, GitHub login in this app, or approval from a payout operator. GitHub still supplies the evidence about what was merged.
 
 
+## Censorship-resistant claim submission
+
+The automatic collector is optional. Anyone can subscribe to the public issue and PR before merge, receive the original signed event emails and submit that evidence themselves. No issue.fund account, premium subscription, App installation or operator permission is required for a direct claim. Another sender can pay claim gas, but the reward still goes to the wallet authenticated in the merged PR title.
+
+This resists censorship by the collection service: if it refuses, delays or stops operating, another receipt holder can submit through the static app, an independent interface or the escrow contract directly. The receipts are the proof; this deployment verifies RSA/DKIM signatures without generating a ZK proof.
+
+It is not absolute censorship resistance. GitHub controls notification delivery and signed event truth, maintainers control merging, and a claim still needs valid originals, the supported key and format, timely submission and inclusion on Gnosis. Subscribe before the events; a late subscription cannot recreate missing originals.
+
+Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails) and [Claim and withdraw](https://issue.fund/#docs/contributors/claim-and-withdraw). Before publishing personal receipts, confirm the repository’s locking policy and read [Email privacy](https://issue.fund/#docs/reference/privacy).
+
+
 ## The complete flow
 
 1. Fund: paste an open public issue URL, wait for Notifications ready in automatic mode, and deposit the reward in xDAI on Gnosis. Choose manual collection explicitly if you will arrange your own receipts.

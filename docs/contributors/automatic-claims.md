@@ -40,7 +40,9 @@ A relayer pays claim gas when it submits for you. Your wallet still needs native
 
 ## If automation is unavailable
 
-The manual upload controls remain on an open bounty. Use the two original GitHub emails and confirm their payout wallet before submission. Automatic collection does not extend the bounty’s deadline or recover emails that were never delivered.
+The manual upload controls remain on an open bounty, including one funded in automatic mode. Any holder of valid original receipts can submit without the service’s permission. Subscribe independently before merge if you want a fallback that does not depend on the service releasing its copies. Automatic collection does not extend the deadline or recover emails that were never delivered.
+
+Before using your own originals, confirm the maintainer’s locking policy, both actual post-merge locks and the receipt account’s role. Follow [Collect the email receipts](https://issue.fund/#docs/contributors/collect-emails); the manual claim form does not perform these checks.
 
 Submitting receipts publishes email data and notification links. A dedicated collector mailbox reduces exposure of your personal mailbox; it does not make receipt contents private. Read Email privacy before using your own receipts.
 

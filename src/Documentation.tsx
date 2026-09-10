@@ -401,7 +401,7 @@ export function Documentation({ path }: { path: string }) {
             Browse repositories <ArrowUpRight size={14} />
           </a>
           <a
-            href="https://github.com/RonTuretzky/issue.fund/tree/main/docs"
+            href="https://github.com/RonTuretzky/issue.fund/tree/codex/automation-production/docs"
             target="_blank"
             rel="noreferrer"
           >

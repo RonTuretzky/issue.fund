@@ -32,4 +32,4 @@ GitHub remains the authority for the events it signs, and maintainers remain res
 The public key and verifier are fixed in this deployment. There is no administrator who can override the payout rule or replace a key. The automatic service can miss or delay a claim, but cannot change the wallet authenticated in the receipts. Read [Contracts and supported limits](https://issue.fund/#docs/reference/contracts) for the pinned-key, template and repository-identity limitations.
 
 - [DKIM standard: RFC 6376](https://www.rfc-editor.org/rfc/rfc6376)
-- [Protocol specification in the source repository](https://github.com/RonTuretzky/issue.fund/blob/main/PROTOCOL.md)
+- [Protocol specification in the source repository](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/PROTOCOL.md)

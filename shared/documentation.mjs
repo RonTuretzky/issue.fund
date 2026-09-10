@@ -771,7 +771,7 @@ export const pages = [
           },
           {
             label: "Protocol specification in the source repository",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/main/PROTOCOL.md",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/PROTOCOL.md",
           },
         ],
       },
@@ -1049,7 +1049,7 @@ export const pages = [
         links: [
           {
             label: "Verification record and test scope",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/main/VERIFICATION.md",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/VERIFICATION.md",
           },
           {
             label: "Recorded direct-DKIM Gnosis claim",
@@ -1098,7 +1098,7 @@ export const pages = [
         links: [
           {
             label: "Full testing guide",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/main/TESTING.md",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/TESTING.md",
           },
         ],
       },
@@ -1149,15 +1149,15 @@ export const pages = [
         links: [
           {
             label: "GitHub Pages hosting and Cloudflare DNS",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/main/CLOUDFLARE.md",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/CLOUDFLARE.md",
           },
           {
             label: "Operations and recovery",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/main/OPERATIONS.md",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/OPERATIONS.md",
           },
           {
             label: "Gnosis deployment guide",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/main/GNOSIS.md",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/GNOSIS.md",
           },
           {
             label: "Browse the source",

@@ -49,7 +49,7 @@ No independent security audit has been completed. Automated tests and a real pub
 
 Verification gas depends on message size. The recorded two-email Gnosis claim used 9,283,775 gas. Use the current wallet estimate to evaluate the transaction fee; that gas count is not a fixed xDAI price.
 
-- [Verification record and test scope](https://github.com/RonTuretzky/issue.fund/blob/main/VERIFICATION.md)
+- [Verification record and test scope](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/VERIFICATION.md)
 - [Recorded direct-DKIM Gnosis claim](https://gnosisscan.io/tx/0xdc00944624435a7f48e38666a3598df0768bc6cac0b7cfd0547a146281b0c053)
 
 ## Previous deployments

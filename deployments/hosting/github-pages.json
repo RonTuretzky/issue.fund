@@ -1,12 +1,12 @@
 {
-  "verifiedAt": "2026-09-10T15:36:30.670Z",
+  "verifiedAt": "2026-09-10T15:54:31.114Z",
   "url": "https://issue.fund/",
   "repository": "RonTuretzky/issue.fund",
   "hosting": "GitHub Pages",
   "buildType": "legacy",
   "sourceBranch": "codex/pages",
   "sourcePath": "/",
-  "sourceCommit": "01651ae0e8cbf599ca573351ba01ee8e3910faaa",
+  "sourceCommit": "524b1005ca18e61a804f1580cbcc469f3dda5ce5",
   "status": "built",
   "httpsEnforced": true,
   "certificateState": "approved",
@@ -53,15 +53,17 @@
     "desktop and mobile directory layout",
     "secure context and zero page errors"
   ],
-  "transactionsSentByDeploymentChecks": 3,
-  "latestChange": "Enabled automatic GitHub email collection and Gnosis claim relay",
+  "transactionsSentByDeploymentChecks": 0,
+  "latestChange": "Document live automatic claims, maintainer setup and contributor withdrawal",
   "latestChangeBrowserChecks": [
-    "automatic funding defaults correctly after delayed configuration",
-    "live Notifications ready check before funding",
-    "real issue #7 funding from public HTTPS site",
-    "server-submitted claim from independently collected emails",
-    "exact 1% fee, contributor credit and browser withdrawal",
-    "replay rejected, confirmed settlement preserved across server restart"
+    "16 live documentation checks across desktop and mobile",
+    "automatic claim and manual fallback instructions",
+    "App installation and separate collector watch setup",
+    "connected-wallet title copy and bounty reference explanation",
+    "links to current source documentation",
+    "all 16 guides in the catalogue",
+    "zero browser errors and no horizontal overflow",
+    "HTTP, www and GitHub Pages redirects to HTTPS apex"
   ],
   "liveAcceptanceEvidence": "../gnosis/automatic-e2e.json",
   "relayFundingTransactions": 1

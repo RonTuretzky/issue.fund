@@ -321,3 +321,5 @@ Validation: all 16 generated documentation pages are consistent; TypeScript and
 the Gnosis static build pass. All five existing documentation browser cases pass,
 covering every guide, deep links/history, branding, mobile navigation/overflow and
 automated accessibility. No emails or blockchain transactions were sent.
+
+The documentation update is live on GitHub Pages from source `524b1005ca18e61a804f1580cbcc469f3dda5ce5`. Sixteen read-only checks across desktop and mobile confirmed the updated guides, correct source links, all 16 catalogue entries, no horizontal overflow and no browser errors. HTTP, www and the default Pages URL each redirected to https://issue.fund/. No emails or blockchain transactions were sent.

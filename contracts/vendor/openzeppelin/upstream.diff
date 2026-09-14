@@ -1,0 +1,43 @@
+--- OpenZeppelin-v5.6.1/RSA.sol
++++ issue-fund/RSA.sol
+@@ -1,8 +1,10 @@
++// ADAPTED: OpenZeppelin 5.6.1 RSA.sol. See README.md in this directory.
++// The 1024-bit allowance is NOT covered by the upstream audit.
+ // SPDX-License-Identifier: MIT
+ // OpenZeppelin Contracts (last updated v5.1.0) (utils/cryptography/RSA.sol)
+ pragma solidity ^0.8.20;
+ 
+-import {Math} from "../math/Math.sol";
++import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+ 
+ /**
+  * @dev RSA PKCS#1 v1.5 signature verification implementation according to https://datatracker.ietf.org/doc/html/rfc8017[RFC8017].
+@@ -33,8 +35,8 @@
+      * method described in https://datatracker.ietf.org/doc/html/rfc8017#section-8.2.2[section 8.2.2 of RFC8017] with
+      * support for explicit or implicit NULL parameters in the DigestInfo (no other optional parameters are supported).
+      *
+-     * IMPORTANT: For security reason, this function requires the signature and modulus to have a length of at least
+-     * 2048 bits. If you use a smaller key, consider replacing it with a larger, more secure, one.
++     * ADAPTATION: The upstream 2048-bit minimum is lowered to 1024 bits for GitHub DKIM.
++     * This exception is not covered by the upstream audit and does not provide 2048-bit security.
+      *
+      * WARNING: This verification algorithm doesn't prevent replayability. If called multiple times with the same
+      * digest, public key and (valid signature), it will return true every time. Consider including an onchain nonce
+@@ -54,7 +56,7 @@
+             // cache and check length
+             uint256 length = n.length;
+             if (
+-                length < 0x100 || // Enforce 2048 bits minimum
++                length < 0x80 || // issue.fund: allow GitHub's 1024-bit DKIM key
+                 length != s.length // signature must have the same length as the finite field
+             ) {
+                 return false;
+@@ -120,7 +122,7 @@
+                 return false;
+             }
+ 
+-            // Length is at least 0x100 and offset is at most 0x34, so this is safe. There is always some padding.
++            // Length is at least 0x80 and offset is at most 0x34, so this is safe. There is always some padding.
+             uint256 paddingEnd = length - offset;
+ 
+             // The padding has variable (arbitrary) length, so we check it byte per byte in a loop.

@@ -110,7 +110,7 @@ async function setup(t) {
     return real.waitForTransactionReceipt({ hash });
   };
   const v = await deploy("GithubDkimVerifier", [receipts.key.modulus]);
-  const e = await deploy("MergeBountyV2", [
+  const e = await deploy("MergeBounty", [
     v.contractAddress,
     accounts[2].address,
     100n,
@@ -118,7 +118,7 @@ async function setup(t) {
   const d = {
     chainId: 31337,
     contract: e.contractAddress,
-    abi: artifact("MergeBountyV2").abi,
+    abi: artifact("MergeBounty").abi,
     keyHash: receipts.key.keyHash,
     fromBlock: Number(e.blockNumber),
   };
@@ -250,7 +250,7 @@ async function setup(t) {
 }
 
 test(
-  "locally signed RSA receipts pass collector → durable relay → V2 fee credits → withdrawal; restart recovers lost broadcast response",
+  "locally signed RSA receipts pass collector → durable relay → fee credits → withdrawal; restart recovers lost broadcast response",
   { timeout: 120000 },
   async (t) => {
     const f = await setup(t);

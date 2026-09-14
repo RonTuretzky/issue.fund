@@ -13,6 +13,8 @@ This implementation verifies that signature directly on-chain. It does not use a
 
 ## Checks in the contract
 
+For worked examples and acceptance rules in plain language, read the [Receipt policy](https://issue.fund/#docs/reference/receipt-policy). For the reuse options and remaining audit work, read [Audited components](https://issue.fund/#docs/reference/audited-components).
+
 1. Authenticate the complete signed header block with RSA and match the full body to its signed SHA-256 hash.
 2. Require the supported GitHub domain, selector, canonicalization, timestamp and signed-subject layout. Partial-body signatures and ambiguous tags are rejected.
 3. Parse the exact native merge and closure events. Check their GitHub issue_event footers, event identifiers and MIME boundaries, so a signed comment quoting an event is insufficient.
@@ -27,13 +29,13 @@ The rule is to pay the address designated in the authenticated merge-time PR tit
 
 ## Permissionless evidence and censorship limits
 
-Both deployed escrow versions expose claim to any sender with valid receipts. There is no collector allowlist, operator signature, account-ownership proof or on-chain requirement to install a GitHub App. The wallet is read from authenticated merge evidence, so a third party relaying or copying a valid claim cannot redirect its reward.
+The escrow exposes claim to any sender with valid receipts. There is no collector allowlist, operator signature, account-ownership proof or on-chain requirement to install a GitHub App. The wallet is read from authenticated merge evidence, so a third party relaying or copying a valid claim cannot redirect its reward.
 
 The collector can withhold its own receipts or stop relaying, but another subscriber can receive and submit their own originals. A separate client can bypass an unavailable website or RPC provider. This is censorship resistance against the service, not independence from GitHub or from transaction inclusion on Gnosis. Missing emails, an expired claim window or an unsupported rotated GitHub key can still prevent settlement.
 
 Conversation locks and receipt-account role checks are service precautions; they are not proven on-chain. Independent submitters retain access to claim and take responsibility for public email disclosure. Follow the [independent collection guide](https://issue.fund/#docs/contributors/collect-emails).
 
-- [V2 escrow: permissionless claim function](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/MergeBountyV2.sol)
+- [Escrow: permissionless claim function](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/MergeBounty.sol)
 - [On-chain RSA/DKIM verifier](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/GithubDkimVerifier.sol)
 
 ## Where trust remains

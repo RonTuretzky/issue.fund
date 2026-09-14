@@ -19,4 +19,4 @@ await exportManifest(
   verifier,
   creations.map((t) => t.hash),
 );
-console.log({ contract, verifier, protocol: "rsa-dkim-v1" });
+console.log({ contract, verifier, sourceContract: "MergeBounty" });

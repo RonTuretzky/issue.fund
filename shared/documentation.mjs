@@ -219,7 +219,7 @@ export const pages = [
             ],
             [
               "Platform fee",
-              "The funding form shows the immutable claim fee and the contributor’s net reward. The original V1 escrow has no fee; fee-bearing V2 escrows deduct only on successful claims. Refunds return the full reward. Wallet transactions still use gas.",
+              "The funding form shows the immutable claim fee and the contributor’s net reward. Historical no-fee escrows keep their original terms; the current escrow deducts its fee only on successful claims. Refunds return the full reward. Wallet transactions still use gas.",
             ],
           ],
         },
@@ -820,7 +820,7 @@ export const pages = [
       {
         title: "Withdraw from the correct escrow",
         paragraphs: [
-          "Your wallet may have balances in more than one escrow version. The withdrawal dialog lists them separately; each balance needs its own transaction. The original V1 balances retain their original no-fee terms.",
+          "Your wallet may have balances in more than one escrow address. The withdrawal dialog lists them separately; each balance needs its own transaction. Historical balances retain their original no-fee terms.",
           "A relayer pays claim gas when it submits for you. Your wallet still needs native xDAI for withdrawal gas. Anyone can relay a valid claim, but they cannot change the signed beneficiary.",
         ],
       },
@@ -845,6 +845,286 @@ export const pages = [
     ],
   },
   {
+    id: "reference/receipt-policy",
+    group: "reference",
+    title: "Receipt policy",
+    summary:
+      "Which GitHub emails qualify for payment, who gets paid, and why a claim can fail.",
+    sections: [
+      {
+        title: "The payment rule in one sentence",
+        paragraphs: [
+          "Pay the wallet named in the PR title when two original, signed GitHub emails show that the PR merged into the funded branch and completed the funded issue. The bounty must still be open, and both events must have been signed within its funded time window.",
+        ],
+      },
+      {
+        title: "The two emails you need",
+        table: {
+          headers: ["Receipt", "What GitHub must say", "What it establishes"],
+          rows: [
+            [
+              "PR merge email",
+              "Merged #43 into main.",
+              "PR #43 merged into the required branch. Its signed title supplies the payout wallet and bounty reference.",
+            ],
+            [
+              "Issue completion email",
+              "Closed #42 as completed via #43.",
+              "Issue #42 was completed by that same PR #43.",
+            ],
+          ],
+        },
+        paragraphs: [
+          "The numbers here are examples. Use Prepare PR on the bounty page: it fills the wallet and bounty markers into the title and the closing instruction into the description. The contract later checks the actual notification emails, not the text you typed into a comment.",
+          "The title contains one [wallet 0x…] marker and one [bounty 0x…] marker. These abbreviated examples are not pasteable values; Prepare PR supplies the full address and reference. The reference selects one reward on one chain and escrow, so two rewards for the same issue cannot be confused.",
+        ],
+      },
+      {
+        title: "What must match before payment",
+        steps: [
+          "Authenticity: both emails must verify against this deployment’s pinned GitHub signing key. The signed headers and full email body must be intact.",
+          "Event type: one email must be GitHub’s own merge notification, and the other its linked issue-completion notification. A contributor’s comment describing a merge does not qualify.",
+          "Same work: both emails must name the funded repository and the same PR. The closure must name the funded issue; the merge must name the funded destination branch.",
+          "Same reward: the merge-time title must contain exactly one valid wallet marker and one bounty marker. The wallet cannot be zero or the escrow itself. The bounty marker must match this funded reward.",
+          "Timing: each email’s authenticated signing time must be on or after funding and on or before the bounty deadline, and cannot be in the future. Any DKIM expiry must still be valid.",
+          "Settlement: submit while the bounty is open and no later than seven days after its deadline. The grace period allows late submission, not late completion. A paid or refunded bounty cannot pay again.",
+          "Credit: successful settlement credits the title’s wallet after the fixed success fee. That wallet then withdraws; the person submitting the emails cannot choose a different beneficiary.",
+        ],
+      },
+      {
+        title: "Examples that do not qualify",
+        table: {
+          headers: ["Example", "Why it fails"],
+          rows: [
+            [
+              "Only a merge email",
+              "There is no authenticated link showing that the funded issue was completed.",
+            ],
+            [
+              "An issue closed manually without “as completed via #43”",
+              "The issue event does not identify a closing PR.",
+            ],
+            [
+              "A comment quoting “Merged #43 into main.”",
+              "A comment is not a native merge event, even if GitHub signs its notification email.",
+            ],
+            [
+              "PR #43 merged, but the closure names PR #44",
+              "The two receipts describe different work.",
+            ],
+            [
+              "A title with duplicate wallet or bounty markers",
+              "Ambiguous payment instructions are rejected.",
+            ],
+            [
+              "Correct emails for an event before funding or after the deadline",
+              "The signing times fall outside the funded window.",
+            ],
+            [
+              "Edited or redacted original emails",
+              "Changing authenticated bytes breaks verification.",
+            ],
+          ],
+        },
+      },
+      {
+        title: "Why the email format is checked so closely",
+        paragraphs: [
+          "GitHub signs notification emails for ordinary comments as well as real events. A valid signature alone cannot distinguish the two. ReceiptPolicy checks the event sentence at the start of the plain-text section, followed immediately by GitHub’s native event footer. The footer’s URL and Message ID must agree on the thread and event number.",
+          "MIME is the format that packages the plain-text and HTML versions of an email. The policy checks their separators and the ending so someone cannot hide a fake event inside an extra section. This deliberately supports a narrow GitHub template; a genuine email in a different format can be rejected. GithubDkimVerifier separately checks the signature, body hash, signed subject and DKIM tags.",
+        ],
+        links: [
+          {
+            label: "Read the annotated ReceiptPolicy.sol",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/ReceiptPolicy.sol",
+          },
+          {
+            label: "Supported key and email formats",
+            url: "#docs/reference/contracts",
+          },
+        ],
+      },
+      {
+        title: "Anyone can collect and submit",
+        paragraphs: [
+          "There is no on-chain allowlist of email recipients or claim submitters. Subscribe to the issue and PR before merge to receive your own originals, then submit through the manual flow or directly to the escrow. This preserves a path around an unavailable or censoring collector. GitHub remains the source of event truth, and chain inclusion and the claim deadline still apply.",
+          "The collector normally submits its own receipts and pays claim gas. It has no power to change the wallet in a valid signed title. You do not need a separate proof that the wallet owns a GitHub account.",
+        ],
+        links: [
+          {
+            label: "Collect the email receipts yourself",
+            url: "#docs/contributors/collect-emails",
+          },
+          {
+            label: "Submit a claim and withdraw",
+            url: "#docs/contributors/claim-and-withdraw",
+          },
+        ],
+      },
+      {
+        title: "Public emails and impersonation",
+        paragraphs: [
+          "A claim publishes signed email contents, including recipient addresses and reply credentials. Someone may use an exposed reply address to post as the notification recipient. Maintainers should automatically lock both the completed issue and merged PR before disclosure; closure alone is not a lock. Manual contributors should confirm that policy before merge, then confirm the actual locks and that the receipt account cannot bypass them.",
+          "Conversation locks and the receipt account’s GitHub role are service checks, not facts proven by this contract. Use the dedicated outside collector account where possible. The contract also does not prove code quality or that a contributor owns a GitHub username.",
+        ],
+        links: [
+          {
+            label: "Read the full privacy and locking guidance",
+            url: "#docs/reference/privacy",
+          },
+          {
+            label: "Maintainer review and merge guide",
+            url: "#docs/maintainers/review-and-merge",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "reference/audited-components",
+    group: "reference",
+    title: "Audited components",
+    summary:
+      "Audited reuse options, compatibility limits, and what still needs an issue.fund audit.",
+    sections: [
+      {
+        title: "What is audited today",
+        paragraphs: [
+          "issue.fund’s own verifier, receipt policy and escrow have not had an independent security audit. Importing audited utilities does not extend their audit to our integration or payment rules. This review checked upstream source and published audit reports on September 14, 2026.",
+          "The project already pins OpenZeppelin Contracts 5.6.1 and uses its math, encoding, reentrancy protection and ownership utilities. Direct GitHub RSA verification and event parsing remain application code.",
+        ],
+      },
+      {
+        title:
+          "RSA-SHA256: OpenZeppelin has a key-size blocker",
+        paragraphs: [
+          "OpenZeppelin’s RSA.sol was included in its Contracts 5.1 audit. It verifies RSA PKCS#1 v1.5 signatures with SHA-256 and checks the signature padding. Its pkcs1Sha256 function is available through the dependency already installed here.",
+          "It requires at least 2048-bit signatures and moduli. A fresh DNS check found GitHub’s pf2023 key is still 1024 bits, exponent 65537, and matches our pinned key. An unchanged import therefore rejects our supported GitHub receipts. Removing the minimum-size check creates a modified implementation whose difference needs review; adding leading zeroes does not make the key stronger.",
+          "Recommendation: keep the narrow compatibility implementation until its RSA-1024 behavior is independently reviewed, or adopt the unmodified OpenZeppelin verifier when a supported GitHub signing key meets its requirement. Neither changing libraries nor tests can make GitHub’s current key 2048-bit.",
+        ],
+        links: [
+          {
+            label: "OpenZeppelin RSA.sol at the installed 5.6.1 release",
+            url: "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.6.1/contracts/utils/cryptography/RSA.sol",
+          },
+          {
+            label: "OpenZeppelin Contracts 5.1 audit, including RSA.sol",
+            url: "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/audits/2024-10-v5.1.pdf",
+          },
+        ],
+      },
+      {
+        title: "Direct DKIM: Ambire is a reference, not a drop-in replacement",
+        paragraphs: [
+          "Ambire’s DKIMRecoverySigValidator was in Pashov’s second security review, with reviewed fixes at commit 20aae8ec666d1341dc1462962ea2ac50bf2edd6f. It implements wallet recovery, not GitHub issue completion. Its reviewed header logic and recovery assumptions do not establish our receipt policy.",
+          "The current Ambire RSASHA256 helper examined here compares only the final recovered hash; it does not check the complete PKCS#1 padding. Our implementation checks the whole encoded block. The audit’s named scope lists the account and DKIM recovery validator, so it is not evidence of a standalone audit of that RSA helper. It is not a suitable replacement for our strict RSA check.",
+          "ENS published a separate advisory about missing RSA padding validation in its DNSSEC implementation and linked a fix. That is a reason to examine exact code and patches, not evidence that the same attack works against GitHub’s exponent-65537 key.",
+        ],
+        links: [
+          {
+            label: "Ambire DKIM security review and scope",
+            url: "https://github.com/AmbireTech/ambire-common/blob/v2/audits/Pashov-Ambire-second-security-review.md",
+          },
+          {
+            label: "Ambire RSA-SHA256 helper examined",
+            url: "https://github.com/AmbireTech/ambire-common/blob/v2/contracts/dkim/RSASHA256.sol",
+          },
+          {
+            label: "ENS padding-validation advisory and patch",
+            url: "https://github.com/ensdomains/ens-contracts/security/advisories/GHSA-c6rr-7pmc-73wc",
+          },
+        ],
+      },
+      {
+        title: "UniPass also has direct DKIM and published audits",
+        paragraphs: [
+          "UniPass publishes BlockSec and Salus wallet-contract audits. BlockSec’s final listed review commit is b5de524eabc036522a2f47349b88836bd7376c5c. The DkimKeys contract has a direct RSA path with exponent 65537, but it also brings wallet-specific parsing, an administrator-managed key registry and upgradeability.",
+          "Its LibRsa.rsapkcs1Verify implementation, including at that reviewed commit, only compares the recovered hash suffix. Despite the function name, it does not validate the full PKCS#1 encoding. It is another audited-system reference whose RSA helper does not meet our full-padding requirement. This is a source-level compatibility assessment, not a demonstrated exploit against the UniPass wallet.",
+        ],
+        links: [
+          {
+            label: "UniPass BlockSec audit and reviewed commits",
+            url: "https://github.com/UniPassID/UniPass-Wallet-Contract/blob/main/audits/blocksec_unipass_wallet_signed_v2.1.pdf",
+          },
+          {
+            label: "UniPass RSA helper at the reviewed commit",
+            url: "https://github.com/UniPassID/UniPass-Wallet-Contract/blob/b5de524eabc036522a2f47349b88836bd7376c5c/contracts/utils/LibRsa.sol",
+          },
+          {
+            label: "UniPass direct DKIM implementation",
+            url: "https://github.com/UniPassID/UniPass-Wallet-Contract/blob/main/contracts/DkimKeys.sol",
+          },
+        ],
+      },
+      {
+        title: "ZK Email has audits, but uses a different verification path",
+        paragraphs: [
+          "ZK Email publishes audits of its circuits and email-authentication contracts. The RSA/DKIM work is proven off-chain and checked using a proof on-chain. A DKIM key registry alone is not an email signature verifier.",
+          "This is a candidate if the project later reintroduces proving. A server could generate proofs without making contributors run a prover, but that would still change our current direct-verification architecture. It has not been imported here.",
+        ],
+        links: [
+          {
+            label: "ZK Email audits and reviewed releases",
+            url: "https://docs.zk.email/audits",
+          },
+        ],
+      },
+      {
+        title: "Audited bounty escrows exist, with different approval rules",
+        table: {
+          headers: ["Candidate", "Audit evidence", "Fit for issue.fund"],
+          rows: [
+            [
+              "StandardBounties",
+              "MixBytes reviewed e79d844; its report links fixes at 7c7dfc6, including a critical double-refund fix.",
+              "Supports ETH and tokens, but approvers accept submissions and issuers have editing/draining powers. A receipt-verifying adapter would have to control those roles and still needs audit.",
+            ],
+            [
+              "Hats Finance",
+              "G0’s February 2023 report includes HATVault and HATVaultsRegistry at 95ff820. This does not audit every later change.",
+              "Built for security bounties with committee approval and dispute handling. Substituting our automatic GitHub rule requires additional integration and review.",
+            ],
+          ],
+        },
+        paragraphs: [
+          "Neither is an unchanged replacement for permissionless, two-email settlement. For this payment rule, retaining one small escrow built from audited utilities leaves a more focused integration to audit than adopting committee, governance or issuer powers that the product does not need. This is an architectural recommendation, not an independent audit finding.",
+        ],
+        links: [
+          {
+            label: "MixBytes StandardBounties report and fixes",
+            url: "https://github.com/mixbytes/audits_public/blob/master/Aragon/Open%20Enterprise/StandardBounties.md",
+          },
+          {
+            label: "StandardBounties role and payout documentation",
+            url: "https://github.com/ConsenSys/StandardBounties",
+          },
+          {
+            label: "Hats G0 audit, February 2023",
+            url: "https://github.com/hats-finance/hats-contracts/blob/develop/audit/202302-g0-group-audit.pdf",
+          },
+          {
+            label: "Hats protocol and committee model",
+            url: "https://github.com/hats-finance/hats-contracts",
+          },
+        ],
+      },
+      {
+        title: "One maintained escrow",
+        paragraphs: [
+          "The maintained source is contracts/MergeBounty.sol. It includes the fixed success fee and changeable fee recipient. New work and deployment scripts use that implementation.",
+          "Existing contracts are immutable. Their addresses, terms and withdrawal balances remain available through historical deployment manifests. Frozen build artifacts are kept solely for exact runtime verification and compatibility tests. Historical wire-format identifiers and explorer contract names remain in those records; they are not alternative product versions.",
+          "The receipt-policy clarity changes preserve executable runtime instructions. This source cleanup does not migrate funds, change the live payment rule or imply a new on-chain deployment.",
+        ],
+        links: [
+          {
+            label: "Maintained escrow source",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/MergeBounty.sol",
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "reference/verification",
     group: "reference",
     title: "How verification works",
@@ -860,6 +1140,9 @@ export const pages = [
       },
       {
         title: "Checks in the contract",
+        paragraphs: [
+          "For worked examples and acceptance rules in plain language, read the [Receipt policy](#docs/reference/receipt-policy). For the reuse options and remaining audit work, read [Audited components](#docs/reference/audited-components).",
+        ],
         steps: [
           "Authenticate the complete signed header block with RSA and match the full body to its signed SHA-256 hash.",
           "Require the supported GitHub domain, selector, canonicalization, timestamp and signed-subject layout. Partial-body signatures and ambiguous tags are rejected.",
@@ -877,14 +1160,14 @@ export const pages = [
       {
         title: "Permissionless evidence and censorship limits",
         paragraphs: [
-          "Both deployed escrow versions expose claim to any sender with valid receipts. There is no collector allowlist, operator signature, account-ownership proof or on-chain requirement to install a GitHub App. The wallet is read from authenticated merge evidence, so a third party relaying or copying a valid claim cannot redirect its reward.",
+          "The escrow exposes claim to any sender with valid receipts. There is no collector allowlist, operator signature, account-ownership proof or on-chain requirement to install a GitHub App. The wallet is read from authenticated merge evidence, so a third party relaying or copying a valid claim cannot redirect its reward.",
           "The collector can withhold its own receipts or stop relaying, but another subscriber can receive and submit their own originals. A separate client can bypass an unavailable website or RPC provider. This is censorship resistance against the service, not independence from GitHub or from transaction inclusion on Gnosis. Missing emails, an expired claim window or an unsupported rotated GitHub key can still prevent settlement.",
           "Conversation locks and receipt-account role checks are service precautions; they are not proven on-chain. Independent submitters retain access to claim and take responsibility for public email disclosure. Follow the [independent collection guide](#docs/contributors/collect-emails).",
         ],
         links: [
           {
-            label: "V2 escrow: permissionless claim function",
-            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/MergeBountyV2.sol",
+            label: "Escrow: permissionless claim function",
+            url: "https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/MergeBounty.sol",
           },
           {
             label: "On-chain RSA/DKIM verifier",
@@ -1194,8 +1477,8 @@ export const pages = [
       {
         title: "Claim fees and changing the fee recipient",
         paragraphs: [
-          "V2 deducts a fixed success fee when a valid claim settles. The funding form shows both the fee and the contributor’s net reward. Refunds return the full reward, and V1 bounties retain their original no-fee terms.",
-          "The V2 owner can change the wallet credited with fees from future claims. The owner cannot change the fee percentage, redirect contributor rewards, withdraw other wallets’ credits, replace the verifier or move active bounty funds. Previously earned fees remain credited to the old recipient.",
+          "The current escrow deducts a fixed success fee when a valid claim settles. The funding form shows both the fee and the contributor’s net reward. Refunds return the full reward, and earlier bounties retain their original no-fee terms.",
+          "The escrow owner can change the wallet credited with fees from future claims. The owner cannot change the fee percentage, redirect contributor rewards, withdraw other wallets’ credits, replace the verifier or move active bounty funds. Previously earned fees remain credited to the old recipient.",
         ],
         steps: [
           "Connect the current owner wallet on Gnosis. Open Fee settings below the wallet balance area on the bounty or repository page.",

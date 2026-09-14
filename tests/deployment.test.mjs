@@ -3,22 +3,22 @@ import assert from "node:assert/strict";
 import { parseEther, keccak256 } from "viem";
 import { isolatedAnvil } from "./helpers/anvil.mjs";
 import { signer } from "./helpers/receipts.mjs";
-import { artifact } from "../scripts/gnosis-manifest.mjs";
+import { artifact, archivedArtifact } from "../scripts/gnosis-manifest.mjs";
 import { verifyDeployments } from "../automation/config.mjs";
 import {
   planDeployment,
   resumeDeployment,
   verifyLegacy,
   assertTerms,
-} from "../scripts/v2-deployment.mjs";
+} from "../scripts/escrow-deployment.mjs";
 
-test("V2 deployment recovers a lost response once, verifies fees, and preserves legacy funding and links", async () => {
+test("Escrow deployment recovers a lost response once, verifies fees, and preserves legacy funding and links", async () => {
   const chain = await isolatedAnvil();
   const { client, wallet, accounts } = chain;
   try {
     const s = signer();
-    const deploy = async (name, args) => {
-      const a = artifact(name);
+    const deploy = async (name, args, historical = false) => {
+      const a = historical ? archivedArtifact(name) : artifact(name);
       const hash = await wallet.deployContract({
         abi: a.abi,
         bytecode: a.bytecode.object,
@@ -27,7 +27,7 @@ test("V2 deployment recovers a lost response once, verifies fees, and preserves 
       return client.waitForTransactionReceipt({ hash });
     };
     const v = await deploy("GithubDkimVerifier", [s.key.modulus]);
-    const old = await deploy("MergeBounty", [v.contractAddress]);
+    const old = await deploy("MergeBounty", [v.contractAddress], true);
     const legacy = {
       chainId: 31337,
       protocol: "rsa-dkim-v1",
@@ -35,7 +35,7 @@ test("V2 deployment recovers a lost response once, verifies fees, and preserves 
       verifier: v.contractAddress,
       keyHash: s.key.keyHash,
       dkimKey: s.key,
-      abi: artifact("MergeBounty").abi,
+      abi: archivedArtifact("MergeBounty").abi,
       fromBlock: Number(old.blockNumber),
       deploymentTransactions: [old.transactionHash],
     };

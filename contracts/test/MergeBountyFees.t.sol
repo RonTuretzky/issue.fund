@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
-import {MergeBountyV2} from "../MergeBountyV2.sol";
+import {MergeBounty} from "../MergeBounty.sol";
 import {IDkimVerifier} from "../IDkimVerifier.sol";
 import {ReceiptPolicy} from "../ReceiptPolicy.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Vm, UnitVerifier, RejectEther} from "./MergeBounty.t.sol";
 
-interface VmV2 is Vm {
+interface VmFees is Vm {
     function expectRevert(bytes calldata) external;
 }
 
-contract V2ReentrantRecipient {
-    MergeBountyV2 immutable escrow;
+contract FeeReentrantRecipient {
+    MergeBounty immutable escrow;
     bool public blocked;
 
-    constructor(MergeBountyV2 e) {
+    constructor(MergeBounty e) {
         escrow = e;
     }
 
@@ -31,9 +31,9 @@ contract V2ReentrantRecipient {
     }
 }
 
-contract MergeBountyV2Test {
-    VmV2 constant vm = VmV2(address(uint160(uint256(keccak256("hevm cheat code")))));
-    MergeBountyV2 escrow;
+contract MergeBountyFeesTest {
+    VmFees constant vm = VmFees(address(uint160(uint256(keccak256("hevm cheat code")))));
+    MergeBounty escrow;
     address constant CONTRIBUTOR = address(0x1234);
     address constant TREASURY = address(0x5678);
     address constant RELAYER = address(0x8888);
@@ -44,7 +44,7 @@ contract MergeBountyV2Test {
     function setUp() public {
         vm.warp(START);
         vm.deal(address(this), 100 ether);
-        escrow = new MergeBountyV2(new UnitVerifier(), TREASURY, 100);
+        escrow = new MergeBounty(new UnitVerifier(), TREASURY, 100);
         escrow.create{value: 1 ether}("owner/repo", 1, "main", DEADLINE);
     }
 
@@ -86,7 +86,7 @@ contract MergeBountyV2Test {
         require(escrow.credits(TREASURY) == 0.01 ether);
         require(escrow.credits(RELAYER) == 0);
         require(escrow.getBounty(1).amount == 1 ether);
-        vm.expectRevert(MergeBountyV2.NotOpen.selector);
+        vm.expectRevert(MergeBounty.NotOpen.selector);
         settle(1, CONTRIBUTOR);
         require(escrow.credits(TREASURY) == 0.01 ether);
     }
@@ -102,7 +102,7 @@ contract MergeBountyV2Test {
     }
 
     function testTreasuryCannotWithdrawOpenBounty() public {
-        vm.expectRevert(MergeBountyV2.NothingToWithdraw.selector);
+        vm.expectRevert(MergeBounty.NothingToWithdraw.selector);
         vm.prank(TREASURY);
         escrow.withdraw(payable(TREASURY));
         require(address(escrow).balance == 1 ether);
@@ -115,16 +115,16 @@ contract MergeBountyV2Test {
 
     function testInvalidClaimLeavesNoFeeOrStateChange() public {
         (IDkimVerifier.Receipt memory m, IDkimVerifier.Receipt memory c) = events(2, CONTRIBUTOR);
-        vm.expectRevert(MergeBountyV2.InvalidReceipt.selector);
+        vm.expectRevert(MergeBounty.InvalidReceipt.selector);
         escrow.claim(1, m, c);
         require(escrow.credits(TREASURY) == 0 && escrow.credits(CONTRIBUTOR) == 0);
-        require(escrow.getBounty(1).status == MergeBountyV2.Status.Open);
+        require(escrow.getBounty(1).status == MergeBounty.Status.Open);
     }
 
     function testCannotCreditZeroOrEscrowItself() public {
-        vm.expectRevert(MergeBountyV2.InvalidReceipt.selector);
+        vm.expectRevert(MergeBounty.InvalidReceipt.selector);
         settle(1, address(0));
-        vm.expectRevert(MergeBountyV2.InvalidReceipt.selector);
+        vm.expectRevert(MergeBounty.InvalidReceipt.selector);
         settle(1, address(escrow));
     }
 
@@ -132,7 +132,7 @@ contract MergeBountyV2Test {
         vm.warp(DEADLINE + 7 days + 1);
         escrow.refund(1);
         require(escrow.credits(address(this)) == 1 ether && escrow.credits(TREASURY) == 0);
-        vm.expectRevert(MergeBountyV2.NotOpen.selector);
+        vm.expectRevert(MergeBounty.NotOpen.selector);
         settle(1, CONTRIBUTOR);
         escrow.withdraw(payable(address(this)));
         require(address(escrow).balance == 0);
@@ -140,28 +140,28 @@ contract MergeBountyV2Test {
 
     function testClaimRefundBoundaryHasNoOverlap() public {
         vm.warp(DEADLINE + 7 days);
-        vm.expectRevert(MergeBountyV2.TooEarly.selector);
+        vm.expectRevert(MergeBounty.TooEarly.selector);
         escrow.refund(1);
         settle(1, CONTRIBUTOR);
         vm.warp(DEADLINE + 7 days + 1);
-        vm.expectRevert(MergeBountyV2.NotOpen.selector);
+        vm.expectRevert(MergeBounty.NotOpen.selector);
         escrow.refund(1);
     }
 
     function testExpiredClaimDoesNotEarnFee() public {
         vm.warp(DEADLINE + 7 days + 1);
-        vm.expectRevert(MergeBountyV2.TooLate.selector);
+        vm.expectRevert(MergeBounty.TooLate.selector);
         settle(1, CONTRIBUTOR);
         require(escrow.credits(TREASURY) == 0);
     }
 
     function testRejectingTreasuryCannotBlockClaim() public {
         RejectEther reject = new RejectEther();
-        escrow = new MergeBountyV2(new UnitVerifier(), address(reject), 100);
+        escrow = new MergeBounty(new UnitVerifier(), address(reject), 100);
         escrow.create{value: 1 ether}("owner/repo", 1, "main", DEADLINE);
         settle(1, CONTRIBUTOR);
         require(escrow.credits(CONTRIBUTOR) == 0.99 ether);
-        vm.expectRevert(MergeBountyV2.TransferFailed.selector);
+        vm.expectRevert(MergeBounty.TransferFailed.selector);
         vm.prank(address(reject));
         escrow.withdraw(payable(address(reject)));
         require(escrow.credits(address(reject)) == 0.01 ether);
@@ -171,7 +171,7 @@ contract MergeBountyV2Test {
     }
 
     function testReentrantWithdrawalCannotDrainOtherCredits() public {
-        V2ReentrantRecipient recipient = new V2ReentrantRecipient(escrow);
+        FeeReentrantRecipient recipient = new FeeReentrantRecipient(escrow);
         settle(1, address(recipient));
         recipient.pull();
         require(recipient.blocked() && address(recipient).balance == 0.99 ether);
@@ -181,11 +181,11 @@ contract MergeBountyV2Test {
     function testInvalidFeeConfiguration() public {
         UnitVerifier verifier = new UnitVerifier();
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableInvalidOwner.selector, address(0)));
-        new MergeBountyV2(verifier, address(0), 100);
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
-        new MergeBountyV2(verifier, TREASURY, 501);
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
-        new MergeBountyV2(IDkimVerifier(address(0)), TREASURY, 100);
+        new MergeBounty(verifier, address(0), 100);
+        vm.expectRevert(MergeBounty.InvalidInput.selector);
+        new MergeBounty(verifier, TREASURY, 501);
+        vm.expectRevert(MergeBounty.InvalidInput.selector);
+        new MergeBounty(IDkimVerifier(address(0)), TREASURY, 100);
     }
 
     function testRecipientRotationOnlyAffectsFutureFeesAndKeepsAccruedCredits() public {
@@ -208,10 +208,10 @@ contract MergeBountyV2Test {
     function testOnlyOwnerCanRouteFeesAndNoInvalidDestinations() public {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, address(this)));
         escrow.setFeeRecipient(CONTRIBUTOR);
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.expectRevert(MergeBounty.InvalidInput.selector);
         vm.prank(TREASURY);
         escrow.setFeeRecipient(address(0));
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.expectRevert(MergeBounty.InvalidInput.selector);
         vm.prank(TREASURY);
         escrow.setFeeRecipient(address(escrow));
         require(escrow.feeRecipient() == TREASURY);
@@ -241,10 +241,10 @@ contract MergeBountyV2Test {
     }
 
     function testOwnershipCannotBeAbandonedOrTransferredToEscrowAndPendingCanBeCancelled() public {
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.expectRevert(MergeBounty.InvalidInput.selector);
         vm.prank(TREASURY);
         escrow.renounceOwnership();
-        vm.expectRevert(MergeBountyV2.InvalidInput.selector);
+        vm.expectRevert(MergeBounty.InvalidInput.selector);
         vm.prank(TREASURY);
         escrow.transferOwnership(address(escrow));
         vm.prank(TREASURY);
@@ -258,11 +258,11 @@ contract MergeBountyV2Test {
     }
 
     function testZeroFeeAndTinyRewards() public {
-        escrow = new MergeBountyV2(new UnitVerifier(), TREASURY, 0);
+        escrow = new MergeBounty(new UnitVerifier(), TREASURY, 0);
         escrow.create{value: 1 ether}("owner/repo", 1, "main", DEADLINE);
         settle(1, CONTRIBUTOR);
         require(escrow.credits(CONTRIBUTOR) == 1 ether && escrow.credits(TREASURY) == 0);
-        escrow = new MergeBountyV2(new UnitVerifier(), TREASURY, 100);
+        escrow = new MergeBounty(new UnitVerifier(), TREASURY, 100);
         escrow.create{value: 99}("owner/repo", 1, "main", DEADLINE);
         settle(1, CONTRIBUTOR);
         require(escrow.credits(CONTRIBUTOR) == 99 && escrow.credits(TREASURY) == 0);
@@ -277,7 +277,7 @@ contract MergeBountyV2Test {
     function testFuzzConservationWithRefundAndFee(uint96 gross, uint16 bps) public {
         uint256 amount = uint256(gross) % 10 ether + 1;
         uint256 feeRate = uint256(bps) % 501;
-        escrow = new MergeBountyV2(new UnitVerifier(), TREASURY, feeRate);
+        escrow = new MergeBounty(new UnitVerifier(), TREASURY, feeRate);
         escrow.create{value: amount}("owner/repo", 1, "main", DEADLINE);
         escrow.create{value: amount}("owner/repo", 1, "main", DEADLINE);
         settle(1, CONTRIBUTOR);

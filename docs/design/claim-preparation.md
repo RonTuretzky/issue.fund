@@ -8,7 +8,7 @@ The bounty page knows the issue, chain, escrow and bounty number. **Prepare PR**
 
 Automatic collection removes the email download, upload and claim transaction. The static frontend prepares the PR; neither it nor the collector creates or edits the PR on the user's behalf. Withdrawal still requires the beneficiary's transaction.
 
-The long `[bounty 0x…]` value is not the GitHub issue number. `MergeBountyV2.referenceFor` hashes the chain ID, escrow address and bounty number. The signed closure event identifies the issue and closing PR; the title reference selects one particular funded reward, including when there are multiple bounties for the same issue. The `[wallet 0x…]` marker designates its beneficiary.
+The long `[bounty 0x…]` value is not the GitHub issue number. `MergeBounty.referenceFor` hashes the chain ID, escrow address and bounty number. The signed closure event identifies the issue and closing PR; the title reference selects one particular funded reward, including when there are multiple bounties for the same issue. The `[wallet 0x…]` marker designates its beneficiary.
 
 ## Implemented: Prepare PR
 

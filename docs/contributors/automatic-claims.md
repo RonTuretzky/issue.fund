@@ -33,7 +33,7 @@ You still prepare the PR title and issue link before merge, then authorize withd
 
 ## Withdraw from the correct escrow
 
-Your wallet may have balances in more than one escrow version. The withdrawal dialog lists them separately; each balance needs its own transaction. The original V1 balances retain their original no-fee terms.
+Your wallet may have balances in more than one escrow address. The withdrawal dialog lists them separately; each balance needs its own transaction. Historical balances retain their original no-fee terms.
 
 A relayer pays claim gas when it submits for you. Your wallet still needs native xDAI for withdrawal gas. Anyone can relay a valid claim, but they cannot change the signed beneficiary.
 

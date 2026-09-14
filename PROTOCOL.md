@@ -39,3 +39,7 @@ Successful claims consume the bounty and credit the signed wallet. No caller ide
 **Client and RPC.** The client can be independently hosted. It does not authorize payments and has no custody key. A malicious UI can still mislead wallet actions or disclose selected files, so review the deployed source and wallet transaction. RPC providers can censor or misreport reads, but cannot make invalid signatures pass the contracts. The current UI shows the newest 100 bounties; full-history indexing remains future work.
 
 The cryptographic code and application are experimental and unaudited. The archived optional privacy design and its remaining work are documented in [issue #1](https://github.com/RonTuretzky/issue.fund/issues/1).
+
+## Reading the receipt policy
+
+The [receipt-policy guide](docs/reference/receipt-policy.md) explains the same acceptance rules with examples. `ReceiptPolicy.decode` is annotated in five stages: subject, first MIME section, event sentence, native event footer, and complete MIME envelope. `GithubDkimVerifier` authenticates the signed data before parsing; `MergeBounty.claim` matches the resulting event pair to the funded reward. These are separate verification responsibilities.

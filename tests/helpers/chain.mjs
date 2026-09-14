@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { createPublicClient, createWalletClient, http, parseEther } from "viem";
 import { foundry } from "viem/chains";
 import { signer } from "./receipts.mjs";
+import { archivedArtifact } from "../../scripts/gnosis-manifest.mjs";
 export const transport = http("http://127.0.0.1:8547");
 export const client = createPublicClient({
   chain: foundry,
@@ -24,7 +25,8 @@ export async function fixture(bits = 1024, { version = 1 } = {}) {
   const accounts = await wallet.getAddresses();
   const s = signer(bits),
     v = artifact("GithubDkimVerifier"),
-    e = artifact(version === 2 ? "MergeBountyV2" : "MergeBounty");
+    e =
+      version === 2 ? artifact("MergeBounty") : archivedArtifact("MergeBounty");
   const deploy = async (a, args) => {
     const hash = await wallet.deployContract({
       account: accounts[0],

@@ -19,10 +19,10 @@ for (const [name, address, sig, args] of [
   ["GithubDkimVerifier", d.verifier, "constructor(bytes)", [d.dkimKey.modulus]],
   d.protocol === "rsa-dkim-v2"
     ? [
-        "MergeBountyV2",
+        d.sourceContract === "MergeBounty" ? "MergeBounty" : "MergeBountyV2",
         d.contract,
         "constructor(address,address,uint256)",
-        [d.verifier, d.feeRecipient, String(d.feeBps)],
+        [d.verifier, d.initialFeeRecipient ?? d.feeRecipient, String(d.feeBps)],
       ]
     : ["MergeBounty", d.contract, "constructor(address)", [d.verifier]],
 ]) {
@@ -30,6 +30,16 @@ for (const [name, address, sig, args] of [
     encoding: "utf8",
   }).trim();
   try {
+    // Historical source lives at the pinned archive commit. These contracts
+    // are already explorer-verified; never submit today's source as their source.
+    if (
+      name === "MergeBountyV2" ||
+      (name === "MergeBounty" && d.protocol === "rsa-dkim-v1")
+    ) {
+      throw Error(
+        "Historical deployment: checking the explorer's existing verification",
+      );
+    }
     execFileSync(
       "forge",
       [

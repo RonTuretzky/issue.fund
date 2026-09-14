@@ -1,13 +1,13 @@
 // Promote only a verified deployment, preserving original links and escrow history.
 import fs from "node:fs";
 import { createPublicClient, http } from "viem";
-import { verifyLegacy } from "./v2-deployment.mjs";
+import { verifyLegacy } from "./escrow-deployment.mjs";
 const candidate = JSON.parse(fs.readFileSync(".local/v2-release.json", "utf8"));
 const current = JSON.parse(
   fs.readFileSync("public/deployment.gnosis.json", "utf8"),
 );
 if (candidate.protocol !== "rsa-dkim-v2" || candidate.chainId !== 100)
-  throw Error("Expected Gnosis V2 candidate");
+  throw Error("Expected Gnosis escrow candidate");
 if (
   ![current, ...(current.legacyDeployments ?? [])].every((old) =>
     [candidate, ...(candidate.legacyDeployments ?? [])].some(
@@ -59,5 +59,5 @@ fs.writeFileSync(
   JSON.stringify(flat, null, 2) + "\n",
 );
 console.log(
-  "Verified V2 manifest promoted locally with all legacy escrows. Deploy the service manifests, then build and publish Pages.",
+  "Verified escrow manifest promoted locally with all legacy escrows. Deploy the service manifests, then build and publish Pages.",
 );

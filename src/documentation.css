@@ -61,6 +61,7 @@
 }
 .docs-content {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 .docs-content h1 {
   font-size: clamp(32px, 3.6vw, 46px);

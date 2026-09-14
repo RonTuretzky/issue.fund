@@ -1,5 +1,7 @@
 # Security review — automation and claim fees
 
+This is a historical internal review, not an independent audit. Its original contract names refer to the September 10 source snapshot. The single maintained escrow is now `contracts/MergeBounty.sol`; [historical build records](../../deployments/archive/2026-09-10/README.md) preserve source and runtime correspondence.
+
 Date: 2026-09-10. This is an implementation review with local regression tests,
 not an independent audit or a statement that production launch is complete.
 

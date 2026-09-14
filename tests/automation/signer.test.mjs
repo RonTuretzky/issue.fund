@@ -17,8 +17,7 @@ const account = mnemonicToAccount(
 const deployment = {
   chainId: 31337,
   contract: "0x1111111111111111111111111111111111111111",
-  abi: JSON.parse(fs.readFileSync("out/MergeBountyV2.sol/MergeBountyV2.json"))
-    .abi,
+  abi: JSON.parse(fs.readFileSync("out/MergeBounty.sol/MergeBounty.json")).abi,
 };
 const receipt = { headers: "0x00", body: "0x00", signature: "0x00" };
 const claim = encodeFunctionData({

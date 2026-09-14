@@ -34,6 +34,8 @@ Prepare your PR, follow the claim, and withdraw your reward.
 
 Verification, privacy, troubleshooting, and developer setup.
 
+- [Receipt policy](reference/receipt-policy.md) — Which GitHub emails qualify for payment, who gets paid, and why a claim can fail.
+- [Audited components](reference/audited-components.md) — Audited reuse options, compatibility limits, and what still needs an issue.fund audit.
 - [How verification works](reference/verification.md) — What RSA/DKIM authenticates, and what the escrow checks before paying.
 - [Email privacy](reference/privacy.md) — How automatic and manual claims handle email data, and what becomes public.
 - [Troubleshooting](reference/troubleshooting.md) — Recover from repository, receipt, wallet, and withdrawal problems.

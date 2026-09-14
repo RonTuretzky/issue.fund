@@ -9,19 +9,26 @@ import {
   parseTransaction,
   recoverTransactionAddress,
 } from "viem";
-import { artifact, normalize } from "./gnosis-manifest.mjs";
+import { artifact, archivedArtifact, normalize } from "./gnosis-manifest.mjs";
 
 const same = (a, b) => a?.toLowerCase() === b?.toLowerCase();
-export async function verifyRuntime(client, address, name) {
-  const a = artifact(name),
-    code = await client.getCode({ address });
+export async function verifyRuntime(client, address, name, historicalName) {
+  const candidates = historicalName
+    ? [archivedArtifact(historicalName)]
+    : [artifact(name)];
+  // The current escrow can still use the original immutable verifier.
+  if (name === "GithubDkimVerifier") candidates.push(archivedArtifact(name));
+  const code = await client.getCode({ address });
   if (
     !code ||
-    normalize(code, a.deployedBytecode.immutableReferences) !==
-      normalize(
-        a.deployedBytecode.object,
-        a.deployedBytecode.immutableReferences,
-      )
+    !candidates.some(
+      (a) =>
+        normalize(code, a.deployedBytecode.immutableReferences) ===
+        normalize(
+          a.deployedBytecode.object,
+          a.deployedBytecode.immutableReferences,
+        ),
+    )
   )
     throw Error(`${name} runtime differs from the compiled source`);
   return keccak256(code);
@@ -58,15 +65,29 @@ export async function verifyLegacy(client, legacy) {
     if (d.chainId !== legacy.chainId) throw Error("Mixed legacy chains");
     if (!["rsa-dkim-v1", "rsa-dkim-v2"].includes(d.protocol))
       throw Error("Unknown legacy protocol");
-    const name = d.protocol === "rsa-dkim-v2" ? "MergeBountyV2" : "MergeBounty";
-    const runtimeHash = await verifyRuntime(client, d.contract, name);
+    const name = "MergeBounty";
+    const historicalName =
+      d.sourceContract === name
+        ? undefined
+        : d.protocol === "rsa-dkim-v2"
+          ? "MergeBountyV2"
+          : "MergeBounty";
+    const runtimeHash = await verifyRuntime(
+      client,
+      d.contract,
+      name,
+      historicalName,
+    );
     if (d.runtimeHash && d.runtimeHash !== runtimeHash)
       throw Error("Legacy runtime hash mismatch");
     await verifyRuntime(client, d.verifier, "GithubDkimVerifier");
     const read = (functionName) =>
       client.readContract({
         address: d.contract,
-        abi: artifact(name).abi,
+        abi: (historicalName
+          ? archivedArtifact(historicalName)
+          : artifact(name)
+        ).abi,
         functionName,
       });
     const modulus = await client.readContract({
@@ -96,8 +117,8 @@ export async function verifyLegacy(client, legacy) {
 export function deploymentIdentity(terms) {
   assertTerms(terms);
   const data = encodeDeployData({
-    abi: artifact("MergeBountyV2").abi,
-    bytecode: artifact("MergeBountyV2").bytecode.object,
+    abi: artifact("MergeBounty").abi,
+    bytecode: artifact("MergeBounty").bytecode.object,
     args: [terms.legacy.verifier, terms.feeRecipient, BigInt(terms.feeBps)],
   });
   const identity = {
@@ -277,9 +298,9 @@ export async function resumeDeployment({
   const runtimeHash = await verifyRuntime(
     client,
     checkpoint.contract,
-    "MergeBountyV2",
+    "MergeBounty",
   );
-  const a = artifact("MergeBountyV2");
+  const a = artifact("MergeBounty");
   const read = (functionName) =>
     client.readContract({
       address: checkpoint.contract,
@@ -311,6 +332,7 @@ export async function resumeDeployment({
   const manifest = {
     ...strip(terms.legacy),
     protocol: "rsa-dkim-v2",
+    sourceContract: "MergeBounty",
     contract: checkpoint.contract,
     abi: a.abi,
     feeBps: terms.feeBps,

@@ -8,16 +8,16 @@ The app is hosted publicly on GitHub Pages, with the **issue.fund** domain manag
 
 ## Documentation
 
-The [documentation hub](https://issue.fund/#docs) lists all 16 pages for both audiences. Start with [maintainer onboarding](docs/maintainers/getting-started.md) or [contributor onboarding](docs/contributors/getting-started.md). The [complete documentation index](docs/README.md) includes funding, PR setup, merging, receipts, claims, withdrawals, refunds, privacy and troubleshooting.
+The [documentation hub](https://issue.fund/#docs) lists all 18 pages for both audiences. Start with [maintainer onboarding](docs/maintainers/getting-started.md) or [contributor onboarding](docs/contributors/getting-started.md). The [complete documentation index](docs/README.md) includes funding, PR setup, merging, receipts, claims, withdrawals, refunds, privacy and troubleshooting.
 
 Content lives in `shared/documentation.mjs`. Run `npm run docs:build` after edits to generate the matching Markdown guides; every build checks that they are in sync. [GitHub Pages and DNS deployment](CLOUDFLARE.md) covers static hosting.
 
 ## Claim fees
 
-New V2 bounties deduct a fixed 1% success fee. The initial fee recipient and owner
+New bounties deduct a fixed 1% success fee. The initial fee recipient and owner
 is `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844`. Connect that wallet and open
 **Fee settings** to change future fee routing or propose an ownership transfer.
-Existing credits remain with the wallet that earned them. V1 bounties retain their
+Existing credits remain with the wallet that earned them. Historical bounties retain their
 original no-fee terms. See the [fee management guide](docs/reference/contracts.md).
 
 ## Use the app
@@ -46,7 +46,7 @@ The [PR preparation guide](docs/contributors/prepare-pr.md) covers templates, fo
 
 ## Live automatic acceptance
 
-On September 10, 2026, [V2 bounty #2](https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2) completed public-site funding, real GitHub issue #7 / PR #8 events, server collection and claim, and contributor withdrawal. The gross reward was 0.0001 xDAI, the contributor withdrew 0.000099 xDAI, and the fee recipient was credited 0.000001 xDAI. No email uploads or browser claim were used. Replay rejection and settlement after a collector/signer restart were verified. [Recorded evidence](deployments/gnosis/automatic-e2e.json) · [Passing full CI](https://github.com/RonTuretzky/issue.fund/actions/runs/34497029568).
+On September 10, 2026, [Bounty #2](https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2) completed public-site funding, real GitHub issue #7 / PR #8 events, server collection and claim, and contributor withdrawal. The gross reward was 0.0001 xDAI, the contributor withdrew 0.000099 xDAI, and the fee recipient was credited 0.000001 xDAI. No email uploads or browser claim were used. Replay rejection and settlement after a collector/signer restart were verified. [Recorded evidence](deployments/gnosis/automatic-e2e.json) · [Passing full CI](https://github.com/RonTuretzky/issue.fund/actions/runs/34497029568).
 
 The live reply-token security matrix remains separate from the operator's accepted exposure policy. External alert delivery and recurring off-host exports remain operational backlog items. This successful example does not enroll other repositories automatically.
 
@@ -91,3 +91,9 @@ Synthetic signing keys are used only in local cryptographic integration tests. P
 The complete previous ZK implementation is preserved on [`codex/archive-zk-proving`](https://github.com/RonTuretzky/issue.fund/tree/codex/archive-zk-proving). [Backlog issue #1](https://github.com/RonTuretzky/issue.fund/issues/1) records its circuits, proving artifacts, operational requirements, security work and restoration criteria. It is removed from the active application.
 
 Legacy escrow `0xdf1f54c97c728f7101b797a6db2383bea2cdecc1` is a separate immutable deployment. Its funded bounty #2 and exact existing proving artifacts were preserved. Use the archived code and original manifest for legacy claims; new RSA receipts cannot settle that old escrow.
+
+## Contract source and receipt rules
+
+There is one maintained escrow, [MergeBounty.sol](contracts/MergeBounty.sol), with an immutable success fee and changeable fee recipient. Historical build records preserve existing deployments; they are not separate development versions.
+
+Read the [plain-language receipt policy](docs/reference/receipt-policy.md) and [audited component comparison](docs/reference/audited-components.md). The annotated parser preserves the existing acceptance rules. Audited utility imports do not constitute an independent audit of issue.fund.

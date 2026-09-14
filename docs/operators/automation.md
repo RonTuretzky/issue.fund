@@ -2,11 +2,11 @@
 
 Implementation status (September 10, 2026): the collector, registry API, encrypted
 store, indexer, restricted signer and relay are implemented and locally tested.
-V2 and its fixed 1% fee are deployed on Gnosis; the public Pages frontend uses V2
-and preserves V1 links/balances. The GitHub App is installed on the example public
+The escrow and its fixed 1% fee are deployed on Gnosis; the public Pages frontend uses the current escrow
+and preserves historical links/balances. The GitHub App is installed on the example public
 repository. Both the genuine public-site manual run and a separate unattended server claim
 passed with emails received by `DecentralParkNY`. The automatic test used issue #7,
-PR #8 and V2 bounty #2; its exact fee, withdrawal and restart checks are in
+PR #8 and bounty #2; its exact fee, withdrawal and restart checks are in
 [the automatic evidence](../../deployments/gnosis/automatic-e2e.json).
 
 The operator has explicitly accepted exposure of the dedicated collector account's
@@ -166,9 +166,8 @@ on-host database restore have been checked. Complete the real-mail acceptance
 matrix before enabling relay; infrastructure health is not delivery readiness.
 
 `DEPLOYMENTS_FILE` contains an array of approved manifests, including chain ID,
-escrow/verifier addresses, ABI, pinned DKIM key and `fromBlock`. Add the new V2
-escrow alongside V1 when it is deployed. The backend validates the chain and
-immutable verifier/key; include `runtimeHash` for bytecode pinning. V2 manifests
+escrow/verifier addresses, ABI, pinned DKIM key and `fromBlock`. Add a new escrow alongside historical deployments when it is deployed. The backend validates the chain and
+immutable verifier/key; include `runtimeHash` for bytecode pinning. Fee-bearing manifests
 also pin `feeBps` and `initialFeeRecipient` (the initial owner). `feeRecipient`,
 `owner` and `pendingOwner` are read from the chain and may change through authorized
 transactions. The initial recipient is recorded separately so a valid routing
@@ -365,8 +364,8 @@ and the verified one-time off-host copy remain available.
 
 ### Service verification
 
-The service at https://api.issue.fund indexes V1 and V2. Automatic disclosure
-and the relay use the operator-accepted policy described above. The public frontend serves V2 with preserved V1
+The service at https://api.issue.fund indexes current and historical escrows. Automatic disclosure
+and the relay use the operator-accepted policy described above. The public frontend serves the current escrow with preserved historical
 links. On September 10, Gmail authentication and the live mailbox health check
 passed using the collector's dedicated app credential. The 2026-09-09 deployment checks covered separate secret access, the
 signer's private network namespace, IPC policy rejection, recovery of both

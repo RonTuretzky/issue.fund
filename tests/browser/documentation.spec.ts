@@ -149,6 +149,8 @@ test("mobile handbook navigation, tables and contract addresses fit narrow scree
     for (const path of [
       "",
       "reference/contracts",
+      "reference/receipt-policy",
+      "reference/audited-components",
       "reference/troubleshooting",
       "contributors/prepare-pr",
     ]) {
@@ -174,6 +176,8 @@ test("handbook pages pass automated accessibility checks", async ({ page }) => {
     "contributors/prepare-pr",
     "reference/privacy",
     "reference/contracts",
+    "reference/receipt-policy",
+    "reference/audited-components",
   ]) {
     await offlineDocs(page, path);
     const result = await new AxeBuilder({ page })

@@ -17,9 +17,9 @@ The public static app uses native xDAI on Gnosis, chain ID 100. The deployment m
 
 ## Claim fees and changing the fee recipient
 
-V2 deducts a fixed success fee when a valid claim settles. The funding form shows both the fee and the contributor’s net reward. Refunds return the full reward, and V1 bounties retain their original no-fee terms.
+The current escrow deducts a fixed success fee when a valid claim settles. The funding form shows both the fee and the contributor’s net reward. Refunds return the full reward, and earlier bounties retain their original no-fee terms.
 
-The V2 owner can change the wallet credited with fees from future claims. The owner cannot change the fee percentage, redirect contributor rewards, withdraw other wallets’ credits, replace the verifier or move active bounty funds. Previously earned fees remain credited to the old recipient.
+The escrow owner can change the wallet credited with fees from future claims. The owner cannot change the fee percentage, redirect contributor rewards, withdraw other wallets’ credits, replace the verifier or move active bounty funds. Previously earned fees remain credited to the old recipient.
 
 1. Connect the current owner wallet on Gnosis. Open Fee settings below the wallet balance area on the bounty or repository page.
 2. Enter New fee recipient, select Update fee recipient and confirm the transaction. The site reads the new address directly from the contract; no website redeployment is needed.

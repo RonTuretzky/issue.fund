@@ -9,11 +9,23 @@ Find the live contracts and understand the boundaries of the current payment rul
 The public static app uses native xDAI on Gnosis, chain ID 100. The deployment manifest records the verifier, escrow, ABI and pinned public key. Contract source verification confirms published source correspondence; it is not a security audit.
 
 - Network: Gnosis (100), native xDAI
-- Escrow: [0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46](https://gnosisscan.io/address/0xf7d518780fb08d77a79efdc9fe8f9fd32bdd6d46?tab=contract)
+- Escrow: [0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630](https://gnosisscan.io/address/0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630?tab=contract)
 - RSA/DKIM verifier: [0xc2404198b7519c915817826586ec3892332a27cf](https://gnosisscan.io/address/0xc2404198b7519c915817826586ec3892332a27cf?tab=contract)
 
 - [Download the current deployment manifest](https://issue.fund/deployment.gnosis.json)
-- [Source and deployment records](https://github.com/RonTuretzky/issue.fund/tree/main/deployments/gnosis)
+- [Source and deployment records](https://github.com/RonTuretzky/issue.fund/tree/codex/automation-production/deployments/gnosis)
+
+## Claim fees and changing the fee recipient
+
+The current escrow deducts a fixed success fee when a valid claim settles. The funding form shows both the fee and the contributor’s net reward. Refunds return the full reward, and earlier bounties retain their original no-fee terms.
+
+The escrow owner can change the wallet credited with fees from future claims. The owner cannot change the fee percentage, redirect contributor rewards, withdraw other wallets’ credits, replace the verifier or move active bounty funds. Previously earned fees remain credited to the old recipient.
+
+1. Connect the current owner wallet on Gnosis. Open Fee settings below the wallet balance area on the bounty or repository page.
+2. Enter New fee recipient, select Update fee recipient and confirm the transaction. The site reads the new address directly from the contract; no website redeployment is needed.
+3. To transfer control as well, enter New owner wallet and select Propose owner transfer. Connect that new wallet and select Accept ownership. The current owner can cancel a pending transfer before acceptance.
+4. To withdraw earned fees, connect the wallet that earned them and use Withdraw xDAI. Changing the fee recipient does not move old credits or transfer ownership.
+
 
 ## Supported receipt format
 
@@ -22,6 +34,7 @@ The public static app uses native xDAI on Gnosis, chain ID 100. The deployment m
 - One wallet marker and one bounty reference in the PR title, with the same repository and closing PR in the two receipts.
 - Original upload size up to 100 KB per file; canonical headers up to 8192 bytes and full canonical body up to 65536 bytes.
 - Public-repository onboarding, supported ASCII repository/branch names and a default branch of at most 64 characters. The live UI currently lists the newest 100 bounties.
+- RSA modulus lengths of exactly 1024 or 2048 bits and exponent 65537. The 1024-bit allowance is a narrowly documented compatibility change from OpenZeppelin’s upstream 2048-bit minimum because GitHub’s current signing key is RSA-1024.
 
 
 ## Key and repository identity
@@ -33,11 +46,11 @@ Receipts bind the case-sensitive owner/repository name, not GitHub’s permanent
 
 ## Review status and transaction cost
 
-No independent security audit has been completed. Automated tests and a real public-GitHub-to-Gnosis claim and withdrawal have passed; those checks do not guarantee the absence of defects. Review the contract and protocol before committing funds.
+No independent issue.fund security audit has been completed. The maintained RSA candidate is adapted from audited OpenZeppelin code by one documented minimum-length change. Automated tests, saved real GitHub receipts and a public-GitHub-to-Gnosis claim and withdrawal have passed; those checks do not guarantee the absence of defects. Review the contract and protocol before committing funds.
 
 Verification gas depends on message size. The recorded two-email Gnosis claim used 9,283,775 gas. Use the current wallet estimate to evaluate the transaction fee; that gas count is not a fixed xDAI price.
 
-- [Verification record and test scope](https://github.com/RonTuretzky/issue.fund/blob/main/VERIFICATION.md)
+- [Verification record and test scope](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/VERIFICATION.md)
 - [Recorded direct-DKIM Gnosis claim](https://gnosisscan.io/tx/0xdc00944624435a7f48e38666a3598df0768bc6cac0b7cfd0547a146281b0c053)
 
 ## Previous deployments

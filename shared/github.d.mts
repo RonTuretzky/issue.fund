@@ -31,6 +31,7 @@ export function parseRepo(value: string): string;
 export function parseIssue(value: string): { repo: string; number: number };
 export function repoProblem(repo: Record<string, unknown>): string;
 export function createGithubClient(fetcher?: typeof fetch): {
+  request(path: string): Promise<{ data: any; more: boolean }>;
   getRepo(value: string): Promise<Repository>;
   getIssue(repo: Repository, number: number): Promise<Issue>;
   inspectIssue(url: string, expected?: FundingCheck): Promise<FundingCheck>;

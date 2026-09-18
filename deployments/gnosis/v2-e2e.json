@@ -1,0 +1,77 @@
+{
+  "testedAt": "2026-09-10T15:04:27.866Z",
+  "realGitHubDkim": true,
+  "directRsaOnChain": true,
+  "staticFrontend": true,
+  "repo": "RonTuretzky/tmp-mergebounty-public-e2e-20260906",
+  "issue": 5,
+  "pr": 6,
+  "bountyId": 1,
+  "escrow": "0x1f5cE96dFa05D207Ca8E59C6ab4B9F1895D24630",
+  "recipient": "0x6636A1CCBdf54485067304C1a590DE016DeaD9F0",
+  "amountWei": "100000000000000",
+  "netWei": "99000000000000",
+  "feeWei": "1000000000000",
+  "feeRecipient": "0x86213f1cf0a501857B70Df35c1cb3C2EcF112844",
+  "feeCreditBefore": "0",
+  "feeCreditAfter": "1000000000000",
+  "replayRejected": true,
+  "publicUrl": "https://issue.fund",
+  "collectorLogin": "DecentralParkNY",
+  "browserClaim": true,
+  "browserWithdrawal": true,
+  "transactions": [
+    {
+      "functionName": "create",
+      "hash": "0x16253ee6053d65e18754181e55d1ce78b5aead7308d93c74eff255c78293d585",
+      "sentAt": "2026-09-10T14:53:35.655Z",
+      "status": "success",
+      "blockNumber": "48180240",
+      "gasUsed": "217352",
+      "feeXDai": "0.0000000000054338"
+    },
+    {
+      "functionName": "claim",
+      "hash": "0xc8407fd4014ef63241db0ab38c3f7de3812a0411f4708a414fe59e5dbd77d720",
+      "sentAt": "2026-09-10T15:04:05.227Z",
+      "status": "success",
+      "blockNumber": "48180364",
+      "gasUsed": "10251619",
+      "feeXDai": "0.000000000235787237"
+    },
+    {
+      "functionName": "withdraw",
+      "hash": "0x4b68ea4bcc4b2ff88e0fbbda62406a6d2c9d6832df82b50264e9b976245878b4",
+      "sentAt": "2026-09-10T15:04:17.876Z",
+      "status": "success",
+      "blockNumber": "48180366",
+      "gasUsed": "33190",
+      "feeXDai": "0.00000000000082975"
+    }
+  ],
+  "treasuryWithdrawalSimulated": true,
+  "treasuryWithdrawalBroadcast": false,
+  "automaticCollector": false,
+  "collectionMethod": "Gmail original-message download from DecentralParkNY; manual browser receipt upload",
+  "disclosurePrecheck": {
+    "checkedAt": "2026-09-10T15:03:46.286Z",
+    "collector": {
+      "id": 261291353,
+      "login": "DecentralParkNY"
+    },
+    "repo": "RonTuretzky/tmp-mergebounty-public-e2e-20260906",
+    "issue": 5,
+    "pr": 6,
+    "outsideCollector": true,
+    "closedConversationsLocked": true,
+    "automaticSecurityMatrixValidated": false
+  },
+  "frontendSource": {
+    "repository": "RonTuretzky/issue.fund",
+    "sourceCommit": "ac49267d0ffaf3ec5457b9d04182efbda3f4b211",
+    "domain": "issue.fund"
+  },
+  "finalBeneficiaryCredit": "0",
+  "finalTreasuryCredit": "1000000000000",
+  "confirmedThroughBlock": "48180378"
+}

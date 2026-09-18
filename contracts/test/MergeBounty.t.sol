@@ -41,7 +41,7 @@ contract MergeBountyTest {
     receive() external payable {}
     function setUp() public {
         vm.warp(START); vm.deal(address(this),100 ether);
-        escrow=new MergeBounty(new UnitVerifier());
+        escrow=new MergeBounty(new UnitVerifier(), address(0x5678), 0);
         escrow.create{value:1 ether}("owner/repo",1,"main",DEADLINE);
         bountyReference=escrow.referenceFor(1);
     }
@@ -76,7 +76,7 @@ contract MergeBountyTest {
             vm.expectRevert(MergeBounty.InvalidReceipt.selector); escrow.claim(1,receipt(m),receipt(c));
         }
     }
-    function testChainAndContractBoundReference() public { bytes32 beforeRef=escrow.referenceFor(1); vm.chainId(block.chainid+1); require(beforeRef!=escrow.referenceFor(1)); MergeBounty other=new MergeBounty(new UnitVerifier()); require(other.referenceFor(1)!=escrow.referenceFor(1)); }
+    function testChainAndContractBoundReference() public { bytes32 beforeRef=escrow.referenceFor(1); vm.chainId(block.chainid+1); require(beforeRef!=escrow.referenceFor(1)); MergeBounty other=new MergeBounty(new UnitVerifier(), address(0x5678), 0); require(other.referenceFor(1)!=escrow.referenceFor(1)); }
     function testClaimAtEndOfGraceAllowed() public { vm.warp(DEADLINE+7 days); settle(); }
     function testClaimAfterGraceFails() public { vm.warp(DEADLINE+7 days+1); vm.expectRevert(MergeBounty.TooLate.selector); settle(); }
     function testEarlyRefundFails() public { vm.warp(DEADLINE+7 days); vm.expectRevert(MergeBounty.TooEarly.selector); escrow.refund(1); }
@@ -92,7 +92,7 @@ contract MergeBountyTest {
         vm.expectRevert(); escrow.create{value:1}("owner/repo",1,"main\n",DEADLINE);
         vm.expectRevert(); escrow.getBounty(0);
         vm.expectRevert(); escrow.getBounty(2);
-        vm.expectRevert(); new MergeBounty(IDkimVerifier(address(1)));
+        vm.expectRevert(); new MergeBounty(IDkimVerifier(address(1)), address(0x5678), 0);
     }
     function testFuzzEscrowConservation(uint96 amount) public {
         uint256 value=uint256(amount)%10 ether+1; escrow.create{value:value}("owner/repo",3,"main",DEADLINE);

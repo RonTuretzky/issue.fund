@@ -36,6 +36,16 @@ export function parseNativeEvent(
   body: string,
   issuedAt: number,
 ): Omit<Summary, "keyHash">;
+export function authenticateEmail(
+  input: Uint8Array,
+  key: DkimKey,
+): Promise<{
+  receipt: Receipt;
+  subject: string;
+  body: string;
+  issuedAt: number;
+  keyHash: string;
+}>;
 export function prepareReceipt(
   input: Uint8Array,
   key: DkimKey,

@@ -18,7 +18,7 @@ test("the hub lists and opens every maintainer, contributor and reference guide 
   );
   await expect(page.getByRole("alert")).toHaveCount(0);
   const catalogue = page.getByLabel("All documentation guides");
-  await expect(catalogue.getByRole("link")).toHaveCount(14);
+  await expect(catalogue.getByRole("link")).toHaveCount(pages.length);
   for (const doc of pages) {
     await catalogue
       .getByRole("link", {
@@ -134,7 +134,7 @@ test("mobile handbook navigation, tables and contract addresses fit narrow scree
       page
         .getByRole("navigation", { name: "Documentation pages" })
         .getByRole("link"),
-    ).toHaveCount(15);
+    ).toHaveCount(pages.length + 1);
     await page
       .getByRole("navigation", { name: "Documentation pages" })
       .getByRole("link", { name: "Maintainer onboarding", exact: true })
@@ -149,6 +149,8 @@ test("mobile handbook navigation, tables and contract addresses fit narrow scree
     for (const path of [
       "",
       "reference/contracts",
+      "reference/receipt-policy",
+      "reference/audited-components",
       "reference/troubleshooting",
       "contributors/prepare-pr",
     ]) {
@@ -174,6 +176,8 @@ test("handbook pages pass automated accessibility checks", async ({ page }) => {
     "contributors/prepare-pr",
     "reference/privacy",
     "reference/contracts",
+    "reference/receipt-policy",
+    "reference/audited-components",
   ]) {
     await offlineDocs(page, path);
     const result = await new AxeBuilder({ page })

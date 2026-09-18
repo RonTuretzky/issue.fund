@@ -8,11 +8,34 @@ Recover from repository, receipt, wallet, and withdrawal problems.
 
 | What you see | What to do |
 | --- | --- |
-| Repository cannot be added | Use a public, active repository with issues enabled and a supported default branch. Adding a repo never requires a GitHub connection here. |
+| Issue cannot be reviewed | Paste an open public issue URL from an active repository with issues enabled and a supported default branch. There is no separate Add repository step. |
 | GitHub rate limit or connection error | Wait and retry. Anonymous API checks may be limited. Do not fund until the fresh issue review succeeds. |
 | Issue is closed or URL is a PR | Choose an open issue URL ending in /issues/NUMBER. Check whether the issue moved or was already resolved. |
 | Repository or branch changed during review | Run a fresh review and inspect the new terms before confirming. |
 | Already has a bounty | Open the existing bounty. Additional bounties are separate escrows, not a top-up. |
+
+
+## PR preparation
+
+| What you see | What to do |
+| --- | --- |
+| Connect payout wallet / preparation disabled | Connect the wallet that should receive the reward. Check its full address; it may differ from the funding wallet. |
+| Source branch not found | Push the branch to the chosen public repository or fork, then retry. Branch suggestions show only the first 100; you can type another exact branch name. |
+| PR details need attention | Correct the listed repository, target, title, wallet or closing line on GitHub, then run Check PR again. A merge-time title cannot be repaired afterward. |
+| PR details match, collector needs attention | The PR metadata and email readiness are separate checks. Resolve delivery/setup with the maintainer or operator, or arrange manual notifications before merge. |
+| Template too long / clipboard unavailable | Use the comparison link and copy the complete displayed title and description. If clipboard access is blocked, select the text and copy it manually. |
+| Previous result disappeared | Wallet/form changes and a five-minute timeout invalidate the result. Prepare or check again. |
+
+
+## Automatic collection
+
+| What you see | What to do |
+| --- | --- |
+| Preparing notifications / maintainer integration required | Ask a maintainer to install the collector App for the selected public repository. Contact the operator to enable collector watching and confirm real email delivery. Wait for Notifications ready before merging. |
+| App installed, but notifications are not ready | Installation and watching are separate. The current collector token checks an existing watch; the operator must enable watching on a new repository. Late setup cannot recreate original emails from past events. |
+| Waiting for GitHub emails after merge | Check that the PR merged into the funded branch and closed the funded issue via that PR. Both native event emails must arrive. Contact the operator if delivery is delayed. |
+| Automatic claim needs attention | Read the displayed reason and refresh the status after it is resolved. Installation, account-role, mailbox, receipt and relay-gas problems may need the maintainer or operator. Manual submission remains available if someone received the originals. |
+| Reward credited, but wallet balance unchanged | Connect the payout wallet and withdraw. The server pays claim gas; the payout wallet still authorizes and pays gas for withdrawal. |
 
 
 ## Receipt checking

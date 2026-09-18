@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
-const d = JSON.parse(fs.readFileSync("public/deployment.gnosis.json", "utf8"));
+const d = JSON.parse(
+  fs.readFileSync(process.argv[2] ?? "public/deployment.gnosis.json", "utf8"),
+);
+if (d.chainId !== 100 || !["rsa-dkim-v1", "rsa-dkim-v2"].includes(d.protocol))
+  throw Error("Expected a Gnosis direct-DKIM manifest");
 // Resolve Blockscout's canonical host before POST: a 301 can discard the body.
 const probe = await fetch(
   "https://gnosis.blockscout.com/api?module=stats&action=ethsupply",
@@ -11,14 +15,31 @@ if (
 )
   throw Error("Unexpected explorer host");
 const results = [];
-for (const [name, address, sig, arg] of [
-  ["GithubDkimVerifier", d.verifier, "constructor(bytes)", d.dkimKey.modulus],
-  ["MergeBounty", d.contract, "constructor(address)", d.verifier],
+for (const [name, address, sig, args] of [
+  ["GithubDkimVerifier", d.verifier, "constructor(bytes)", [d.dkimKey.modulus]],
+  d.protocol === "rsa-dkim-v2"
+    ? [
+        d.sourceContract === "MergeBounty" ? "MergeBounty" : "MergeBountyV2",
+        d.contract,
+        "constructor(address,address,uint256)",
+        [d.verifier, d.initialFeeRecipient ?? d.feeRecipient, String(d.feeBps)],
+      ]
+    : ["MergeBounty", d.contract, "constructor(address)", [d.verifier]],
 ]) {
-  const encoded = execFileSync("cast", ["abi-encode", sig, arg], {
+  const encoded = execFileSync("cast", ["abi-encode", sig, ...args], {
     encoding: "utf8",
   }).trim();
   try {
+    // Historical source lives at the pinned archive commit. These contracts
+    // are already explorer-verified; never submit today's source as their source.
+    if (
+      name === "MergeBountyV2" ||
+      (name === "MergeBounty" && d.protocol === "rsa-dkim-v1")
+    ) {
+      throw Error(
+        "Historical deployment: checking the explorer's existing verification",
+      );
+    }
     execFileSync(
       "forge",
       [
@@ -61,8 +82,17 @@ for (const [name, address, sig, arg] of [
   });
   console.log({ name, verified });
 }
-fs.writeFileSync(
-  "deployments/gnosis/source-verification.json",
-  JSON.stringify(results, null, 2) + "\n",
-);
+const file = "deployments/gnosis/source-verification.json";
+const previous = fs.existsSync(file)
+  ? JSON.parse(fs.readFileSync(file, "utf8"))
+  : [];
+const merged = previous
+  .filter(
+    (old) =>
+      !results.some(
+        (next) => next.address.toLowerCase() === old.address.toLowerCase(),
+      ),
+  )
+  .concat(results);
+fs.writeFileSync(file, JSON.stringify(merged, null, 2) + "\n");
 if (results.some((r) => !r.verified)) process.exitCode = 1;

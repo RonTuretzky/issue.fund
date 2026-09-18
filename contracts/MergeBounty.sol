@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReceiptPolicy} from "./ReceiptPolicy.sol";
 
 import {IDkimVerifier} from "./IDkimVerifier.sol";
 
-/// Native-ETH issue escrow. No administrator, upgrades, replacement verifier,
-/// key updates, fee recipient, or discretionary withdrawal of active bounties.
-contract MergeBounty is ReentrancyGuard {
+/// Native-currency issue escrow with an immutable success fee.
+/// The owner can change future fee routing, but cannot change the rate, verifier,
+/// contributor payouts, accrued credits, or access active bounty funds.
+/// Single maintained escrow. Historical deployments keep their original terms.
+contract MergeBounty is ReentrancyGuard, Ownable2Step {
     enum Status {
         Open,
         Paid,
@@ -29,6 +34,11 @@ contract MergeBounty is ReentrancyGuard {
 
     IDkimVerifier public immutable verifier;
     bytes32 public immutable githubKeyHash;
+    uint256 public constant FEE_DENOMINATOR = 10_000;
+    uint256 public constant MAX_FEE_BPS = 500;
+    address public immutable initialFeeRecipient;
+    address public feeRecipient;
+    uint256 public immutable feeBps;
     uint256 public constant CLAIM_GRACE = 7 days;
     uint256 public nextId = 1;
     mapping(uint256 => Bounty) private bounties;
@@ -43,6 +53,8 @@ contract MergeBounty is ReentrancyGuard {
         uint64 deadline
     );
     event Paid(uint256 indexed id, address indexed recipient, uint256 amount, uint64 pr);
+    event ClaimFee(uint256 indexed id, address indexed treasury, uint256 grossAmount, uint256 feeAmount);
+    event FeeRecipientChanged(address indexed previousRecipient, address indexed newRecipient);
     event Refunded(uint256 indexed id, address indexed funder, uint256 amount);
     event Withdrawn(address indexed owner, address indexed destination, uint256 amount);
     error InvalidInput();
@@ -54,10 +66,41 @@ contract MergeBounty is ReentrancyGuard {
     error NothingToWithdraw();
     error TransferFailed();
 
-    constructor(IDkimVerifier v) {
+    constructor(IDkimVerifier v, address treasury, uint256 successFeeBps) Ownable(treasury) {
+        if (treasury == address(0) || treasury == address(this) || successFeeBps > MAX_FEE_BPS) revert InvalidInput();
+        feeRecipient = treasury;
+        initialFeeRecipient = treasury;
+        feeBps = successFeeBps;
         if (address(v).code.length == 0 || v.keyHash() == bytes32(0)) revert InvalidInput();
         verifier = v;
         githubKeyHash = v.keyHash();
+    }
+
+    /// Applies only to claims settled after this transaction. Existing credits
+    /// remain withdrawable exclusively by the wallet that earned them.
+    function setFeeRecipient(address treasury) external onlyOwner {
+        if (treasury == address(0) || treasury == address(this)) revert InvalidInput();
+        address previous = feeRecipient;
+        feeRecipient = treasury;
+        emit FeeRecipientChanged(previous, treasury);
+    }
+
+    /// A new owner must accept the transfer. Zero cancels a pending transfer.
+    function transferOwnership(address newOwner) public override onlyOwner {
+        if (newOwner == address(this)) revert InvalidInput();
+        super.transferOwnership(newOwner);
+    }
+
+    /// Keep fee routing recoverable; ownership can instead be transferred to a safe.
+    function renounceOwnership() public view override onlyOwner {
+        revert InvalidInput();
+    }
+
+    /// The fee rounds down; the contributor receives all remaining wei.
+    /// Paid.amount is the contributor's net credit. Funded.amount is the gross reward.
+    function quoteClaim(uint256 grossAmount) public view returns (uint256 netAmount, uint256 feeAmount) {
+        feeAmount = Math.mulDiv(grossAmount, feeBps, FEE_DENOMINATOR);
+        netAmount = grossAmount - feeAmount;
     }
 
     function getBounty(uint256 id) external view returns (Bounty memory) {
@@ -83,14 +126,16 @@ contract MergeBounty is ReentrancyGuard {
         validateRepo(repo);
         validateBranch(branch);
         id = nextId++;
-        bounties[id] =
-            Bounty(
+        bounties[id] = Bounty(
             msg.sender, msg.value, uint64(block.timestamp), deadline, issue, Status.Open, address(0), 0, repo, branch
         );
         emit Funded(id, msg.sender, referenceFor(id), repo, issue, msg.value, deadline);
     }
 
-    function claim(uint256 id, IDkimVerifier.Receipt calldata merged, IDkimVerifier.Receipt calldata closed) external nonReentrant {
+    function claim(uint256 id, IDkimVerifier.Receipt calldata merged, IDkimVerifier.Receipt calldata closed)
+        external
+        nonReentrant
+    {
         Bounty storage bounty = bounties[id];
         if (bounty.funder == address(0)) revert InvalidInput();
         if (bounty.status != Status.Open) revert NotOpen();
@@ -98,8 +143,8 @@ contract MergeBounty is ReentrancyGuard {
         ReceiptPolicy.Event memory m = verifier.verifyReceipt(merged);
         ReceiptPolicy.Event memory c = verifier.verifyReceipt(closed);
         if (
-            !m.merged || c.merged || m.pr != c.pr || c.number != bounty.issue || m.pr > type(uint64).max
-                || m.bountyRef != referenceFor(id)
+            !m.merged || c.merged || m.wallet == address(0) || m.wallet == address(this) || m.pr != c.pr
+                || c.number != bounty.issue || m.pr > type(uint64).max || m.bountyRef != referenceFor(id)
         ) revert InvalidReceipt();
         if (
             keccak256(bytes(m.repo)) != keccak256(bytes(bounty.repo))
@@ -113,8 +158,11 @@ contract MergeBounty is ReentrancyGuard {
         bounty.status = Status.Paid;
         bounty.recipient = m.wallet;
         bounty.pr = uint64(m.pr);
-        credits[m.wallet] += bounty.amount;
-        emit Paid(id, m.wallet, bounty.amount, uint64(m.pr));
+        (uint256 netAmount, uint256 feeAmount) = quoteClaim(bounty.amount);
+        credits[m.wallet] += netAmount;
+        credits[feeRecipient] += feeAmount;
+        emit Paid(id, m.wallet, netAmount, uint64(m.pr));
+        emit ClaimFee(id, feeRecipient, bounty.amount, feeAmount);
     }
 
     function refund(uint256 id) external nonReentrant {
@@ -150,7 +198,8 @@ contract MergeBounty is ReentrancyGuard {
                 if (i == 0 || i == s.length - 1) {
                     revert InvalidInput();
                 }
-            } else if (!((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 45 || c == 95 || c == 46)) {
+            } else if (!((c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 45 || c == 95
+                        || c == 46)) {
                 revert InvalidInput();
             }
         }

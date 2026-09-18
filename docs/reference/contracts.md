@@ -34,6 +34,7 @@ The escrow owner can change the wallet credited with fees from future claims. Th
 - One wallet marker and one bounty reference in the PR title, with the same repository and closing PR in the two receipts.
 - Original upload size up to 100 KB per file; canonical headers up to 8192 bytes and full canonical body up to 65536 bytes.
 - Public-repository onboarding, supported ASCII repository/branch names and a default branch of at most 64 characters. The live UI currently lists the newest 100 bounties.
+- RSA modulus lengths of exactly 1024 or 2048 bits and exponent 65537. The 1024-bit allowance is a narrowly documented compatibility change from OpenZeppelin’s upstream 2048-bit minimum because GitHub’s current signing key is RSA-1024.
 
 
 ## Key and repository identity
@@ -45,7 +46,7 @@ Receipts bind the case-sensitive owner/repository name, not GitHub’s permanent
 
 ## Review status and transaction cost
 
-No independent security audit has been completed. Automated tests and a real public-GitHub-to-Gnosis claim and withdrawal have passed; those checks do not guarantee the absence of defects. Review the contract and protocol before committing funds.
+No independent issue.fund security audit has been completed. The maintained RSA candidate is adapted from audited OpenZeppelin code by one documented minimum-length change. Automated tests, saved real GitHub receipts and a public-GitHub-to-Gnosis claim and withdrawal have passed; those checks do not guarantee the absence of defects. Review the contract and protocol before committing funds.
 
 Verification gas depends on message size. The recorded two-email Gnosis claim used 9,283,775 gas. Use the current wallet estimate to evaluate the transaction fee; that gas count is not a fixed xDAI price.
 

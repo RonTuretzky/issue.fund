@@ -7,12 +7,11 @@ not an independent audit or a statement that production launch is complete.
 
 ## Scope and deployment boundary
 
-Reviewed `MergeBounty`, `GithubDkimVerifier`, `ReceiptPolicy`, `RsaSha256`, the new
-`MergeBountyV2`, and the collector/relay boundaries introduced on
-`codex/automation-production`. V1 source and deployed economics are preserved.
-V2 is a separate deployment with a fixed fee percentage and owner-controlled fee routing.
-The initial fee recipient and owner is `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844`.
-Existing V1 balances retain their original terms.
+Reviewed `MergeBounty`, `GithubDkimVerifier`, `ReceiptPolicy`, the OpenZeppelin-derived
+`RsaSha256` candidate, and the collector/relay boundaries introduced on
+`codex/automation-production`. The maintained escrow is one source; historical
+deployments and balances remain immutable records. The initial fee recipient and
+owner is `0x86213f1cf0a501857B70Df35c1cb3C2EcF112844`.
 
 ## Findings and disposition
 
@@ -21,7 +20,7 @@ Existing V1 balances retain their original terms.
 | Signed notification headers expose working reply credentials           | Comment impersonation as the notification recipient; not proof of payout theft or full account takeover | Previously confirmed in issue #2. Automatic disclosure is gated on a dedicated outside account, both conversation locks, transport validation and a live acceptance record. Live lock/replay tests remain outstanding. The operator explicitly accepts collector impersonation exposure; a separate scoped acceptance mode enables the relay without claiming validation. |
 | Recipient identity headers are unsigned in actual samples              | Trusting `X-GitHub-Recipient` alone would let modified/replayed mail misidentify the exposed account    | Added a direct Gmail delivery policy plus local DKIM verification. Its ingress assumptions still require live forgery/replay validation; other providers fail closed.                                                  |
 | GitHub can rotate its pinned DKIM key or change notification templates | New receipts can become unverifiable; users rely on the refund path after the grace period              | Inherent V1/V2 deployment constraint. Monitor key/template drift, pause automation, preserve old escrows, and deploy a reviewed verifier version rather than silently substituting a trust root.                       |
-| Current pinned GitHub key is RSA-1024                                  | Security strength is constrained by GitHub's signing key                                                | Verifier supports 1024/2048-bit moduli; an arbitrary larger key cannot verify GitHub's existing mail. This remains a provider constraint.                                                                              |
+| Current pinned GitHub key is RSA-1024                                  | Security strength is constrained by GitHub's signing key                                                | The maintained verifier uses OpenZeppelin's complete PKCS#1 v1.5 checks with one documented minimum-length adaptation from 2048 to 1024 bits. The adaptation is not covered by the upstream audit; an arbitrary larger key cannot verify GitHub's existing mail. |
 | Receipt verification is gas-heavy                                      | A public relay can exhaust its gas balance even without a payout exploit                                | Local verification before RPC, enrollment/admission limits, strict claim-only signer, per-claim caps, daily reserved budget and dedicated relay wallet. Genuine server-submitted V2 claim measured 10,232,103 gas; live fee credit, withdrawal, replay and restart checks passed.    |
 | Mutable locks and account roles                                        | Public tokens may become useful again after unlocking or privilege changes                              | Operational dependency, not an on-chain guarantee. Persistent-lock obligations and residual risk are documented; live validation remains required.                                                                     |
 | A fee sent directly to a receiver during settlement could block payout | Rejecting/reentrant fee receiver could disrupt otherwise valid claims                                   | V2 uses pull credits for both beneficiary and treasury. Failure to withdraw cannot block settlement or take the other credit.                                                                                          |
@@ -65,8 +64,12 @@ not establish that every current GitHub email variant is supported.
 
 ## Evidence as of this checkpoint
 
-- 54 Solidity tests pass, including the existing RSA/policy/escrow cases and 19
-  V2 fee and ownership cases; fuzz cases run 128 inputs each.
+- 59 Solidity tests pass, including the existing RSA/policy/escrow cases, RSA
+  conformance cases and 19 fee and ownership cases; fuzz cases run 128 inputs each.
+- 25 JavaScript tests pass, including a source-level check that the vendored RSA
+  file differs from OpenZeppelin only in the documented import path, comments and
+  minimum-length comparison. Saved real GitHub merge and closure receipts verify
+  on an isolated local chain; no raw receipt was sent to a public RPC.
 - 40 automation tests pass, including a real local EVM path using **locally
   generated RSA signatures**, encrypted receipt persistence, out-of-order/dedup
   handling, admission/readiness checks, disclosure gating before RPC, fee payout,
@@ -86,12 +89,12 @@ not establish that every current GitHub email variant is supported.
 ## Release work still required
 
 The frontend now includes automatic/manual onboarding, status flows, exact fee/net
-quotes and separate V1/V2 bounty identities and withdrawal balances. Local browser
+quotes and the maintained escrow's bounty identities and withdrawal balances. Local browser
 checks cover readiness loss, manual fallback, old links and independent withdrawal.
 The static build passes; browser RPC coverage verifies both deployed local escrows and rejects changed
 immutable fee rates while accepting authorized fee-recipient changes. The new
 fee owner controls also pass browser transfer, cancellation, acceptance and mobile
-accessibility checks. V2 is deployed on Gnosis. A genuine public-site manual collection, claim, fee credit
+accessibility checks. The current fee-bearing escrow is deployed on Gnosis. A genuine public-site manual collection, claim, fee credit
 and contributor withdrawal run passed on September 10; see [the evidence](../../deployments/gnosis/v2-e2e.json).
 Retention uses a persistent settlement timestamp and prunes settled encrypted
 payloads after 30 days, while active transactions pin their evidence. An online

@@ -6,21 +6,22 @@ Audited reuse options, compatibility limits, and what still needs an issue.fund 
 
 ## What is audited today
 
-issue.fund’s own verifier, receipt policy and escrow have not had an independent security audit. Importing audited utilities does not extend their audit to our integration or payment rules. This review checked upstream source and published audit reports on September 14, 2026.
+issue.fund’s own verifier, receipt policy and escrow have not had an independent security audit. OpenZeppelin’s RSA implementation is covered by its upstream Contracts 5.1 audit, but importing audited code does not extend that audit to our integration or payment rules. This review checked the upstream source, the exact one-line compatibility change and published audit reports on September 18, 2026.
 
-The project already pins OpenZeppelin Contracts 5.6.1 and uses its math, encoding, reentrancy protection and ownership utilities. Direct GitHub RSA verification and event parsing remain application code.
+The maintained RSA wrapper vendors OpenZeppelin Contracts 5.6.1 and changes only the minimum modulus length from 2048 to 1024 bytes so it can verify GitHub’s current pf2023 key. The wrapper still restricts keys to GitHub’s observed 1024/2048-byte sizes and exponent 65537. The 1024-bit exception and issue.fund integration remain unaudited; direct header, body, event parsing and escrow rules remain application code.
 
 
-## RSA-SHA256: OpenZeppelin has a key-size blocker
+## RSA-SHA256: OpenZeppelin with one documented compatibility change
 
-OpenZeppelin’s RSA.sol was included in its Contracts 5.1 audit. It verifies RSA PKCS#1 v1.5 signatures with SHA-256 and checks the signature padding. Its pkcs1Sha256 function is available through the dependency already installed here.
+OpenZeppelin’s RSA.sol was included in its Contracts 5.1 audit. It verifies RSA PKCS#1 v1.5 signatures with SHA-256, checks the complete encoded padding, rejects signatures at or above the modulus, and supports explicit or implicit NULL DigestInfo parameters.
 
-It requires at least 2048-bit signatures and moduli. A fresh DNS check found GitHub’s pf2023 key is still 1024 bits, exponent 65537, and matches our pinned key. An unchanged import therefore rejects our supported GitHub receipts. Removing the minimum-size check creates a modified implementation whose difference needs review; adding leading zeroes does not make the key stronger.
+The upstream function requires at least 2048-bit signatures and moduli. A DNS check on September 18, 2026 found GitHub’s pf2023 key is still 1024 bits with exponent 65537 and matches our pinned key. An unchanged import therefore rejects genuine GitHub receipts. The maintained candidate is the upstream file with one executable change: `length < 0x100` becomes `length < 0x80`. There is no zero-padding workaround, no relaxed suffix-only check and no other algorithm change.
 
-Recommendation: keep the narrow compatibility implementation until its RSA-1024 behavior is independently reviewed, or adopt the unmodified OpenZeppelin verifier when a supported GitHub signing key meets its requirement. Neither changing libraries nor tests can make GitHub’s current key 2048-bit.
+The candidate is the smallest compatible adaptation, not an unchanged audited library. The 1024-bit exception is explicitly marked in source, isolated in a vendored file, and covered by conformance tests that compare 2048-bit behavior byte-for-byte with upstream and prove unchanged upstream rejects a valid 1024-bit signature. This narrows review; it does not make the exception audited or make RSA-1024 as strong as RSA-2048.
 
 - [OpenZeppelin RSA.sol at the installed 5.6.1 release](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.6.1/contracts/utils/cryptography/RSA.sol)
 - [OpenZeppelin Contracts 5.1 audit, including RSA.sol](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/audits/2024-10-v5.1.pdf)
+- [Issue.fund vendored candidate and exact diff](https://github.com/RonTuretzky/issue.fund/tree/codex/automation-production/contracts/vendor/openzeppelin)
 
 ## Direct DKIM: Ambire is a reference, not a drop-in replacement
 

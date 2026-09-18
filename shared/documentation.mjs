@@ -990,17 +990,17 @@ export const pages = [
       {
         title: "What is audited today",
         paragraphs: [
-          "issue.fund’s own verifier, receipt policy and escrow have not had an independent security audit. Importing audited utilities does not extend their audit to our integration or payment rules. This review checked upstream source and published audit reports on September 14, 2026.",
-          "The project already pins OpenZeppelin Contracts 5.6.1 and uses its math, encoding, reentrancy protection and ownership utilities. Direct GitHub RSA verification and event parsing remain application code.",
+          "issue.fund’s own verifier, receipt policy and escrow have not had an independent security audit. OpenZeppelin’s RSA implementation is covered by its upstream Contracts 5.1 audit, but importing audited code does not extend that audit to our integration or payment rules. This review checked the upstream source, the exact one-line compatibility change and published audit reports on September 18, 2026.",
+          "The maintained RSA wrapper vendors OpenZeppelin Contracts 5.6.1 and changes only the minimum modulus length from 2048 to 1024 bytes so it can verify GitHub’s current pf2023 key. The wrapper still restricts keys to GitHub’s observed 1024/2048-byte sizes and exponent 65537. The 1024-bit exception and issue.fund integration remain unaudited; direct header, body, event parsing and escrow rules remain application code.",
         ],
       },
       {
         title:
-          "RSA-SHA256: OpenZeppelin has a key-size blocker",
+          "RSA-SHA256: OpenZeppelin with one documented compatibility change",
         paragraphs: [
-          "OpenZeppelin’s RSA.sol was included in its Contracts 5.1 audit. It verifies RSA PKCS#1 v1.5 signatures with SHA-256 and checks the signature padding. Its pkcs1Sha256 function is available through the dependency already installed here.",
-          "It requires at least 2048-bit signatures and moduli. A fresh DNS check found GitHub’s pf2023 key is still 1024 bits, exponent 65537, and matches our pinned key. An unchanged import therefore rejects our supported GitHub receipts. Removing the minimum-size check creates a modified implementation whose difference needs review; adding leading zeroes does not make the key stronger.",
-          "Recommendation: keep the narrow compatibility implementation until its RSA-1024 behavior is independently reviewed, or adopt the unmodified OpenZeppelin verifier when a supported GitHub signing key meets its requirement. Neither changing libraries nor tests can make GitHub’s current key 2048-bit.",
+          "OpenZeppelin’s RSA.sol was included in its Contracts 5.1 audit. It verifies RSA PKCS#1 v1.5 signatures with SHA-256, checks the complete encoded padding, rejects signatures at or above the modulus, and supports explicit or implicit NULL DigestInfo parameters.",
+          "The upstream function requires at least 2048-bit signatures and moduli. A DNS check on September 18, 2026 found GitHub’s pf2023 key is still 1024 bits with exponent 65537 and matches our pinned key. An unchanged import therefore rejects genuine GitHub receipts. The maintained candidate is the upstream file with one executable change: `length < 0x100` becomes `length < 0x80`. There is no zero-padding workaround, no relaxed suffix-only check and no other algorithm change.",
+          "The candidate is the smallest compatible adaptation, not an unchanged audited library. The 1024-bit exception is explicitly marked in source, isolated in a vendored file, and covered by conformance tests that compare 2048-bit behavior byte-for-byte with upstream and prove unchanged upstream rejects a valid 1024-bit signature. This narrows review; it does not make the exception audited or make RSA-1024 as strong as RSA-2048.",
         ],
         links: [
           {
@@ -1010,6 +1010,10 @@ export const pages = [
           {
             label: "OpenZeppelin Contracts 5.1 audit, including RSA.sol",
             url: "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/audits/2024-10-v5.1.pdf",
+          },
+          {
+            label: "Issue.fund vendored candidate and exact diff",
+            url: "https://github.com/RonTuretzky/issue.fund/tree/codex/automation-production/contracts/vendor/openzeppelin",
           },
         ],
       },
@@ -1495,6 +1499,7 @@ export const pages = [
           "One wallet marker and one bounty reference in the PR title, with the same repository and closing PR in the two receipts.",
           "Original upload size up to 100 KB per file; canonical headers up to 8192 bytes and full canonical body up to 65536 bytes.",
           "Public-repository onboarding, supported ASCII repository/branch names and a default branch of at most 64 characters. The live UI currently lists the newest 100 bounties.",
+          "RSA modulus lengths of exactly 1024 or 2048 bits and exponent 65537. The 1024-bit allowance is a narrowly documented compatibility change from OpenZeppelin’s upstream 2048-bit minimum because GitHub’s current signing key is RSA-1024.",
         ],
       },
       {
@@ -1507,7 +1512,7 @@ export const pages = [
       {
         title: "Review status and transaction cost",
         paragraphs: [
-          "No independent security audit has been completed. Automated tests and a real public-GitHub-to-Gnosis claim and withdrawal have passed; those checks do not guarantee the absence of defects. Review the contract and protocol before committing funds.",
+          "No independent issue.fund security audit has been completed. The maintained RSA candidate is adapted from audited OpenZeppelin code by one documented minimum-length change. Automated tests, saved real GitHub receipts and a public-GitHub-to-Gnosis claim and withdrawal have passed; those checks do not guarantee the absence of defects. Review the contract and protocol before committing funds.",
           "Verification gas depends on message size. The recorded two-email Gnosis claim used 9,283,775 gas. Use the current wallet estimate to evaluate the transaction fee; that gas count is not a fixed xDAI price.",
         ],
         links: [

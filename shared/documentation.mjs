@@ -247,6 +247,13 @@ export const pages = [
       "Make sure the accepted PR produces receipts that can settle the bounty.",
     sections: [
       {
+        title: "Automated PR notice",
+        paragraphs: [
+          "For repositories enrolled with the issue.fund GitHub App, the bot checks open PR descriptions for closing references to active funded issues. It posts one notice with issue and bounty links, the designated wallet, and preparation problems such as missing markers or an incorrect target branch. It updates that comment as the PR changes.",
+          "Merging into the default branch closes the linked issue and starts the bounty claim process. Automatic submission waits for verified merge and closure receipts; settlement still depends on the contract conditions. Confirm the wallet and lock both conversations before receipt publication. The notice is not a payment guarantee, and any subscriber can still submit valid receipts independently.",
+        ],
+      },
+      {
         title: "Review the contribution normally",
         paragraphs: [
           "Run your project’s tests and verify the issue’s acceptance criteria. The escrow checks signed GitHub events; it does not inspect code quality, test results, authorship, or whether the fix is useful. Your merge decision still matters.",

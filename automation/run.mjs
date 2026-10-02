@@ -18,6 +18,7 @@ import { RelayWorker } from "./relay.mjs";
 import { DisclosureGate } from "./disclosure.mjs";
 import { SignerClient } from "./signer-ipc.mjs";
 import { createApi } from "./api.mjs";
+import { PrNoticeWorker } from "./pr-notices.mjs";
 import { safeCode, fail } from "./errors.mjs";
 
 try {
@@ -45,6 +46,7 @@ try {
       : null,
   });
   const identity = await github.collectorIdentity();
+  const prNotices = new PrNoticeWorker({ store, github });
   const mailbox = {
     host: process.env.MAIL_HOST ?? "imap.gmail.com",
     address: process.env.MAIL_ADDRESS,
@@ -127,6 +129,7 @@ try {
       );
       for (const row of stale) await registry.reconcile(row.id);
       if (relay) await relay.tick();
+      await prNotices.poll();
       store.expireReceipts();
       store.health("worker", true);
     } catch (error) {

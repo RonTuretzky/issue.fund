@@ -129,12 +129,13 @@ try {
       );
       for (const row of stale) await registry.reconcile(row.id);
       if (relay) await relay.tick();
-      await prNotices.poll();
       store.expireReceipts();
       store.health("worker", true);
     } catch (error) {
       store.health("worker", false, safeCode(error));
     }
+    // Mailbox or relay failures must not suppress maintainer notices.
+    await prNotices.poll();
   };
   const schedule = () => {
     inFlight = tick().finally(() => {

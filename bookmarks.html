@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Issue.fund — Research Bookmarks</title>
+    <style>
+      :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: #1f2937; }
+      body { margin: 0; background: #f9fafb; color: #0f172a; }
+      header { padding: 24px; background: linear-gradient(120deg, #0b1e3f, #15335f); color: #fff; }
+      main { padding: 24px; }
+      h1 { margin: 0; font-size: 1.8rem; }
+      .note { margin-top: 8px; opacity: .9; }
+      .group { margin-top: 24px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+      h2 { margin-top: 0; font-size: 1.2rem; }
+      ul { margin: 0; padding-left: 20px; }
+      li { margin: 6px 0; }
+      a { color: #1d4ed8; }
+      .actions { margin: 8px 0 16px 0; }
+      .btn { display: inline-block; margin-right: 8px; padding: 8px 12px; border-radius: 8px; background: #111827; color: #fff; text-decoration: none; font-size: 0.9rem; }
+      .btn:hover { background: #0f172a; }
+      code { font-size: 0.95rem; color: #334155; background: #f1f5f9; padding: 2px 6px; border-radius: 5px; }
+    </style>
+    <script>
+      const groupOpen = () => {
+        document.querySelectorAll('.group-links').forEach((el) => {
+          const links = Array.from(el.querySelectorAll('a[href]')).map((a) => a.href);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn';
+          btn.textContent = 'Open all in tabs';
+          btn.addEventListener('click', () => {
+            links.forEach((href) => {
+              window.open(href, '_blank');
+            });
+          });
+          el.parentNode.querySelector('.actions').appendChild(btn);
+        });
+      };
+      window.addEventListener('DOMContentLoaded', groupOpen);
+    </script>
+  </head>
+  <body>
+    <header>
+      <h1>Issue.fund research bookmarks</h1>
+      <p class="note">Keep this file as a stable source of links: <code>/Users/wk/Documents/ChatGPT/poa/mergebounty/bookmarks.html</code></p>
+    </header>
+    <main>
+      <p>Use this page in Chrome if tabs disappear. It replaces the “single tab” memory problem with a durable link list.</p>
+
+      <section class="group">
+        <h2>Issue.fund contracts (GitHub)</h2>
+        <div class="actions"></div>
+        <ul class="group-links">
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/GithubDkimVerifier.sol">contracts/GithubDkimVerifier.sol</a></li>
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/IDkimVerifier.sol">contracts/IDkimVerifier.sol</a></li>
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/MergeBounty.sol">contracts/MergeBounty.sol</a></li>
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/ReceiptPolicy.sol">contracts/ReceiptPolicy.sol</a></li>
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/RsaSha256.sol">contracts/RsaSha256.sol</a></li>
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/test/MergeBounty.t.sol">contracts/test/MergeBounty.t.sol</a></li>
+          <li><a href="https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/contracts/test/MergeBountyFees.t.sol">contracts/test/MergeBountyFees.t.sol</a></li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h2>Issue reference pages</h2>
+        <div class="actions"></div>
+        <ul class="group-links">
+          <li><a href="https://github.com/mdn/content/issues/45668">mdn/content #45668</a></li>
+          <li><a href="https://github.com/mdn/content/issues/35182">mdn/content #35182</a></li>
+          <li><a href="https://github.com/tscircuit/cli/issues/4628">tscircuit/cli #4628</a></li>
+          <li><a href="https://github.com/tscircuit/core/issues/3068">tscircuit/core #3068</a></li>
+          <li><a href="https://github.com/tscircuit/core/issues/3732">tscircuit/core #3732</a></li>
+          <li><a href="https://github.com/coollabsio/coolify/issues/7642">coollabsio/coolify #7642</a></li>
+          <li><a href="https://github.com/coollabsio/coolify/issues/11752">coollabsio/coolify #11752</a></li>
+          <li><a href="https://github.com/coollabsio/coolify/issues/11756">coollabsio/coolify #11756</a></li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h2>Current bounty route pages</h2>
+        <div class="actions"></div>
+        <ul class="group-links">
+          <li><a href="https://issue.fund/#repositories">Issue.fund — repositories</a></li>
+          <li><a href="https://issue.fund/#bounty/100/0x1f5ce96dfa05d207ca8e59c6ab4b9f1895d24630/2">Issue.fund — bounty id 100 example</a></li>
+          <li><a href="https://mergebounty-gnosis.turetzkyron.chatgpt.site/#bounty-2">Legacy gnosis test link</a></li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

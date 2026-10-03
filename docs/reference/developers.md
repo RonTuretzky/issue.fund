@@ -36,7 +36,7 @@ npm run docs:build
 npm run build:gnosis
 ```
 
-- [Full testing guide](https://github.com/RonTuretzky/issue.fund/blob/main/TESTING.md)
+- [Full testing guide](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/TESTING.md)
 
 ## Source map
 
@@ -61,7 +61,7 @@ npm run build:gnosis creates a static dist/ build. npm run deploy:pages publishe
 
 Contract deployment creates new immutable addresses and does not migrate existing funds. The source includes a chain-100 deployment script and a pinned Breadchain Etherform workflow. See the operations and Gnosis records before deploying.
 
-- [GitHub Pages hosting and Cloudflare DNS](https://github.com/RonTuretzky/issue.fund/blob/main/CLOUDFLARE.md)
-- [Operations and recovery](https://github.com/RonTuretzky/issue.fund/blob/main/OPERATIONS.md)
-- [Gnosis deployment guide](https://github.com/RonTuretzky/issue.fund/blob/main/GNOSIS.md)
+- [GitHub Pages hosting and Cloudflare DNS](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/CLOUDFLARE.md)
+- [Operations and recovery](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/OPERATIONS.md)
+- [Gnosis deployment guide](https://github.com/RonTuretzky/issue.fund/blob/codex/automation-production/GNOSIS.md)
 - [Browse the source](https://github.com/RonTuretzky/issue.fund)

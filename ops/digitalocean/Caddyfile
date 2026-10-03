@@ -1,0 +1,14 @@
+api.issue.fund {
+  request_body {
+    max_size 4KB
+  }
+  header {
+    Strict-Transport-Security "max-age=31536000"
+    -Server
+  }
+  reverse_proxy 127.0.0.1:4320 {
+    transport http {
+      response_header_timeout 25s
+    }
+  }
+}

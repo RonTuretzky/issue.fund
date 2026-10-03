@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { prepareReceipt, checkPair, type Receipt } from "../shared/dkim.mjs";
 import type { Bounty, Config, Preview } from "./types";
+import { formatEther } from "viem";
+import { claimQuote } from "./deployments";
 import { friendly } from "./api";
 export function ClaimPanel({
   bounty,
@@ -131,6 +133,27 @@ export function ClaimPanel({
           <dl>
             <dt>Closing pull request</dt>
             <dd>#{result.preview.pr}</dd>
+            <dt>Contributor receives</dt>
+            <dd>
+              {formatEther(
+                claimQuote(
+                  bounty.amount,
+                  config.protocol === "rsa-dkim-v2" ? config.feeBps : 0,
+                ).net,
+              )}{" "}
+              {config.currency ?? "ETH"}
+            </dd>
+            <dt>Claim fee</dt>
+            <dd>
+              {(config.feeBps ?? 0) / 100}% ·{" "}
+              {formatEther(
+                claimQuote(
+                  bounty.amount,
+                  config.protocol === "rsa-dkim-v2" ? config.feeBps : 0,
+                ).fee,
+              )}{" "}
+              {config.currency ?? "ETH"}
+            </dd>
             <dt>Payout wallet</dt>
             <dd className="full-address">{result.preview.wallet}</dd>
           </dl>

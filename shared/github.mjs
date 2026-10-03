@@ -75,8 +75,11 @@ export function createGithubClient(fetcher = fetch) {
     }
     if (!response.ok) {
       if (response.status === 404)
-        throw new Error(
-          "Not found on public GitHub. Check the URL; private repositories are not supported.",
+        throw Object.assign(
+          new Error(
+            "Not found on public GitHub. Check the URL; private repositories are not supported.",
+          ),
+          { status: 404 },
         );
       if (response.status === 410)
         throw new Error(
@@ -89,7 +92,7 @@ export function createGithubClient(fetcher = fetch) {
       ) {
         const reset = Number(response.headers.get("x-ratelimit-reset"));
         throw new Error(
-          `GitHub’s public API limit has been reached.${reset ? ` Try again after ${new Date(reset * 1000).toLocaleTimeString()}.` : " Wait a few minutes and retry."} Funding is paused until the issue can be checked.`,
+          `GitHub’s public API limit has been reached.${reset ? ` Try again after ${new Date(reset * 1000).toLocaleTimeString()}.` : " Wait a few minutes and retry."} Retry the check before continuing.`,
         );
       }
       if (response.status === 403)
@@ -241,5 +244,5 @@ export function createGithubClient(fetcher = fetch) {
       incomplete: false,
     };
   }
-  return { getRepo, getIssue, inspectIssue, listIssues };
+  return { getRepo, getIssue, inspectIssue, listIssues, request };
 }

@@ -18,22 +18,26 @@ Choose an issue, fund the work, and review a contribution.
 - [Fund an issue](maintainers/fund-issue.md) — Check the target, choose the reward and deadline, and create the escrow.
 - [Review and merge](maintainers/review-and-merge.md) — Make sure the accepted PR produces receipts that can settle the bounty.
 - [Manage rewards and refunds](maintainers/manage-bounties.md) — Understand bounty states, expiry, and the funder’s withdrawal path.
+- [Set up automatic claims](maintainers/automatic-claims.md) — Let the collector receive GitHub emails and submit claims for contributors.
 
 ## Contributors & users
 
-Prepare your PR, collect receipts, and claim your reward.
+Prepare your PR, follow the claim, and withdraw your reward.
 
 - [Contributor onboarding](contributors/getting-started.md) — Choose a funded issue and set up your wallet and receipt delivery.
-- [Prepare your pull request](contributors/prepare-pr.md) — Bind the PR to the right bounty, wallet, issue, and target branch.
-- [Collect the email receipts](contributors/collect-emails.md) — Enable notifications and download the two original messages the contract accepts.
-- [Claim and withdraw](contributors/claim-and-withdraw.md) — Check the receipts locally, submit a claim, and collect the credited reward.
+- [Prepare your pull request](contributors/prepare-pr.md) — Open a prefilled GitHub PR, check its bounty details, and prepare for the merge.
+- [Collect the email receipts](contributors/collect-emails.md) — Submit independently: subscribe before merge and preserve the two signed event messages.
+- [Claim and withdraw](contributors/claim-and-withdraw.md) — Follow an automatic claim or submit receipts manually, then withdraw the credited reward.
+- [Follow an automatic claim](contributors/automatic-claims.md) — Check collection progress, confirm the payout wallet, and withdraw your reward.
 
 ## Reference
 
 Verification, privacy, troubleshooting, and developer setup.
 
+- [Receipt policy](reference/receipt-policy.md) — Which GitHub emails qualify for payment, who gets paid, and why a claim can fail.
+- [Audited components](reference/audited-components.md) — Audited reuse options, compatibility limits, and what still needs an issue.fund audit.
 - [How verification works](reference/verification.md) — What RSA/DKIM authenticates, and what the escrow checks before paying.
-- [Email privacy](reference/privacy.md) — What stays in the page and what becomes public when you submit a claim.
+- [Email privacy](reference/privacy.md) — How automatic and manual claims handle email data, and what becomes public.
 - [Troubleshooting](reference/troubleshooting.md) — Recover from repository, receipt, wallet, and withdrawal problems.
 - [Contracts and supported limits](reference/contracts.md) — Find the live contracts and understand the boundaries of the current payment rule.
 - [Developer setup](reference/developers.md) — Run the app locally, test direct verification, and navigate the source.

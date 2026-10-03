@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-09-14T18:15:14.549Z",
+  "method": "Compare executable runtime after masking compiler-declared immutable slots and removing the trailing Solidity CBOR metadata; full historical runtime verification remains enabled separately.",
+  "comparisons": [
+    {
+      "current": "MergeBounty",
+      "priorArtifact": "MergeBountyV2",
+      "executableInstructionsUnchanged": true,
+      "normalizedExecutableHash": "0xb14303f1c8cadeebc92546b56a367731d86a8853348ecfdfc6a607f772545d61"
+    },
+    {
+      "current": "GithubDkimVerifier",
+      "priorArtifact": "GithubDkimVerifier",
+      "executableInstructionsUnchanged": true,
+      "normalizedExecutableHash": "0xe6d68fae9771ef8d27c35027b8d6ecb7948a0fe4cf1f0f5db6491a0d26264f94"
+    }
+  ],
+  "newOnchainDeployment": false
+}

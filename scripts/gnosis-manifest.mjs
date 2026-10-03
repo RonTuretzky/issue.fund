@@ -6,7 +6,13 @@ export const dkimKey = JSON.parse(
 );
 export const artifact = (name) =>
   JSON.parse(fs.readFileSync(`out/${name}.sol/${name}.json`, "utf8"));
-function normalize(code, references) {
+// Frozen build outputs are only for checking or reproducing historical escrows.
+// New deployments always use the single maintained MergeBounty implementation.
+export const archivedArtifact = (name) =>
+  JSON.parse(
+    fs.readFileSync(`deployments/archive/2026-09-10/${name}.json`, "utf8"),
+  );
+export function normalize(code, references) {
   let hex = code.toLowerCase().replace(/^0x/, "");
   for (const refs of Object.values(references ?? {}))
     for (const { start, length } of refs)
@@ -56,8 +62,23 @@ export async function exportManifest(client, contract, verifier, transactions) {
     if ((await client.getTransactionReceipt({ hash })).status !== "success")
       throw Error("Deployment transaction failed");
   }
+  const current = JSON.parse(
+    fs.readFileSync("public/deployment.gnosis.json", "utf8"),
+  );
+  const strip = ({ legacyDeployments, legacyLinkContract, ...deployment }) =>
+    deployment;
+  const legacyDeployments = [current, ...(current.legacyDeployments ?? [])]
+    .filter((d) => d.contract.toLowerCase() !== contract.toLowerCase())
+    .map(strip);
+  if (legacyDeployments.length >= 10)
+    throw Error("Too many historical escrows");
+  const initialFeeRecipient = await read("initialFeeRecipient");
+  const deploymentReceipt = await client.getTransactionReceipt({
+    hash: transactions.at(-1),
+  });
   const manifest = {
-    protocol: "rsa-dkim-v1",
+    protocol: "rsa-dkim-v2", // Stable wire format; not a second maintained implementation.
+    sourceContract: "MergeBounty",
     chainId: 100,
     chainName: "Gnosis",
     currency: "xDAI",
@@ -67,8 +88,14 @@ export async function exportManifest(client, contract, verifier, transactions) {
     verifier,
     keyHash: dkimKey.keyHash,
     dkimKey,
-    experimental: true,
     local: false,
+    feeBps: Number(await read("feeBps")),
+    feeRecipient: await read("feeRecipient"),
+    initialFeeRecipient,
+    runtimeHash: keccak256(await client.getCode({ address: contract })),
+    fromBlock: Number(deploymentReceipt.blockNumber),
+    legacyDeployments,
+    legacyLinkContract: current.legacyLinkContract ?? current.contract,
     deployedAt: new Date().toISOString(),
     deploymentTransactions: transactions,
     verifierSourceSha256: createHash("sha256")

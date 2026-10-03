@@ -11,7 +11,10 @@ if ((await client.getChainId()) !== 31337) throw new Error("Local Anvil only.");
 const file = ".local/deployment.rsa.json";
 if (fs.existsSync(file)) {
   const d = JSON.parse(fs.readFileSync(file));
-  if (await client.getCode({ address: d.contract })) {
+  if (
+    d.sourceContract === "MergeBounty" &&
+    (await client.getCode({ address: d.contract }))
+  ) {
     console.log("Reusing the existing direct DKIM deployment.");
     process.exit(0);
   }
@@ -48,11 +51,15 @@ async function deploy(name, args) {
   return r.contractAddress;
 }
 const verifier = await deploy("GithubDkimVerifier", [key.modulus]);
-const contract = await deploy("MergeBounty", [verifier]);
+const contract = await deploy("MergeBounty", [verifier, account, 0n]);
 const digest = (p) =>
   createHash("sha256").update(fs.readFileSync(p)).digest("hex");
 const d = {
-  protocol: "rsa-dkim-v1",
+  protocol: "rsa-dkim-v2",
+  sourceContract: "MergeBounty",
+  feeBps: 0,
+  feeRecipient: account,
+  initialFeeRecipient: account,
   chainId: 31337,
   chainName: "Anvil · test ETH",
   currency: "ETH",

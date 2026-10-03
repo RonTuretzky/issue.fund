@@ -212,7 +212,7 @@ export function parseNativeEvent(subject, body, issuedAt) {
   };
 }
 
-export async function prepareReceipt(input, key) {
+export async function authenticateEmail(input, key) {
   const c = canonicalizeEmail(input);
   if (
     c.tags.d !== key.domain ||
@@ -251,13 +251,28 @@ export async function prepareReceipt(input, key) {
     throw new Error("GitHub’s RSA signature is invalid for these headers.");
   if (c.tags.x && Number(c.tags.x) * 1000 < Date.now())
     throw new Error("This DKIM signature has expired.");
-  const summary = parseNativeEvent(c.subject, latin1(c.body), Number(c.tags.t));
   return {
     receipt: {
       headers: hex(c.headers),
       body: hex(c.body),
       signature: hex(c.signature),
     },
+    subject: c.subject,
+    body: latin1(c.body),
+    issuedAt: Number(c.tags.t),
+    keyHash: key.keyHash,
+  };
+}
+
+export async function prepareReceipt(input, key) {
+  const authenticated = await authenticateEmail(input, key);
+  const summary = parseNativeEvent(
+    authenticated.subject,
+    authenticated.body,
+    authenticated.issuedAt,
+  );
+  return {
+    receipt: authenticated.receipt,
     summary: { ...summary, keyHash: key.keyHash },
   };
 }

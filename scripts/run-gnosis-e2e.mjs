@@ -1,7 +1,8 @@
 import { spawn } from "node:child_process";
 import { hiddenKey } from "./hidden-key.mjs";
 const mode = process.argv[2];
-if (!["fund", "claim"].includes(mode)) throw Error("Choose fund or claim");
+if (!["fund", "claim", "relay-withdraw"].includes(mode))
+  throw Error("Choose fund, claim, or relay-withdraw");
 const key = await hiddenKey();
 const child = spawn(
   "npx",
@@ -10,7 +11,11 @@ const child = spawn(
     "test",
     "tests/browser/gnosis.spec.ts",
     "--grep",
-    mode === "fund" ? "fund the Gnosis fixture" : "claim genuine",
+    mode === "fund"
+      ? "fund the Gnosis fixture"
+      : mode === "relay-withdraw"
+        ? "withdraw server-relayed"
+        : "claim genuine",
   ],
   {
     stdio: "inherit",

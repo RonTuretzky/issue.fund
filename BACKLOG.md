@@ -2,7 +2,7 @@
 
 [Issue #3: automatic GitHub receipt collection and claim relay](https://github.com/RonTuretzky/issue.fund/issues/3)
 
-Track repositories internally from issue URLs, prepare notifications before funding, collect original GitHub emails, and relay valid claims. Includes shared readiness states, manual fallback, operating limits, and the reply-credential security dependency below. The collector is not implemented.
+Track repositories internally from issue URLs, prepare notifications before funding, collect original GitHub emails, and relay valid claims. Includes shared readiness states, manual fallback, operating limits, and the reply-credential security dependency below. Implementation is in progress on `codex/automation-production`; the local collector, registry, encrypted storage, indexer and restricted relay have integration tests. Production onboarding/deployment and genuine-email acceptance remain open. See [operator setup](docs/operators/automation.md) and [security review](docs/operators/security-review.md).
 
 [Issue #2: mitigate exposed GitHub reply credentials](https://github.com/RonTuretzky/issue.fund/issues/2)
 

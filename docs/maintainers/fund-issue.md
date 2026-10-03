@@ -14,13 +14,13 @@ Use Connect wallet and select Browser wallet. If prompted, switch to Gnosis (cha
 1. Open Fund an issue or select an issue from Repositories. Paste an issue URL such as https://github.com/owner/repo/issues/42.
 2. Choose Review issue. Check the canonical repository name, issue title and number, and target branch. A pull-request URL or closed issue cannot be funded through this flow.
 3. Enter the reward in xDAI and choose 7, 14, 30, or 90 days to complete the work.
-4. Read the escrow terms and acknowledge that you will arrange the required email notifications.
+4. The live site defaults to Automatically through the collector. Wait for Notifications ready, including the maintainer integration and email delivery. If you choose manual collection instead, arrange your own notifications. Read and acknowledge the escrow terms.
 5. Choose Fund bounty. The app checks GitHub again before asking your wallet to confirm. Wait for the transaction to succeed, then share the new bounty page.
 
 
 ## Premium automation for maintainers
 
-Let contributors focus on the code. We can set up a premium service to collect and submit the required GitHub emails for your project, so contributors don’t have to upload them. Get in touch to discuss setup.
+Automatic email collection and claim submission are live. We can configure the premium service for your public repository so contributors don’t have to upload emails. Get in touch to arrange the maintainer App and collector notifications before work is merged.
 
 - [Contact turetzkyron@gmail.com](mailto:turetzkyron@gmail.com?subject=issue.fund%20premium%20automation)
 
@@ -32,7 +32,7 @@ Let contributors focus on the code. We can set up a premium service to collect a
 | Target branch | The checked default branch is fixed at funding. Coordinate before changing it on GitHub. |
 | Reward and deadline | They cannot be edited or withdrawn early after funding. |
 | Claim grace period | Seven days after the completion deadline, for submitting receipts signed within the completion window. |
-| Platform fee | The escrow takes no platform fee. Wallet transactions still use gas. |
+| Platform fee | The funding form shows the immutable claim fee and the contributor’s net reward. Historical no-fee escrows keep their original terms; the current escrow deducts its fee only on successful claims. Refunds return the full reward. Wallet transactions still use gas. |
 
 
 ## Existing bounties and additional funding

@@ -1,0 +1,28 @@
+{
+  "verifiedAt": "2026-09-10T16:39:40.395Z",
+  "sourceCommit": "555d036a0008e411feb8e9afceded9a3a2be5844",
+  "url": "https://issue.fund/",
+  "guideChecks": 22,
+  "guides": [
+    "overview",
+    "maintainers/getting-started",
+    "maintainers/review-and-merge",
+    "maintainers/automatic-claims",
+    "contributors/getting-started",
+    "contributors/prepare-pr",
+    "contributors/collect-emails",
+    "contributors/claim-and-withdraw",
+    "contributors/automatic-claims",
+    "reference/verification",
+    "reference/privacy"
+  ],
+  "widths": [
+    1440,
+    320
+  ],
+  "catalogueGuides": 16,
+  "redirects": 3,
+  "transactionsSent": 0,
+  "emailsSent": 0,
+  "pageErrors": []
+}
